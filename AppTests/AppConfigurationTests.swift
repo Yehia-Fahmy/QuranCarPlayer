@@ -48,12 +48,17 @@ struct AppConfigurationTests {
         #expect(L10n.time(65, language: .arabic) == "1:05")
     }
 
-    @Test("Composition root builds one coordinator with the fixture catalog")
+    @Test("Composition root streams the four MP3Quran reciters, with Maher selected")
     @MainActor
     func environmentComposes() throws {
         let environment = AppEnvironment.shared
         #expect(environment.coordinator === AppEnvironment.shared.coordinator)
         #expect(environment.coordinator.surahCatalog.surahs.count == 114)
-        #expect(environment.coordinator.audioCatalog.reciters.allSatisfy { $0.collection.isTestFixture })
+        let reciters = environment.coordinator.audioCatalog.reciters
+        #expect(reciters.map(\.id.rawValue) == [
+            "mp3quran.maher", "mp3quran.mishary", "mp3quran.sudais", "mp3quran.shuraim",
+        ])
+        #expect(reciters.allSatisfy { $0.collection.isTestFixture == false })
+        #expect(environment.coordinator.selectedReciter?.englishName == "Maher Al-Muaiqly")
     }
 }

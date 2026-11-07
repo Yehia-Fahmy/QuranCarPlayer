@@ -31,7 +31,8 @@ struct SettingsView: View {
             }
 
             Section(L10n.string("settings.source", language)) {
-                Text(verbatim: L10n.string("settings.source.fixture", language))
+                let usesTestTones = coordinator.audioCatalog.reciters.allSatisfy { $0.collection.isTestFixture }
+                Text(verbatim: L10n.string(usesTestTones ? "settings.source.fixture" : "settings.source.mp3quran", language))
                     .font(.footnote)
                 ForEach(coordinator.audioCatalog.reciters) { reciter in
                     VStack(alignment: .leading, spacing: 2) {

@@ -1,0 +1,46 @@
+{
+  "retrieved": "2026-11-07",
+  "endpoint": "https://mp3quran.net/api/v3/reciters",
+  "reciters": [
+    {
+      "id": "mp3quran.maher",
+      "providerReciterId": 102,
+      "moshafId": 102,
+      "arabicName": "ماهر المعيقلي",
+      "englishName": "Maher Al-Muaiqly",
+      "riwayah": "Hafs an Asim",
+      "style": "Murattal",
+      "server": "https://cdn.mp3quran.net/audio/maher-muaiqly/r1/"
+    },
+    {
+      "id": "mp3quran.mishary",
+      "providerReciterId": 123,
+      "moshafId": 123,
+      "arabicName": "مشاري العفاسي",
+      "englishName": "Mishary Rashid Alafasy",
+      "riwayah": "Hafs an Asim",
+      "style": "Murattal",
+      "server": "https://cdn.mp3quran.net/audio/mishary-alafasy/r1/"
+    },
+    {
+      "id": "mp3quran.sudais",
+      "providerReciterId": 54,
+      "moshafId": 54,
+      "arabicName": "عبدالرحمن السديس",
+      "englishName": "Abdul Rahman Al-Sudais",
+      "riwayah": "Hafs an Asim",
+      "style": "Murattal",
+      "server": "https://cdn.mp3quran.net/audio/abdulrahman-sudais/r1/"
+    },
+    {
+      "id": "mp3quran.shuraim",
+      "providerReciterId": 31,
+      "moshafId": 31,
+      "arabicName": "سعود الشريم",
+      "englishName": "Saud Al-Shuraim",
+      "riwayah": "Hafs an Asim",
+      "style": "Murattal",
+      "server": "https://cdn.mp3quran.net/audio/saud-shuraim/r1/"
+    }
+  ]
+}

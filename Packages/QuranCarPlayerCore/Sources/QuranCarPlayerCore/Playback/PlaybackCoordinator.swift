@@ -110,6 +110,12 @@ public final class PlaybackCoordinator {
     private func restoreCheckpoint() {
         guard let checkpoint = try? sessionStore.load() else { return }
         let session = checkpoint.session
+        // A checkpoint from another catalog (for example the old test tones)
+        // cannot be resumed against the current recordings.
+        guard audioCatalog.reciter(forCollection: session.recording.collection) != nil else {
+            try? sessionStore.clear()
+            return
+        }
         snapshot.currentRecording = session.recording
         snapshot.elapsed = session.elapsedSeconds
         snapshot.intent = .pause

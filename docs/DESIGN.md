@@ -117,6 +117,8 @@ Bundle canonical bilingual surah metadata from a verified, permitted source so b
 
 If provider terms remain unclear, keep implementation moving with test-owned audio and a mock catalog; production distribution remains blocked on the source decision.
 
+Reviewed 2026-11-07. The live v3 endpoint `https://mp3quran.net/api/v3/reciters` returned the four proposed reciters, each with one Hafs an Asim murattal moshaf whose `surah_list` is 1–114. Audio URLs are `{server}{surah as three digits}.mp3` using the `server` value from that response (HTTPS on `cdn.mp3quran.net`). Sample files for surahs 1, 2, 18, and 114 returned `audio/mpeg`. MP3Quran's English privacy page, copyrights section, says all rights are available to everyone and any visitor or developer may copy material or use any link on the site. The app streams those links and does not store the files. That sentence is not a separate written license for App Store redistribution or offline downloads; those stay out of scope until a clearer grant exists. Automated tests keep using the synthetic tones.
+
 ## 8. Proposed architecture and data
 
 Use native Swift, SwiftUI for the phone, CarPlay framework for car scenes, AVFoundation for playback, and MediaPlayer for Now Playing and remote commands. Start with Apple frameworks, URLSession, and simple persistence; no third-party dependencies are currently needed.

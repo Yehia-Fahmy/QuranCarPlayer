@@ -624,6 +624,18 @@ struct SettingsTests {
         #expect(h2.coordinator.surahListAnchor == nil)
     }
 
+    @Test("A saved session from another catalog is discarded on launch")
+    func unknownCatalogCheckpointIsDiscarded() throws {
+        let foreign = RecordingID(collection: RecordingCollectionID(provider: "other", collection: "x"),
+                                   surahNumber: 1)
+        let saved = PlaybackSession(recording: foreign, elapsedSeconds: 10, checkpointDate: Date())
+        let h = try Harness(savedSession: saved)
+        #expect(h.snapshot.currentRecording == nil)
+        #expect(h.snapshot.resumableSession == nil)
+        #expect(h.sessionStore.checkpoint == nil)
+        #expect(h.engine.commands.isEmpty)
+    }
+
     @Test("List anchor falls back to the current surah when none is saved")
     func anchorFallback() throws {
         let saved = PlaybackSession(recording: Fixtures.recording(36), elapsedSeconds: 5, checkpointDate: Date())

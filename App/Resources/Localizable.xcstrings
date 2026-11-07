@@ -231,8 +231,14 @@
     },
     "settings.source.fixture" : {
       "localizations" : {
-        "ar" : { "stringUnit" : { "state" : "translated", "value" : "هذا الإصدار يشغّل نغمات اختبارية اصطناعية مولّدة داخل المشروع. لا يحتوي على أي تلاوة قرآنية بعد؛ الأذونات الخاصة بمصدر الصوت الفعلي قيد المراجعة." } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "This build plays synthetic test tones generated inside the project. It contains no Quran recitation yet; permission for the production audio source is still being reviewed." } }
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "هذا الإصدار يشغّل نغمات اختبارية اصطناعية مولّدة داخل المشروع. لا يحتوي على أي تلاوة قرآنية." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "This build plays synthetic test tones generated inside the project. It contains no Quran recitation." } }
+      }
+    },
+    "settings.source.mp3quran" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "التلاوة تُبث من موقع MP3Quran ولا تُحفظ داخل التطبيق. يحتاج التشغيل إلى اتصال بالإنترنت. المصدر يسمح باستخدام الروابط المنشورة على موقعه. التنزيل للاستخدام دون اتصال غير مضاف." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Recitation is streamed from MP3Quran and is not stored in the app. Playback needs an internet connection. The source allows use of links published on its site. Offline download is not included." } }
       }
     },
     "settings.about" : {
