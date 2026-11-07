@@ -28,7 +28,7 @@ Build only:
 cd Packages/QuranCarPlayerCore && swift build
 ```
 
-## 2. iOS app (requires Xcode; not yet run on this Mac)
+## 2. iOS app (Xcode 27.2 on this Mac)
 
 ### One-time
 1. Install Xcode (Mac App Store or developer.apple.com), open it once, accept the license,
@@ -65,21 +65,35 @@ xcodebuild -project QuranCarPlayer.xcodeproj -scheme QuranCarPlayer \
   -derivedDataPath /tmp/QuranCarPlayer-DerivedData test
 ```
 `AppTests/` checks the Info.plist scene manifest, background audio mode, bundled test tones,
-localizations, and the composition root. The core package tests are also compiled by Xcode
-when the package is opened there, but the scheme runs only `QuranCarPlayerTests`; run
-`Scripts/test-core.sh` (or the package's own scheme in Xcode) for the policy tests.
+localizations, and the composition root. `UITests/` (`PhonePlaybackUITests`) drives the phone
+UI. Verified 2026-11-07: **3 tests passed** on the same iPhone 17 simulator. The scheme runs
+both test targets. Core policy tests stay on `Scripts/test-core.sh`.
+
+Phone UI tests pass `-QCPUITestReset`. `AppEnvironment` then uses in-memory stores so a
+previous test's language or reciter does not leak. Do not pass that argument for a normal launch.
 
 ### CarPlay in the simulator
 Apple's documented path (checked 2026-11-07): with the app running in the iOS simulator, choose **I/O ▸ External Displays ▸ CarPlay**. Xcode 27.2 does not ship `Simulator.app` at the old Developer/Applications path; DeviceHub (`Xcode.app/Contents/Applications/DeviceHub.app`) is the device UI. Record the exact successful menu path for this Xcode in ENVIRONMENT.md once the CarPlay window is opened. The CarPlay Simulator cannot establish real connection/auto-resume behaviour.
 
 ### Device builds
 1. Copy `Config/Signing.xcconfig.example` to `Config/Signing.xcconfig` (gitignored) and set
-   `QCP_DEVELOPMENT_TEAM` and a real `QCP_BUNDLE_ID`.
-2. In Xcode, sign in with the owner's Apple account; automatic signing is configured.
-3. The CarPlay audio entitlement (`com.apple.developer.carplay-audio`) is already in
-   `App/QuranCarPlayer.entitlements`. **A device build will fail to sign until Apple grants the
-   entitlement to the App ID** and a profile containing it exists. Simulator builds do not
-   need it.
+   `QCP_DEVELOPMENT_TEAM` and a real `QCP_BUNDLE_ID`. This Mac already has a local file for
+   Personal Team `MN7YP2FD68` and `com.yehiafahmy.QuranCarPlayer`.
+2. Sign in under **Xcode ▸ Settings ▸ Accounts**. Without an account, device builds fail with
+   "No Accounts" even when the team ID is set. That was the result on 2026-11-07 for
+   Yehia's iPhone (`00008130-001C6C2C14DA001C`).
+3. Phone installs use `App/QuranCarPlayerPhone.entitlements` (empty), which is the default of
+   `QCP_CODE_SIGN_ENTITLEMENTS`. `App/QuranCarPlayer.entitlements` still contains
+   `com.apple.developer.carplay-audio`. Switch the setting to that file only after the paid
+   team has the capability. A Personal Team cannot sign it.
+4. Build and install:
+
+```sh
+xcodebuild -project QuranCarPlayer.xcodeproj -scheme QuranCarPlayer \
+  -destination 'platform=iOS,id=DEVICE_UDID' \
+  -allowProvisioningUpdates \
+  -derivedDataPath /tmp/QuranCarPlayer-DeviceDD build
+```
 
 ## 3. Test audio
 

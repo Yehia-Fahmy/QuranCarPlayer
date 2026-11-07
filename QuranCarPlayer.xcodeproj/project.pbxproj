@@ -21,6 +21,7 @@
 		C2D6D6532AA84F29192E624A /* AppConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 949996AA6D25941564263182 /* AppConfigurationTests.swift */; };
 		D9C779B96293F99D523D8FEB /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDCDCFF3C1DB27B514A7DBA5 /* SettingsView.swift */; };
 		E03888DC43B918E052473537 /* QuranCarPlayerCore in Frameworks */ = {isa = PBXBuildFile; productRef = B52E9ABA5BC05D748692ECA4 /* QuranCarPlayerCore */; };
+		E378FA8EF56C18A1CE1FFA71 /* PhonePlaybackUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33317718FAC06656AF85AFB9 /* PhonePlaybackUITests.swift */; };
 		E9340F12A5CAA36B6E546658 /* test-tone-a.m4a in Resources */ = {isa = PBXBuildFile; fileRef = 5BD189B0394BC4DD2ABA0E87 /* test-tone-a.m4a */; };
 		EC87FA446AE804E8ABD7D8FB /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0511542ED415621A69A3AB5 /* RootView.swift */; };
 		FE7D4B6F1C3B66F56BF07BEA /* QuranCarPlayerCore in Frameworks */ = {isa = PBXBuildFile; productRef = 353CCC1C7CED8E48461EB7F2 /* QuranCarPlayerCore */; };
@@ -28,6 +29,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		0EDF984BC1A980B3499115AE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 85CA0A544F1CDB8B7AB7426D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 47993EBD4B01366CFAD1D73D;
+			remoteInfo = QuranCarPlayer;
+		};
 		6332BB9838A7F46CA3E236B4 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 85CA0A544F1CDB8B7AB7426D /* Project object */;
@@ -40,10 +48,12 @@
 /* Begin PBXFileReference section */
 		171D7667ED419A97C1622BC2 /* CarPlaySceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlaySceneDelegate.swift; sourceTree = "<group>"; };
 		2045B3812E8826F3983EAA31 /* QuranCarPlayerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuranCarPlayerApp.swift; sourceTree = "<group>"; };
+		33317718FAC06656AF85AFB9 /* PhonePlaybackUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhonePlaybackUITests.swift; sourceTree = "<group>"; };
 		3BAA5917EA15E4B613E4A185 /* test-tone-c.m4a */ = {isa = PBXFileReference; path = "test-tone-c.m4a"; sourceTree = "<group>"; };
 		42F0585220DFF92B2E3437B7 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		5BD189B0394BC4DD2ABA0E87 /* test-tone-a.m4a */ = {isa = PBXFileReference; path = "test-tone-a.m4a"; sourceTree = "<group>"; };
 		78B577F87AB849C7050A269F /* test-tone-b.m4a */ = {isa = PBXFileReference; path = "test-tone-b.m4a"; sourceTree = "<group>"; };
+		790BB31EDFC37E5D7737AC26 /* QuranCarPlayerUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = QuranCarPlayerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		7D40A3383B22775E91CD8972 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		89478E1C4987A3A6A9E641A7 /* PlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerView.swift; sourceTree = "<group>"; };
 		949996AA6D25941564263182 /* AppConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfigurationTests.swift; sourceTree = "<group>"; };
@@ -92,6 +102,14 @@
 			path = Phone;
 			sourceTree = "<group>";
 		};
+		35D6C07BF3CDD656C71D67AC /* UITests */ = {
+			isa = PBXGroup;
+			children = (
+				33317718FAC06656AF85AFB9 /* PhonePlaybackUITests.swift */,
+			);
+			path = UITests;
+			sourceTree = "<group>";
+		};
 		3C4A47D9CD37BA7F213539D1 /* Config */ = {
 			isa = PBXGroup;
 			children = (
@@ -113,6 +131,7 @@
 			children = (
 				FFB044C45D4A00B21FAA9D50 /* QuranCarPlayer.app */,
 				B3A8E32160FD0EA8112340F9 /* QuranCarPlayerTests.xctest */,
+				790BB31EDFC37E5D7737AC26 /* QuranCarPlayerUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -165,6 +184,7 @@
 				CB749C3A2E41BFB89337152A /* AppTests */,
 				3C4A47D9CD37BA7F213539D1 /* Config */,
 				58D3B32C51435A582BF3AE4C /* Packages */,
+				35D6C07BF3CDD656C71D67AC /* UITests */,
 				65214AA48B0BA762FFFEA565 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -229,6 +249,24 @@
 			productReference = FFB044C45D4A00B21FAA9D50 /* QuranCarPlayer.app */;
 			productType = "com.apple.product-type.application";
 		};
+		7766CEB8FF8B367B851CE15E /* QuranCarPlayerUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5932297C9430E5B0A76495BB /* Build configuration list for PBXNativeTarget "QuranCarPlayerUITests" */;
+			buildPhases = (
+				8EF7932A1F3EE786CD925D9E /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				497D3AB3B14EC5737BE94EB9 /* PBXTargetDependency */,
+			);
+			name = QuranCarPlayerUITests;
+			packageProductDependencies = (
+			);
+			productName = QuranCarPlayerUITests;
+			productReference = 790BB31EDFC37E5D7737AC26 /* QuranCarPlayerUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -245,6 +283,11 @@
 					47993EBD4B01366CFAD1D73D = {
 						DevelopmentTeam = "$(QCP_DEVELOPMENT_TEAM)";
 						ProvisioningStyle = Automatic;
+					};
+					7766CEB8FF8B367B851CE15E = {
+						DevelopmentTeam = "$(QCP_DEVELOPMENT_TEAM)";
+						ProvisioningStyle = Automatic;
+						TestTargetID = 47993EBD4B01366CFAD1D73D;
 					};
 				};
 			};
@@ -268,6 +311,7 @@
 			targets = (
 				47993EBD4B01366CFAD1D73D /* QuranCarPlayer */,
 				227CB202A6D6E1E1B06C1160 /* QuranCarPlayerTests */,
+				7766CEB8FF8B367B851CE15E /* QuranCarPlayerUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -305,6 +349,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		8EF7932A1F3EE786CD925D9E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E378FA8EF56C18A1CE1FFA71 /* PhonePlaybackUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A6B36BA041B938B4CFA704A4 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -316,6 +368,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		497D3AB3B14EC5737BE94EB9 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 47993EBD4B01366CFAD1D73D /* QuranCarPlayer */;
+			targetProxy = 0EDF984BC1A980B3499115AE /* PBXContainerItemProxy */;
+		};
 		D9E3F429AFE738428FA5DD37 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 47993EBD4B01366CFAD1D73D /* QuranCarPlayer */;
@@ -329,7 +386,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = App/QuranCarPlayer.entitlements;
+				CODE_SIGN_ENTITLEMENTS = "$(QCP_CODE_SIGN_ENTITLEMENTS)";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = "$(QCP_DEVELOPMENT_TEAM)";
@@ -455,6 +512,44 @@
 			};
 			name = Debug;
 		};
+		6A94B73A8EDED434716CF95F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = "$(QCP_DEVELOPMENT_TEAM)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "$(QCP_BUNDLE_ID).uitests";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = QuranCarPlayer;
+			};
+			name = Debug;
+		};
+		7CB8AF1C73F1C805F1004419 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = "$(QCP_DEVELOPMENT_TEAM)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "$(QCP_BUNDLE_ID).uitests";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = QuranCarPlayer;
+			};
+			name = Release;
+		};
 		D85334C447578E1CF36FC06C /* Release */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = D62967F5A4C9D65ECA2B6D78 /* Shared.xcconfig */;
@@ -523,7 +618,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = App/QuranCarPlayer.entitlements;
+				CODE_SIGN_ENTITLEMENTS = "$(QCP_CODE_SIGN_ENTITLEMENTS)";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = "$(QCP_DEVELOPMENT_TEAM)";
@@ -544,6 +639,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		5932297C9430E5B0A76495BB /* Build configuration list for PBXNativeTarget "QuranCarPlayerUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6A94B73A8EDED434716CF95F /* Debug */,
+				7CB8AF1C73F1C805F1004419 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		9A35462F609F5F6A3D96B95F /* Build configuration list for PBXNativeTarget "QuranCarPlayer" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

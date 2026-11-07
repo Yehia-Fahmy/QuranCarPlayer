@@ -8,4 +8,9 @@
 QCP_BUNDLE_ID = local.placeholder.QuranCarPlayer
 QCP_DEVELOPMENT_TEAM =
 
+// Phone-only signing until the paid Developer Program team can use CarPlay.
+// Switch this to App/QuranCarPlayer.entitlements after that entitlement is on the App ID.
+// See docs/IMPLEMENTATION.md, "Open: CarPlay".
+QCP_CODE_SIGN_ENTITLEMENTS = App/QuranCarPlayerPhone.entitlements
+
 #include? "Signing.xcconfig"

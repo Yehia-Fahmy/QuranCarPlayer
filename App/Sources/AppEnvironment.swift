@@ -33,11 +33,21 @@ final class AppEnvironment {
         // the app plays clearly-labelled synthetic test tones.
         let audioCatalog = FixtureAudioCatalog(fixtureURLs: fixtureURLs)
 
+        // UI tests pass -QCPUITestReset so each launch starts from defaults.
+        // Otherwise a previous test's Arabic setting or saved session leaks
+        // through the shared simulator container.
         let sessionStore: SessionStore
-        do {
-            sessionStore = try FileSessionStore.applicationSupport()
-        } catch {
+        let settingsStore: SettingsStore
+        if ProcessInfo.processInfo.arguments.contains("-QCPUITestReset") {
             sessionStore = InMemorySessionStore()
+            settingsStore = InMemorySettingsStore()
+        } else {
+            do {
+                sessionStore = try FileSessionStore.applicationSupport()
+            } catch {
+                sessionStore = InMemorySessionStore()
+            }
+            settingsStore = UserDefaultsSettingsStore()
         }
 
         let engine = AVPlayerEngine()
@@ -47,7 +57,7 @@ final class AppEnvironment {
                                           engine: engine,
                                           scheduler: DispatchWorkScheduler(),
                                           sessionStore: sessionStore,
-                                          settingsStore: UserDefaultsSettingsStore(),
+                                          settingsStore: settingsStore,
                                           defaultReciter: FixtureAudioCatalog.defaultReciterID)
         nowPlaying = NowPlayingBridge(coordinator: coordinator) { language in
             NowPlayingLabels(testAudioNotice: L10n.string("testAudio.short", language))

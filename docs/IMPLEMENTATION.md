@@ -9,7 +9,7 @@ Legend for evidence tags used below: **[macOS-tested]** verified by `Scripts/tes
 - [ ] Establish the Xcode toolchain, app project, shared scheme, simulator, and device signing.
   - [x] App project, shared scheme, entitlements, Info.plist scene manifest, signing xcconfig mechanism.
   - [x] Xcode 27.2 (27B52), iOS SDK 27.2, iOS Simulator runtime 27.2 (24B8117). Simulator **build succeeded**; **5/5 app tests passed** on iPhone 17 (2026-11-07).
-  - [ ] Device signing **[blocked: team/bundle ID + entitlement]**.
+  - [ ] Device signing **[blocked: Xcode has no Apple ID]**. Local `Config/Signing.xcconfig` sets Personal Team `MN7YP2FD68` and `com.yehiafahmy.QuranCarPlayer`. Phone builds use `App/QuranCarPlayerPhone.entitlements` (no CarPlay capability). `xcodebuild` on the connected iPhone on 2026-11-07 failed with "No Accounts". Sign in under Xcode ▸ Settings ▸ Accounts, then rebuild with `-allowProvisioningUpdates`.
 - [ ] Verify/request CarPlay audio entitlement through the owner's account. **[blocked: owner]** Instructions in ENVIRONMENT.md "Owner actions".
 - [ ] Build a small native CarPlay list and Now Playing prototype with test-owned audio.
   - [x] Written and **[simulator-built]**: `CarPlaySceneDelegate`, `CarPlayTemplateController`, test tones bundled. App-bundle test confirms the CarPlay scene delegate class resolves at runtime.
@@ -33,8 +33,8 @@ Exit: playback works on the phone while locked, state survives a relaunch, contr
 
 ## Milestone 2 — Phone interface
 
-- [ ] Surah list, saved visible anchor/current-surah positioning, reciter selection, player, and settings. **[simulator-built]**; first-launch Surahs list **[simulator-tested]** by screenshot (Quran order, test-tone reciter labelled). Playback, reciter sheet, and settings not tapped.
-- [ ] System/English/Arabic localization and right-to-left layout. **[simulator-built]**; en/ar string resolution **[simulator-tested]** by app test. RTL not visually checked.
+- [x] Surah list, reciter selection, player, and settings. **[simulator-tested]** by `PhonePlaybackUITests` (2026-11-07): list reaches surah 114, selecting surah 1 starts test-tone playback, pause works, Next moves to surah 2, reciter change updates the header, Settings switches the UI to Arabic. Saved list-anchor restore is implemented; the UI tests reset storage, so anchor restore was not the thing those tests checked.
+- [x] System/English/Arabic localization. **[simulator-tested]** by the settings UI test (Arabic title "الإعدادات", list title "السور"). Right-to-left layout is set from the language but was not inspected visually.
 - [ ] Loading, buffering, retry, first-use, and completed-session states. Status text and Retry present in `PlayerView` **[simulator-built]**.
 - [ ] Dynamic Type and VoiceOver checks on key controls and bilingual names. Labels added; not checked on a device.
 
@@ -100,6 +100,16 @@ Unit-test policy boundaries, queue progression, persistence, retry cancellation,
 
 For each implementation handoff, record changed files, commands run, results, manual device evidence, known limitations, and the next unblocked milestone. Do not claim a build or test was run if prerequisites prevented it.
 
+## Open: CarPlay (future agent)
+
+Leave these until the paid Developer Program membership is active and Apple has attached CarPlay Audio to the App ID. Do not delete the CarPlay source to make the phone build succeed.
+
+- Switch `QCP_CODE_SIGN_ENTITLEMENTS` from `App/QuranCarPlayerPhone.entitlements` (current, empty) to `App/QuranCarPlayer.entitlements` (`com.apple.developer.carplay-audio`). Adding the Boolean does not grant the capability.
+- Install the signed app on the iPhone and confirm the icon appears in CarPlay Simulator. On this Mac, Xcode 27 uses Device Hub with the physical iPhone over USB (window title like "Yehia's iPhone / Standard"). The old Simulator menu I/O ▸ External Displays ▸ CarPlay is not the path that worked here. A car Home Screen was seen on 2026-11-07; QuranCarPlayer was absent because it was not installed and a free Personal Team cannot sign the CarPlay entitlement.
+- Run the in-car automatic-resume matrix (FEASIBILITY.md §1). Policy is unit-tested only. Two owner decisions remain: resume after a deliberate pause, and whether to skip resume when another app is playing.
+- List position: current `CPListTemplate` docs have no scroll API. Exact restoration is not possible with the public API. Any shortcut (for example a labelled Current Surah row) needs owner approval. Do not reorder the Quran list.
+- Lock screen, steering-wheel, and background audio on a real device are untested.
+
 ## Handoff record
 
 ### 2026-11-06 — Milestone 0 foundation (branch `codex/milestone-0-foundation`)
@@ -148,4 +158,22 @@ For each implementation handoff, record changed files, commands run, results, ma
 
 **Manual device evidence:** none (no physical iPhone connected).
 
-**CarPlay Simulator:** not opened. Apple's current docs still specify Simulator **I/O ▸ External Displays ▸ CarPlay** after a simulator run.
+**CarPlay Simulator:** not opened in that session. Apple's current docs still specify Simulator **I/O ▸ External Displays ▸ CarPlay** after a simulator run. Later the same day a car Home Screen was shown via Device Hub attached to the physical iPhone; see the next handoff.
+
+### 2026-11-07 — Phone UI verified; device install blocked on Accounts
+
+**Changed**
+- Default device signing uses `App/QuranCarPlayerPhone.entitlements` via `QCP_CODE_SIGN_ENTITLEMENTS`. `App/QuranCarPlayer.entitlements` stays in the repo for the future CarPlay switch.
+- `UITests/PhonePlaybackUITests.swift`. Launch argument `-QCPUITestReset` makes `AppEnvironment` use in-memory session and settings stores so tests do not leak language or reciter.
+- Play/pause and the test-audio banner have accessibility identifiers.
+
+**Commands run and results**
+- `xcodebuild … -destination 'platform=iOS Simulator,id=6A7BEB9D-5E0D-455D-A67E-B920AFC202FE' -only-testing:QuranCarPlayerUITests test` → **TEST SUCCEEDED**. Three tests: surah list through 114, player play/pause and next surah, reciter change and Arabic settings. Each launch is isolated.
+- `xcodebuild … -destination 'platform=iOS,id=00008130-001C6C2C14DA001C' -allowProvisioningUpdates build` → **BUILD FAILED**: "No Accounts" and no profile for `com.yehiafahmy.QuranCarPlayer`. Same result from Xcode's provisioning update after the project was opened. Team ID in the local xcconfig is `MN7YP2FD68`; Xcode reports that team with a null name because no Apple ID is signed in.
+
+**Manual device evidence:** Yehia's iPhone 15 Pro Max (`00008130-001C6C2C14DA001C`, iOS 27.0.1) is paired, available, and Developer Mode is on. The app was not installed. Xcode's run destination is that phone. The one step only the owner can do: Xcode ▸ Settings ▸ Accounts, sign in with the Apple ID for Personal Team `MN7YP2FD68`, then build again. The first install may ask to trust the developer under Settings ▸ General ▸ VPN & Device Management.
+
+**Next concrete tasks**
+1. Owner: sign in to Xcode Accounts. Agent: device build, install, launch, and confirm the test-tone banner and play/pause on the phone.
+2. Future agent, after paid membership and CarPlay entitlement: the "Open: CarPlay" list above.
+3. Still separate: proofread `surahs.json`, and do not add a production audio provider until DESIGN.md §7 permission is recorded.

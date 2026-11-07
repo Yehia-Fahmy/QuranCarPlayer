@@ -1,8 +1,11 @@
 // Copy to Config/Signing.xcconfig (gitignored) and fill in your own values.
 //
-// QCP_DEVELOPMENT_TEAM: the 10-character Team ID from developer.apple.com (Membership details).
-// QCP_BUNDLE_ID: a reverse-DNS identifier you control, registered as an App ID with the
-//                CarPlay Audio capability once Apple approves the entitlement request.
+// QCP_DEVELOPMENT_TEAM: the 10-character Team ID from Xcode ▸ Settings ▸ Accounts.
+// A free Personal Team can install on your own iPhone only when
+// QCP_CODE_SIGN_ENTITLEMENTS points at the phone file (the Shared.xcconfig default).
+// After the paid Developer Program membership is active and Apple has enabled
+// CarPlay Audio on the App ID, set:
+//   QCP_CODE_SIGN_ENTITLEMENTS = App/QuranCarPlayer.entitlements
 
 QCP_DEVELOPMENT_TEAM = ABCDE12345
 QCP_BUNDLE_ID = com.example.qurancarplayer

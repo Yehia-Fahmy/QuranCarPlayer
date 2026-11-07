@@ -57,6 +57,13 @@ Rechecked on the same Mac after the planning session:
 - Xcode 27.2 no longer ships `Simulator.app` at the legacy path (`/Applications/Xcode.app/Contents/Developer/Applications/Simulator.app` is absent). Device UI lives in `DeviceHub.app` (`com.apple.dt.Devices`). Apple's CarPlay Simulator docs still say: run in the iOS simulator, then **I/O ▸ External Displays ▸ CarPlay**. That menu was not opened from the command line; CarPlay UI remains untested.
 - Swift version used by this Xcode: confirm with `xcrun swift --version` if needed; iOS SDK 27.2.
 
+## Observed later on November 7, 2026 (phone UI and device signing)
+
+- Phone UI tests: **3 passed** on iPhone 17 simulator (`PhonePlaybackUITests`). Selecting a surah starts the labelled test tone; pause, next surah, reciter change, and Arabic settings were exercised.
+- Physical device present and paired: Yehia's iPhone, iPhone 15 Pro Max, UDID `00008130-001C6C2C14DA001C`, iOS 27.0.1, Developer Mode on, USB. `devicectl list devices` shows it available.
+- Device build **failed**: Xcode has no Apple ID ("No Accounts"). Local gitignored `Config/Signing.xcconfig` names Personal Team `MN7YP2FD68` and bundle ID `com.yehiafahmy.QuranCarPlayer`. The committed default remains `local.placeholder.QuranCarPlayer`. Phone signing uses `App/QuranCarPlayerPhone.entitlements` so a free team can install once an account is signed in. CarPlay entitlements stay in `App/QuranCarPlayer.entitlements` and are not on the phone build.
+- CarPlay Simulator, observed earlier the same day with this phone in Device Hub: a car Home Screen appeared. QuranCarPlayer was not on it. A free Personal Team cannot sign `com.apple.developer.carplay-audio`, and the app was not installed. Paid membership was still waiting on Apple activation.
+
 ## 1. Install or select full Xcode
 
 Find an existing Xcode installation first. If absent, obtain a stable supported release from Apple. The owner may need to complete account sign-in, installation, license acceptance, and component installation. Choose a release compatible with the Mac, supported iPhone OS, and current App Store submission requirements; do not assume a version from this plan.
@@ -125,11 +132,11 @@ Record iPhone model/OS, Xcode version, car/head-unit model, and wired/wireless t
 ## Setup completion checklist
 
 - [x] Full Xcode selected; exact versions recorded. Xcode 27.2 (27B52), iOS SDK 27.2 (2026-11-06, later the same day).
-- [x] iOS runtime available and app builds in simulator. iOS 27.2 (24B8117); simulator **build succeeded** (zero compiler warnings) and **app tests passed** (5/5) on iPhone 17. App launched; first-launch Surahs screen verified by screenshot. CarPlay Simulator window not yet opened.
-- [x] Shared scheme committed (`QuranCarPlayer.xcodeproj/xcshareddata/xcschemes/QuranCarPlayer.xcscheme`). Core test command verified (`Scripts/test-core.sh`, 48 tests pass). `xcodebuild` commands not yet verified.
-- [ ] Owner team and unique bundle ID configured locally (`Config/Signing.xcconfig`). Mechanism in place; values pending from owner.
-- [ ] CarPlay entitlement status and profile verified. Entitlements file committed; approval not requested yet.
-- [ ] App runs on owner's phone and appears in CarPlay.
+- [x] iOS runtime available and app builds in simulator. iOS 27.2 (24B8117); simulator build succeeded and app tests passed (5/5) on iPhone 17. Phone UI tests passed (3/3) on 2026-11-07.
+- [x] Shared scheme committed (`QuranCarPlayer.xcodeproj/xcshareddata/xcschemes/QuranCarPlayer.xcscheme`). Core test command verified (`Scripts/test-core.sh`, 48 tests pass). `xcodebuild` simulator test verified.
+- [x] Owner team and bundle ID configured locally (`Config/Signing.xcconfig`, gitignored): Personal Team `MN7YP2FD68`, `com.yehiafahmy.QuranCarPlayer`. Xcode still needs the Apple ID signed in before a profile can be created.
+- [ ] CarPlay entitlement status and profile verified. Phone builds deliberately omit it. Approval still waiting on paid membership activation. See IMPLEMENTATION.md "Open: CarPlay".
+- [ ] App runs on owner's phone and appears in CarPlay. Phone install blocked on "No Accounts" (2026-11-07). CarPlay icon is a later step.
 - [ ] Source permissions and catalog verification recorded separately. Not started; app uses test tones.
 
 ## Official references

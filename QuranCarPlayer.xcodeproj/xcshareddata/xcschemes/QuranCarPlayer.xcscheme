@@ -35,6 +35,20 @@
                ReferencedContainer = "container:QuranCarPlayer.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "7766CEB8FF8B367B851CE15E"
+               BuildableName = "QuranCarPlayerUITests.xctest"
+               BlueprintName = "QuranCarPlayerUITests"
+               ReferencedContainer = "container:QuranCarPlayer.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
@@ -62,6 +76,17 @@
                BlueprintIdentifier = "227CB202A6D6E1E1B06C1160"
                BuildableName = "QuranCarPlayerTests.xctest"
                BlueprintName = "QuranCarPlayerTests"
+               ReferencedContainer = "container:QuranCarPlayer.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "7766CEB8FF8B367B851CE15E"
+               BuildableName = "QuranCarPlayerUITests.xctest"
+               BlueprintName = "QuranCarPlayerUITests"
                ReferencedContainer = "container:QuranCarPlayer.xcodeproj">
             </BuildableReference>
          </TestableReference>

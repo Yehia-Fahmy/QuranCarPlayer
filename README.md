@@ -2,7 +2,7 @@
 
 A planned iPhone Quran audio player designed primarily for easy surah and reciter selection through Apple CarPlay. Initially for personal use, with a future free App Store release.
 
-**Status (November 7, 2026): Milestone 0 foundation in progress.** Core playback logic is unit-tested on macOS (48 tests). The iOS app **builds and launches** in the iPhone 17 simulator (Xcode 27.2, iOS 27.2); 5/5 app-bundle tests pass. CarPlay Simulator has not been opened yet. The app currently plays clearly-labelled synthetic test tones, not Quran audio.
+**Status (November 7, 2026): phone app works in the simulator; CarPlay is left for a later agent.** Core playback logic is unit-tested on macOS (48 tests). The iOS app builds on the iPhone 17 simulator (Xcode 27.2, iOS 27.2). App-bundle tests (5) and phone UI tests (3) pass: surah list through 114, play/pause of labelled test tones, next surah, reciter change, and Arabic settings. The connected iPhone could not be installed because Xcode currently has no Apple ID in Accounts. CarPlay entitlement, CarPlay Simulator icon, and in-car resume stay open. The app plays clearly-labelled synthetic test tones, not Quran audio.
 
 ## Start here
 
@@ -17,6 +17,7 @@ A planned iPhone Quran audio player designed primarily for easy surah and recite
 - `Packages/QuranCarPlayerCore` — platform-independent domain, catalog, playback coordinator, persistence, and AVFoundation/MediaPlayer adapters (SwiftPM, testable on macOS).
 - `App/` — iOS app: SwiftUI phone UI, CarPlay scene and templates, composition root, localization, test audio.
 - `AppTests/` — app-bundle smoke tests (run in Xcode).
+- `UITests/` — phone playback UI tests (simulator). They launch with `-QCPUITestReset` so each test starts from default settings.
 - `project.yml` → `QuranCarPlayer.xcodeproj` (XcodeGen; generated project is committed with a shared scheme).
 - `Config/` — build settings; signing values are local and gitignored.
 - `Scripts/` — core test runner, project generation, test-audio generation.

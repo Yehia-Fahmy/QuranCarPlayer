@@ -61,10 +61,6 @@ targets:
               - UISceneClassName: CPTemplateApplicationScene
                 UISceneConfigurationName: CarPlay
                 UISceneDelegateClassName: $(PRODUCT_MODULE_NAME).CarPlaySceneDelegate
-    entitlements:
-      path: App/QuranCarPlayer.entitlements
-      properties:
-        com.apple.developer.carplay-audio: true
     dependencies:
       - package: QuranCarPlayerCore
     settings:
@@ -73,6 +69,7 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: $(QCP_BUNDLE_ID)
         DEVELOPMENT_TEAM: $(QCP_DEVELOPMENT_TEAM)
         CODE_SIGN_STYLE: Automatic
+        CODE_SIGN_ENTITLEMENTS: $(QCP_CODE_SIGN_ENTITLEMENTS)
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         GENERATE_INFOPLIST_FILE: NO
@@ -93,6 +90,21 @@ targets:
         CODE_SIGN_STYLE: Automatic
         GENERATE_INFOPLIST_FILE: YES
 
+  QuranCarPlayerUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: UITests
+    dependencies:
+      - target: QuranCarPlayer
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(QCP_BUNDLE_ID).uitests
+        DEVELOPMENT_TEAM: $(QCP_DEVELOPMENT_TEAM)
+        CODE_SIGN_STYLE: Automatic
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: QuranCarPlayer
+
 schemes:
   QuranCarPlayer:
     shared: true
@@ -100,6 +112,7 @@ schemes:
       targets:
         QuranCarPlayer: all
         QuranCarPlayerTests: [test]
+        QuranCarPlayerUITests: [test]
     run:
       config: Debug
     test:
@@ -107,6 +120,8 @@ schemes:
       gatherCoverageData: true
       targets:
         - name: QuranCarPlayerTests
+          parallelizable: false
+        - name: QuranCarPlayerUITests
           parallelizable: false
     profile:
       config: Release

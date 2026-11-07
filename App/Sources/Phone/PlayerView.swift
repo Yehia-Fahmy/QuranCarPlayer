@@ -145,6 +145,7 @@ struct PlayerView: View {
                     .font(.system(size: 72))
             }
             .disabled(snapshot.currentRecording == nil)
+            .accessibilityIdentifier("player-play-pause")
             .accessibilityLabel(L10n.string(snapshot.isActivelyPlaying ? "player.pause" : "player.play", language))
 
             Button {
@@ -168,5 +169,6 @@ struct TestAudioBanner: View {
             .frame(maxWidth: .infinity)
             .background(Color.orange.opacity(0.18), in: RoundedRectangle(cornerRadius: 10))
             .accessibilityElement(children: .combine)
+            .accessibilityIdentifier("test-audio-banner")
     }
 }
