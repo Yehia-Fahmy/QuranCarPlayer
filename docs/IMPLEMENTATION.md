@@ -2,17 +2,18 @@
 
 Read DESIGN.md and ENVIRONMENT.md first. Work in small reviewable changes. Check off work only with evidence; these tasks are all pending. Keep confirmed product requirements separate from defaults and platform limitations. Update these documents as decisions are resolved.
 
-Legend for evidence tags used below: **[macOS-tested]** verified by `Scripts/test-core.sh` on the development Mac; **[written, uncompiled]** iOS code that exists but could not be built because Xcode is not installed; **[blocked]** waiting on the owner or on hardware.
+Legend for evidence tags used below: **[macOS-tested]** verified by `Scripts/test-core.sh`; **[simulator-built]** compiled for iOS Simulator; **[simulator-tested]** ran in iPhone 17 simulator; **[blocked]** waiting on the owner or on hardware.
 
 ## Milestone 0 — Toolchain and feasibility
 
 - [ ] Establish the Xcode toolchain, app project, shared scheme, simulator, and device signing.
-  - [x] App project (`project.yml` → `QuranCarPlayer.xcodeproj`), shared scheme, entitlements, Info.plist scene manifest, signing xcconfig mechanism (2026-11-06).
-  - [ ] Xcode toolchain and simulator **[blocked: owner must install Xcode]**; device signing **[blocked: team/bundle ID + entitlement]**.
+  - [x] App project, shared scheme, entitlements, Info.plist scene manifest, signing xcconfig mechanism.
+  - [x] Xcode 27.2 (27B52), iOS SDK 27.2, iOS Simulator runtime 27.2 (24B8117). Simulator **build succeeded**; **5/5 app tests passed** on iPhone 17 (2026-11-07).
+  - [ ] Device signing **[blocked: team/bundle ID + entitlement]**.
 - [ ] Verify/request CarPlay audio entitlement through the owner's account. **[blocked: owner]** Instructions in ENVIRONMENT.md "Owner actions".
 - [ ] Build a small native CarPlay list and Now Playing prototype with test-owned audio.
-  - [x] Written: `CarPlaySceneDelegate`, `CarPlayTemplateController` (tab bar: Listen / Surahs / Reciters, native playing indicator, shared Now Playing, Retry alert, item-limit check), test tones in `App/Resources/TestAudio` **[written, uncompiled]**.
-  - [ ] Built and shown in CarPlay Simulator.
+  - [x] Written and **[simulator-built]**: `CarPlaySceneDelegate`, `CarPlayTemplateController`, test tones bundled. App-bundle test confirms the CarPlay scene delegate class resolves at runtime.
+  - [ ] Shown in CarPlay Simulator (I/O ▸ External Displays ▸ CarPlay not yet opened on this Mac).
 - [ ] Test 114-item browsing, native playing indicators, returning to a list, tab switching, reconnecting, and list-position restoration using public APIs. **Documentation finding (FEASIBILITY.md §2): no public scroll/position API on `CPListTemplate`.** Runtime behaviour untested.
 - [ ] Test automatic resume in all lifecycle cases listed in DESIGN.md. Resolve the manually-paused-session and other-audio-app policies with the owner using findings. Policy implemented and unit-tested (FEASIBILITY.md §1) **[macOS-tested]**; in-car matrix **[blocked: Xcode, device, car]**; two owner decisions open.
 - [ ] Verify production audio provider permissions, attribution, and the four candidate recording collections. Document evidence and any unavailable reciter. Not started; the app ships test tones labelled as such.
@@ -26,26 +27,26 @@ Deliverable: reproducible prototype and a dated feasibility note with device/SDK
 - [ ] Implement provider adapter and last-known-good catalog cache with fixture tests. Only `FixtureAudioCatalog` exists (test tones). Production adapter blocked on source permission.
 - [x] Build shared playback coordinator, intent-aware state transitions, retry cancellation, and stale-operation rejection. `PlaybackCoordinator` **[macOS-tested]**: scenarios 1–7, 13–17 covered by unit tests.
 - [x] Implement continuous ordered playback, next/previous boundaries, reciter changes, checkpoint restore, and completed-session handling **[macOS-tested]**.
-- [ ] Add audio-session handling, background playback, Now Playing metadata, and remote commands. `AVPlayerEngine`, `NowPlayingBridge` compile on macOS; `AudioSessionController` is iOS-only **[written, uncompiled]**. Background audio mode declared. Not exercised on a device.
+- [ ] Add audio-session handling, background playback, Now Playing metadata, and remote commands. `AVPlayerEngine`, `NowPlayingBridge`, `AudioSessionController` **[simulator-built]**. Background audio mode declared and asserted by an app test. Not exercised on a device or with lock-screen controls.
 
 Exit: playback works on the phone while locked, state survives a relaunch, controls act on one shared session, and policy tests pass without network access. → Policy tests pass without network **[macOS-tested]**; the rest is untested.
 
 ## Milestone 2 — Phone interface
 
-- [ ] Surah list, saved visible anchor/current-surah positioning, reciter selection, player, and settings. `RootView`, `SurahListView` (anchor via `ScrollViewReader`), `ReciterListView`, `PlayerView` (play/pause, next/previous, seek, elapsed/duration, Retry), `SettingsView` **[written, uncompiled]**.
-- [ ] System/English/Arabic localization and right-to-left layout. `Localizable.xcstrings` (en, ar), `L10n` helper, layout direction switched from the app setting **[written, uncompiled]**.
-- [ ] Loading, buffering, retry, first-use, and completed-session states. Status text and Retry present in `PlayerView` **[written, uncompiled]**.
+- [ ] Surah list, saved visible anchor/current-surah positioning, reciter selection, player, and settings. **[simulator-built]**; first-launch Surahs list **[simulator-tested]** by screenshot (Quran order, test-tone reciter labelled). Playback, reciter sheet, and settings not tapped.
+- [ ] System/English/Arabic localization and right-to-left layout. **[simulator-built]**; en/ar string resolution **[simulator-tested]** by app test. RTL not visually checked.
+- [ ] Loading, buffering, retry, first-use, and completed-session states. Status text and Retry present in `PlayerView` **[simulator-built]**.
 - [ ] Dynamic Type and VoiceOver checks on key controls and bilingual names. Labels added; not checked on a device.
 
 Exit: a new user can select a surah, change reciter, pause, resume, seek, and change language; no account is required.
 
 ## Milestone 3 — CarPlay interface
 
-- [ ] Native Listen / Surahs / Reciters templates and native Now Playing. **[written, uncompiled]**
-- [ ] Shared state synchronization across phone, car, and remote controls. One coordinator in `AppEnvironment.shared`; observers drive CarPlay and Now Playing **[written, uncompiled]**.
+- [ ] Native Listen / Surahs / Reciters templates and native Now Playing. **[simulator-built]**; not shown in CarPlay Simulator.
+- [ ] Shared state synchronization across phone, car, and remote controls. One coordinator in `AppEnvironment.shared` **[simulator-tested]** by composition-root test. Car/remote surfaces untested.
 - [ ] Implement proven list-position behavior; obtain owner agreement for any fallback. See FEASIBILITY.md §2; owner decision pending after prototype.
 - [ ] Implement validated automatic resume policy and car-disconnection pause. Policy **[macOS-tested]**; validation in car pending.
-- [ ] Handle scene reconnects, selection callbacks, loading cancellation, language rebuilds, and errors without losing playback position. Selection completion/timeout, in-place relocalization, failure alert **[written, uncompiled]**.
+- [ ] Handle scene reconnects, selection callbacks, loading cancellation, language rebuilds, and errors without losing playback position. Selection completion/timeout, in-place relocalization, failure alert **[simulator-built]**.
 
 Exit: ordinary listening works with the phone locked. Every confirmed behavior works or has a documented platform limitation and an owner-approved alternative.
 
@@ -130,9 +131,21 @@ For each implementation handoff, record changed files, commands run, results, ma
 - App icon and CarPlay icon slots are empty placeholders.
 
 **Next concrete tasks (in order)**
-1. Owner: install Xcode, sign in, set `Config/Signing.xcconfig`, request the CarPlay audio entitlement (ENVIRONMENT.md "Owner actions").
-2. Agent: `xcodebuild … build` for the simulator; fix compile errors in `App/`; run `AppTests` in a simulator; record Xcode/SDK versions in ENVIRONMENT.md.
-3. Agent: launch in Simulator, open **I/O ▸ External Displays ▸ CarPlay**, and record: tab bar appears, 114 items listed, `maximumItemCount` log value, playing indicator, Now Playing push, Retry alert, whether returning to Surahs preserves scroll. Update FEASIBILITY.md §2.
-4. Agent (needs device + entitlement): run on the phone, verify lock-screen controls and background audio with test tones; then the in-car auto-resume matrix (FEASIBILITY.md §1).
-5. Owner + agent: resolve the two auto-resume policy decisions and the list-position fallback.
-6. Separately: production audio permission review (DESIGN.md §7) before any provider adapter is written.
+1. Agent/owner: in the iOS Simulator GUI, open **I/O ▸ External Displays ▸ CarPlay** and record: tab bar, 114 items / `maximumItemCount`, playing indicator, Now Playing push, Retry alert, whether returning to Surahs preserves scroll. Update FEASIBILITY.md §2. Xcode 27.2 ships DeviceHub (`com.apple.dt.Devices`) rather than the legacy `Simulator.app` path.
+2. Owner: set `Config/Signing.xcconfig` (Team ID + real bundle ID) and request the CarPlay audio entitlement (ENVIRONMENT.md "Owner actions" items 3–4).
+3. Agent (needs device + entitlement): run on the phone, verify lock-screen controls and background audio with test tones; then the in-car auto-resume matrix (FEASIBILITY.md §1).
+4. Owner + agent: resolve the two auto-resume policy decisions and the list-position fallback.
+5. Separately: production audio permission review (DESIGN.md §7) before any provider adapter is written.
+
+### 2026-11-07 — Simulator toolchain unblocked
+
+**Changed:** `AppEnvironment.fixtureNames` marked `nonisolated` (fixes a Swift 6 concurrency warning in AppTests). Docs updated.
+
+**Commands run and results**
+- `xcodebuild … -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' build` → **BUILD SUCCEEDED**, zero compiler warnings (AppIntents metadata skip is Xcode noise).
+- `xcodebuild … -destination 'platform=iOS Simulator,id=6A7BEB9D-5E0D-455D-A67E-B920AFC202FE' test` → **TEST SUCCEEDED**, 5/5 app-bundle tests.
+- `xcrun simctl install` + `launch` on iPhone 17 → app launched. Screenshot: Surahs list, test-tone reciter labelled as not Quran.
+
+**Manual device evidence:** none (no physical iPhone connected).
+
+**CarPlay Simulator:** not opened. Apple's current docs still specify Simulator **I/O ▸ External Displays ▸ CarPlay** after a simulator run.

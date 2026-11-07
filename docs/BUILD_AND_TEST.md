@@ -56,6 +56,8 @@ xcodebuild -project QuranCarPlayer.xcodeproj -scheme QuranCarPlayer \
 ```
 
 ### Run app-bundle tests in a simulator
+Verified 2026-11-07 on iPhone 17, iOS 27.2 (`6A7BEB9D-5E0D-455D-A67E-B920AFC202FE`): **TEST SUCCEEDED**, 5 tests.
+
 ```sh
 xcodebuild -showdestinations -project QuranCarPlayer.xcodeproj -scheme QuranCarPlayer
 xcodebuild -project QuranCarPlayer.xcodeproj -scheme QuranCarPlayer \
@@ -68,9 +70,7 @@ when the package is opened there, but the scheme runs only `QuranCarPlayerTests`
 `Scripts/test-core.sh` (or the package's own scheme in Xcode) for the policy tests.
 
 ### CarPlay in the simulator
-Apple's documented path: with the app running in Simulator, choose **I/O ▸ External Displays
-▸ CarPlay**. Menu names vary by Xcode version; record the exact successful steps in
-ENVIRONMENT.md. The CarPlay Simulator cannot establish real connection/auto-resume behaviour.
+Apple's documented path (checked 2026-11-07): with the app running in the iOS simulator, choose **I/O ▸ External Displays ▸ CarPlay**. Xcode 27.2 does not ship `Simulator.app` at the old Developer/Applications path; DeviceHub (`Xcode.app/Contents/Applications/DeviceHub.app`) is the device UI. Record the exact successful menu path for this Xcode in ENVIRONMENT.md once the CarPlay window is opened. The CarPlay Simulator cannot establish real connection/auto-resume behaviour.
 
 ### Device builds
 1. Copy `Config/Signing.xcconfig.example` to `Config/Signing.xcconfig` (gitignored) and set

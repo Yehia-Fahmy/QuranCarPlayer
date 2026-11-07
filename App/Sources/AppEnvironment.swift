@@ -13,7 +13,7 @@ final class AppEnvironment {
     let audioSession: AudioSessionController
 
     /// Names of the bundled test-tone fixtures (see Scripts/generate-test-audio.py).
-    static let fixtureNames = ["test-tone-a", "test-tone-b", "test-tone-c"]
+    nonisolated static let fixtureNames = ["test-tone-a", "test-tone-b", "test-tone-c"]
 
     private init() {
         let surahCatalog: SurahCatalog

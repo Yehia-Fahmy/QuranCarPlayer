@@ -2,7 +2,7 @@
 
 A planned iPhone Quran audio player designed primarily for easy surah and reciter selection through Apple CarPlay. Initially for personal use, with a future free App Store release.
 
-**Status (November 6, 2026): Milestone 0 foundation in progress.** The core playback logic is implemented and unit-tested on macOS (48 tests). The iOS app, CarPlay templates, and Xcode project exist but have **not been compiled** because Xcode is not installed on the development Mac. The app currently plays clearly-labelled synthetic test tones, not Quran audio.
+**Status (November 7, 2026): Milestone 0 foundation in progress.** Core playback logic is unit-tested on macOS (48 tests). The iOS app **builds and launches** in the iPhone 17 simulator (Xcode 27.2, iOS 27.2); 5/5 app-bundle tests pass. CarPlay Simulator has not been opened yet. The app currently plays clearly-labelled synthetic test tones, not Quran audio.
 
 ## Start here
 

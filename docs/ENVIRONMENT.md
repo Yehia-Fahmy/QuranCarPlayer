@@ -35,13 +35,27 @@ Rechecked on the same Mac after the planning session:
 
 ### Owner actions required
 
-1. **Install Xcode.** Open the Mac App Store, sign in with your Apple ID, search "Xcode", install (large download). Open it once, accept the license, and when prompted install the iOS platform/simulator. Then tell the next agent; it will record exact versions here.
-2. **Sign in to Xcode** (Xcode ▸ Settings ▸ Accounts ▸ "+") with the Apple ID that holds your Developer Program membership.
+1. ~~Install Xcode.~~ Done: Xcode 27.2 (27B52).
+2. ~~Sign in to Xcode~~ Owner reports signed in. No development certificate exists yet (`security find-identity` returned 0 identities); the first device build with a team selected will create one.
 3. **Choose a bundle ID** you control (reverse-DNS, e.g. based on a domain you own) and your Team ID; put them in `Config/Signing.xcconfig` (copy from `Config/Signing.xcconfig.example`). The committed default `local.placeholder.QuranCarPlayer` is for simulator builds only.
 4. **Request the CarPlay audio entitlement** at https://developer.apple.com/contact/carplay/ for that bundle ID, describing the app as a Quran audio player for surah/reciter selection and playback in the car. Approval can take days to weeks and is required before the app will run on your phone with CarPlay. After approval, enable the CarPlay Audio capability on the App ID in Certificates, Identifiers & Profiles and regenerate the provisioning profile.
 5. Later: enable Developer Mode on the iPhone and pair it with Xcode for device testing; in-car testing needs you (or a passenger) with the parked car.
 
-Until step 1 is done, agents can continue only on the core package and on reviewing/writing iOS code without compiling it.
+## Observed later on November 6, 2026 (after the owner installed Xcode)
+
+- **Xcode 27.2 (27B52)** at `/Applications/Xcode.app`, globally selected (`xcode-select -p` → `/Applications/Xcode.app/Contents/Developer`). iOS SDK 27.2, iOS Simulator SDK 27.2. Owner reports being signed in to Xcode.
+- `xcodebuild -project QuranCarPlayer.xcodeproj -scheme QuranCarPlayer -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath /tmp/QuranCarPlayer-DerivedData build` → **BUILD SUCCEEDED, zero compiler warnings or errors**, first attempt. The bundle contains the CarPlay scene delegate class, both `.lproj` folders, the test tones, and the `carplay-audio` entitlement.
+- No iOS simulator runtime was installed with Xcode. Started `xcodebuild -downloadPlatform iOS` (multi-GB download). Until it finishes, `simctl` reports no runtimes and nothing can run or be tested in a simulator.
+- `security find-identity -v -p codesigning` → 0 identities (normal until the first device build with a team selected). `xcrun devicectl list devices` → no iPhone connected.
+- Simulator-only bundle ID in use: `local.placeholder.QuranCarPlayer` (from `Config/Shared.xcconfig`). Device builds still need `Config/Signing.xcconfig`.
+
+## Observed on November 7, 2026 (simulator runtime arrived)
+
+- iOS Simulator runtime **iOS 27.2 (27.2 — 24B8117)** is installed. Available devices include iPhone 17 (`6A7BEB9D-5E0D-455D-A67E-B920AFC202FE`).
+- App tests: `xcodebuild … -destination 'platform=iOS Simulator,id=6A7BEB9D-5E0D-455D-A67E-B920AFC202FE' test` → **TEST SUCCEEDED**. Swift Testing suite "App bundle configuration": **5 tests passed** (CarPlay scene delegate class resolves, background audio mode, test-tone files bundled, en/ar strings, composition root).
+- Installed and launched on that simulator (`local.placeholder.QuranCarPlayer`, pid recorded). Screenshot of first launch: Surahs list in Quran order, header "Reciter: Test Tone A (not Quran)", reciter and settings toolbar buttons present. **Playback, seek, reciter change, and settings were not tapped in this session.**
+- Xcode 27.2 no longer ships `Simulator.app` at the legacy path (`/Applications/Xcode.app/Contents/Developer/Applications/Simulator.app` is absent). Device UI lives in `DeviceHub.app` (`com.apple.dt.Devices`). Apple's CarPlay Simulator docs still say: run in the iOS simulator, then **I/O ▸ External Displays ▸ CarPlay**. That menu was not opened from the command line; CarPlay UI remains untested.
+- Swift version used by this Xcode: confirm with `xcrun swift --version` if needed; iOS SDK 27.2.
 
 ## 1. Install or select full Xcode
 
@@ -84,7 +98,7 @@ Pair the iPhone with Xcode, enable Developer Mode as required, build and run the
 
 ## 4. Repeatable build and test commands
 
-See [BUILD_AND_TEST.md](BUILD_AND_TEST.md) for the maintained procedure. `Scripts/test-core.sh` works today with only the Command Line Tools. The `xcodebuild` commands below require full Xcode and have **not yet been run** on this Mac.
+See [BUILD_AND_TEST.md](BUILD_AND_TEST.md) for the maintained procedure. Core tests: `Scripts/test-core.sh`. Simulator destination used 2026-11-07: iPhone 17, `6A7BEB9D-5E0D-455D-A67E-B920AFC202FE`. Re-check with `-showdestinations` if devices change.
 
 ```sh
 xcodebuild -list -project QuranCarPlayer.xcodeproj
@@ -110,8 +124,8 @@ Record iPhone model/OS, Xcode version, car/head-unit model, and wired/wireless t
 
 ## Setup completion checklist
 
-- [ ] Full Xcode selected; exact versions recorded. **Blocked: owner must install Xcode (2026-11-06).**
-- [ ] iOS runtime available and app builds in simulator. Blocked on the above.
+- [x] Full Xcode selected; exact versions recorded. Xcode 27.2 (27B52), iOS SDK 27.2 (2026-11-06, later the same day).
+- [x] iOS runtime available and app builds in simulator. iOS 27.2 (24B8117); simulator **build succeeded** (zero compiler warnings) and **app tests passed** (5/5) on iPhone 17. App launched; first-launch Surahs screen verified by screenshot. CarPlay Simulator window not yet opened.
 - [x] Shared scheme committed (`QuranCarPlayer.xcodeproj/xcshareddata/xcschemes/QuranCarPlayer.xcscheme`). Core test command verified (`Scripts/test-core.sh`, 48 tests pass). `xcodebuild` commands not yet verified.
 - [ ] Owner team and unique bundle ID configured locally (`Config/Signing.xcconfig`). Mechanism in place; values pending from owner.
 - [ ] CarPlay entitlement status and profile verified. Entitlements file committed; approval not requested yet.
