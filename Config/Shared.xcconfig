@@ -1,0 +1,11 @@
+// Shared build configuration. Committed.
+//
+// Signing values default to placeholders suitable only for simulator builds.
+// For device builds, copy Config/Signing.xcconfig.example to Config/Signing.xcconfig
+// (gitignored) and fill in the owner's team ID and a real reverse-DNS bundle ID.
+// The placeholder below is intentionally not a real organization identifier.
+
+QCP_BUNDLE_ID = local.placeholder.QuranCarPlayer
+QCP_DEVELOPMENT_TEAM =
+
+#include? "Signing.xcconfig"

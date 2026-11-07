@@ -1,0 +1,27 @@
+# Xcode / SwiftPM build output
+DerivedData/
+build/
+.build/
+*.xcresult
+.swiftpm/
+
+# User-specific Xcode state
+xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+*.xccheckout
+*.xcworkspace/xcuserdata/
+.DS_Store
+
+# Local signing configuration (team ID, bundle ID). See Config/Signing.xcconfig.example.
+Config/Signing.xcconfig
+
+# Credentials and keys must never be committed
+*.p12
+*.mobileprovision
+*.p8
+*.cer
+*.certSigningRequest
+
+# Scratch
+/tmp/

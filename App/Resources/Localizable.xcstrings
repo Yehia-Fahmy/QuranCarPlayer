@@ -1,0 +1,264 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "app.title" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "QuranCarPlayer" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "QuranCarPlayer" } }
+      }
+    },
+    "surahs.title" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "السور" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Surahs" } }
+      }
+    },
+    "reciters.title" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "القرّاء" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Reciters" } }
+      }
+    },
+    "listen.title" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "استماع" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Listen" } }
+      }
+    },
+    "settings.title" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "الإعدادات" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Settings" } }
+      }
+    },
+    "listen.continue" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "متابعة الاستماع" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Continue Listening" } }
+      }
+    },
+    "listen.choose" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "اختر سورة" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Choose a Surah" } }
+      }
+    },
+    "listen.nowPlaying" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "قيد التشغيل" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Now Playing" } }
+      }
+    },
+    "reciter.label" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "القارئ" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Reciter" } }
+      }
+    },
+    "reciter.selected" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "محدد" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Selected" } }
+      }
+    },
+    "player.play" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "تشغيل" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Play" } }
+      }
+    },
+    "player.pause" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "إيقاف مؤقت" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Pause" } }
+      }
+    },
+    "player.next" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "السورة التالية" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Next surah" } }
+      }
+    },
+    "player.previous" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "السابق" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Previous" } }
+      }
+    },
+    "player.retry" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "إعادة المحاولة" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Retry" } }
+      }
+    },
+    "player.cancel" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "إلغاء" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Cancel" } }
+      }
+    },
+    "player.seek" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "موضع التشغيل" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Playback position" } }
+      }
+    },
+    "player.done" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "تم" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Done" } }
+      }
+    },
+    "state.idle" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "لم يتم اختيار سورة" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No surah selected" } }
+      }
+    },
+    "state.loading" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "جارٍ التحميل…" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Loading…" } }
+      }
+    },
+    "state.playing" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "قيد التشغيل" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Playing" } }
+      }
+    },
+    "state.paused" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "متوقف مؤقتًا" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Paused" } }
+      }
+    },
+    "state.buffering" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "جارٍ التخزين المؤقت…" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Buffering…" } }
+      }
+    },
+    "state.retrying" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "جارٍ إعادة الاتصال…" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Reconnecting…" } }
+      }
+    },
+    "state.completed" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "انتهى — تم بلوغ نهاية سورة الناس" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Finished — reached the end of An-Nas" } }
+      }
+    },
+    "error.unableToLoad" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "تعذّر تحميل هذه السورة" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Unable to load this surah" } }
+      }
+    },
+    "error.network" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "مشكلة في الاتصال" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Connection problem" } }
+      }
+    },
+    "error.notPermitted" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "تم رفض الوصول إلى هذا التسجيل" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Access to this recording was refused" } }
+      }
+    },
+    "testAudio.banner" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "صوت اختباري: نغمات اصطناعية وليست تلاوة قرآنية" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Test audio: synthetic tones, not Quran recitation" } }
+      }
+    },
+    "testAudio.short" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "صوت اختباري — ليس قرآنًا" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Test audio — not Quran" } }
+      }
+    },
+    "settings.language" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "اللغة" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Language" } }
+      }
+    },
+    "language.system" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "لغة النظام" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "System" } }
+      }
+    },
+    "language.english" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "English" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "English" } }
+      }
+    },
+    "language.arabic" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "العربية" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "العربية" } }
+      }
+    },
+    "settings.carplay" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "CarPlay" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "CarPlay" } }
+      }
+    },
+    "settings.autoResume" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "متابعة التشغيل تلقائيًا عند الاتصال بـ CarPlay" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Resume automatically when CarPlay connects" } }
+      }
+    },
+    "settings.autoResume.footer" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "عند التفعيل، يستأنف التطبيق آخر سورة من الموضع المحفوظ مرة واحدة عند اتصال السيارة، إذا كان التوقف بسبب فصل السيارة. لا يُستأنف التشغيل بعد إيقاف مؤقت متعمد أو بعد انتهاء سورة الناس. تعتمد السياسة النهائية على اختبار السيارة." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "When on, the app resumes the last surah from its saved position once when the car connects, if playback stopped because the car disconnected. It does not resume after a deliberate pause or after An-Nas has finished. The final policy depends on in-car testing." } }
+      }
+    },
+    "settings.source" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "مصدر الصوت" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Audio source" } }
+      }
+    },
+    "settings.source.fixture" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "هذا الإصدار يشغّل نغمات اختبارية اصطناعية مولّدة داخل المشروع. لا يحتوي على أي تلاوة قرآنية بعد؛ الأذونات الخاصة بمصدر الصوت الفعلي قيد المراجعة." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "This build plays synthetic test tones generated inside the project. It contains no Quran recitation yet; permission for the production audio source is still being reviewed." } }
+      }
+    },
+    "settings.about" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "حول التطبيق" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "About" } }
+      }
+    },
+    "settings.version" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "الإصدار" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Version" } }
+      }
+    },
+    "carplay.listLimit" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "هذه السيارة تحدّ من عدد العناصر المعروضة؛ لا يمكن عرض السور الـ114 كلها هنا. استخدم الهاتف عند التوقف." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "This car limits list length; not all 114 surahs can be shown here. Use the phone while parked." } }
+      }
+    },
+    "carplay.ok" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "حسنًا" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "OK" } }
+      }
+    }
+  },
+  "version" : "1.0"
+}

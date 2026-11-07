@@ -14,6 +14,35 @@ Checked November 6, 2026:
 
 These are observations, not permanent facts. Recheck on the next agent's host. No working build has been verified.
 
+## Observed on November 6, 2026 (implementation session)
+
+Rechecked on the same Mac after the planning session:
+
+- macOS 27.0.1 (build 26A434), Apple Silicon (arm64).
+- **Full Xcode is still not installed.** Searched `/Applications`, `~/Applications`, Spotlight, and `find / -maxdepth 4`. Only `/Library/Developer/CommandLineTools` exists; `xcodebuild` and `simctl` are unavailable, and there is no iOS SDK. **Installing Xcode requires the owner's Apple account (see "Owner actions" below).**
+- Command Line Tools provide Swift 6.4 (`swiftlang-6.4.0.34.1`) with the macOS 27.0 SDK. `swift build` and `swift test` work for macOS targets. XCTest is **not** shipped with the CLT; Swift Testing is, but its macro plugin must be passed explicitly (see `Scripts/test-core.sh`).
+- Homebrew 7.0.12 present. Installed `xcodegen` 2.46.0 (bottled) to generate the Xcode project from `project.yml`. XcodeGen is a development tool only; the generated project is committed and does not require it.
+- `afconvert` (macOS) available; used to produce the AAC test tones.
+- Git: branch `main` tracks `origin/main` (`git@github.com:Yehia-Fahmy/QuranCarPlayer.git`), one commit. Work for this session is on `codex/milestone-0-foundation`; nothing was pushed.
+- Disk: ~286 GB free, enough for Xcode and simulator runtimes.
+
+### What was verified on this Mac
+
+- `Scripts/test-core.sh`: core package builds and **48 tests in 7 suites pass** (macOS, fake audio engine, injected clock/scheduler).
+- `Packages/QuranCarPlayerCore` compiles including the `AVPlayerEngine` and `NowPlayingBridge` (AVFoundation/MediaPlayer are available on macOS). `AudioSessionController` is `#if os(iOS)` and was not compiled.
+- All files in `App/Sources` and `AppTests` pass `swiftc -parse` (syntax only). **They have not been type-checked or built**, because that needs the iOS SDK.
+- `QuranCarPlayer.xcodeproj` was generated and inspected (scheme shared, package linked, entitlements and Info.plist scene manifest present). It has not been opened in Xcode.
+
+### Owner actions required
+
+1. **Install Xcode.** Open the Mac App Store, sign in with your Apple ID, search "Xcode", install (large download). Open it once, accept the license, and when prompted install the iOS platform/simulator. Then tell the next agent; it will record exact versions here.
+2. **Sign in to Xcode** (Xcode ▸ Settings ▸ Accounts ▸ "+") with the Apple ID that holds your Developer Program membership.
+3. **Choose a bundle ID** you control (reverse-DNS, e.g. based on a domain you own) and your Team ID; put them in `Config/Signing.xcconfig` (copy from `Config/Signing.xcconfig.example`). The committed default `local.placeholder.QuranCarPlayer` is for simulator builds only.
+4. **Request the CarPlay audio entitlement** at https://developer.apple.com/contact/carplay/ for that bundle ID, describing the app as a Quran audio player for surah/reciter selection and playback in the car. Approval can take days to weeks and is required before the app will run on your phone with CarPlay. After approval, enable the CarPlay Audio capability on the App ID in Certificates, Identifiers & Profiles and regenerate the provisioning profile.
+5. Later: enable Developer Mode on the iPhone and pair it with Xcode for device testing; in-car testing needs you (or a passenger) with the parked car.
+
+Until step 1 is done, agents can continue only on the core package and on reviewing/writing iOS code without compiling it.
+
 ## 1. Install or select full Xcode
 
 Find an existing Xcode installation first. If absent, obtain a stable supported release from Apple. The owner may need to complete account sign-in, installation, license acceptance, and component installation. Choose a release compatible with the Mac, supported iPhone OS, and current App Store submission requirements; do not assume a version from this plan.
@@ -55,7 +84,7 @@ Pair the iPhone with Xcode, enable Developer Mode as required, build and run the
 
 ## 4. Repeatable build and test commands
 
-The following are intended commands AFTER creating the proposed project and shared scheme. They cannot work in the current documentation-only repository.
+See [BUILD_AND_TEST.md](BUILD_AND_TEST.md) for the maintained procedure. `Scripts/test-core.sh` works today with only the Command Line Tools. The `xcodebuild` commands below require full Xcode and have **not yet been run** on this Mac.
 
 ```sh
 xcodebuild -list -project QuranCarPlayer.xcodeproj
@@ -81,13 +110,13 @@ Record iPhone model/OS, Xcode version, car/head-unit model, and wired/wireless t
 
 ## Setup completion checklist
 
-- [ ] Full Xcode selected; exact versions recorded.
-- [ ] iOS runtime available and app builds in simulator.
-- [ ] Shared scheme and repeatable test commands verified.
-- [ ] Owner team and unique bundle ID configured locally.
-- [ ] CarPlay entitlement status and profile verified.
+- [ ] Full Xcode selected; exact versions recorded. **Blocked: owner must install Xcode (2026-11-06).**
+- [ ] iOS runtime available and app builds in simulator. Blocked on the above.
+- [x] Shared scheme committed (`QuranCarPlayer.xcodeproj/xcshareddata/xcschemes/QuranCarPlayer.xcscheme`). Core test command verified (`Scripts/test-core.sh`, 48 tests pass). `xcodebuild` commands not yet verified.
+- [ ] Owner team and unique bundle ID configured locally (`Config/Signing.xcconfig`). Mechanism in place; values pending from owner.
+- [ ] CarPlay entitlement status and profile verified. Entitlements file committed; approval not requested yet.
 - [ ] App runs on owner's phone and appears in CarPlay.
-- [ ] Source permissions and catalog verification recorded separately.
+- [ ] Source permissions and catalog verification recorded separately. Not started; app uses test tones.
 
 ## Official references
 

@@ -1,0 +1,8 @@
+// Copy to Config/Signing.xcconfig (gitignored) and fill in your own values.
+//
+// QCP_DEVELOPMENT_TEAM: the 10-character Team ID from developer.apple.com (Membership details).
+// QCP_BUNDLE_ID: a reverse-DNS identifier you control, registered as an App ID with the
+//                CarPlay Audio capability once Apple approves the entitlement request.
+
+QCP_DEVELOPMENT_TEAM = ABCDE12345
+QCP_BUNDLE_ID = com.example.qurancarplayer

@@ -2,44 +2,50 @@
 
 Read DESIGN.md and ENVIRONMENT.md first. Work in small reviewable changes. Check off work only with evidence; these tasks are all pending. Keep confirmed product requirements separate from defaults and platform limitations. Update these documents as decisions are resolved.
 
+Legend for evidence tags used below: **[macOS-tested]** verified by `Scripts/test-core.sh` on the development Mac; **[written, uncompiled]** iOS code that exists but could not be built because Xcode is not installed; **[blocked]** waiting on the owner or on hardware.
+
 ## Milestone 0 — Toolchain and feasibility
 
 - [ ] Establish the Xcode toolchain, app project, shared scheme, simulator, and device signing.
-- [ ] Verify/request CarPlay audio entitlement through the owner's account.
+  - [x] App project (`project.yml` → `QuranCarPlayer.xcodeproj`), shared scheme, entitlements, Info.plist scene manifest, signing xcconfig mechanism (2026-11-06).
+  - [ ] Xcode toolchain and simulator **[blocked: owner must install Xcode]**; device signing **[blocked: team/bundle ID + entitlement]**.
+- [ ] Verify/request CarPlay audio entitlement through the owner's account. **[blocked: owner]** Instructions in ENVIRONMENT.md "Owner actions".
 - [ ] Build a small native CarPlay list and Now Playing prototype with test-owned audio.
-- [ ] Test 114-item browsing, native playing indicators, returning to a list, tab switching, reconnecting, and list-position restoration using public APIs.
-- [ ] Test automatic resume in all lifecycle cases listed in DESIGN.md. Resolve the manually-paused-session and other-audio-app policies with the owner using findings.
-- [ ] Verify production audio provider permissions, attribution, and the four candidate recording collections. Document evidence and any unavailable reciter.
+  - [x] Written: `CarPlaySceneDelegate`, `CarPlayTemplateController` (tab bar: Listen / Surahs / Reciters, native playing indicator, shared Now Playing, Retry alert, item-limit check), test tones in `App/Resources/TestAudio` **[written, uncompiled]**.
+  - [ ] Built and shown in CarPlay Simulator.
+- [ ] Test 114-item browsing, native playing indicators, returning to a list, tab switching, reconnecting, and list-position restoration using public APIs. **Documentation finding (FEASIBILITY.md §2): no public scroll/position API on `CPListTemplate`.** Runtime behaviour untested.
+- [ ] Test automatic resume in all lifecycle cases listed in DESIGN.md. Resolve the manually-paused-session and other-audio-app policies with the owner using findings. Policy implemented and unit-tested (FEASIBILITY.md §1) **[macOS-tested]**; in-car matrix **[blocked: Xcode, device, car]**; two owner decisions open.
+- [ ] Verify production audio provider permissions, attribution, and the four candidate recording collections. Document evidence and any unavailable reciter. Not started; the app ships test tones labelled as such.
 
-Deliverable: reproducible prototype and a dated feasibility note with device/SDK details, actual results, limitations, and owner decisions. Do not wait for entitlement or source approval to implement independent domain logic and phone functionality with fixtures.
+Deliverable: reproducible prototype and a dated feasibility note with device/SDK details, actual results, limitations, and owner decisions. Do not wait for entitlement or source approval to implement independent domain logic and phone functionality with fixtures. → `docs/FEASIBILITY.md` (dated 2026-11-06, documentation-level; device results pending).
 
 ## Milestone 1 — Catalog and playback foundation
 
-- [ ] Define stable surah, reciter, collection, recording, and session IDs.
-- [ ] Add verified bilingual surah metadata; validate exactly 114 unique sequential IDs.
-- [ ] Implement provider adapter and last-known-good catalog cache with fixture tests.
-- [ ] Build shared playback coordinator, intent-aware state transitions, retry cancellation, and stale-operation rejection.
-- [ ] Implement continuous ordered playback, next/previous boundaries, reciter changes, checkpoint restore, and completed-session handling.
-- [ ] Add audio-session handling, background playback, Now Playing metadata, and remote commands.
+- [x] Define stable surah, reciter, collection, recording, and session IDs. `Surah`, `ReciterID`, `RecordingCollectionID`, `RecordingID`, `PlaybackSession`, `SessionCheckpoint` (versioned) **[macOS-tested]**.
+- [x] Add bilingual surah metadata; validate exactly 114 unique sequential IDs. `surahs.json` + `SurahCatalog` validation **[macOS-tested]**. **Caveat:** names were entered from general knowledge, not imported from a verified permitted source; an owner/agent must proofread all 114 Arabic names and transliterations before release.
+- [ ] Implement provider adapter and last-known-good catalog cache with fixture tests. Only `FixtureAudioCatalog` exists (test tones). Production adapter blocked on source permission.
+- [x] Build shared playback coordinator, intent-aware state transitions, retry cancellation, and stale-operation rejection. `PlaybackCoordinator` **[macOS-tested]**: scenarios 1–7, 13–17 covered by unit tests.
+- [x] Implement continuous ordered playback, next/previous boundaries, reciter changes, checkpoint restore, and completed-session handling **[macOS-tested]**.
+- [ ] Add audio-session handling, background playback, Now Playing metadata, and remote commands. `AVPlayerEngine`, `NowPlayingBridge` compile on macOS; `AudioSessionController` is iOS-only **[written, uncompiled]**. Background audio mode declared. Not exercised on a device.
 
-Exit: playback works on the phone while locked, state survives a relaunch, controls act on one shared session, and policy tests pass without network access.
+Exit: playback works on the phone while locked, state survives a relaunch, controls act on one shared session, and policy tests pass without network access. → Policy tests pass without network **[macOS-tested]**; the rest is untested.
 
 ## Milestone 2 — Phone interface
 
-- [ ] Surah list, saved visible anchor/current-surah positioning, reciter selection, player, and settings.
-- [ ] System/English/Arabic localization and right-to-left layout.
-- [ ] Loading, buffering, retry, first-use, and completed-session states.
-- [ ] Dynamic Type and VoiceOver checks on key controls and bilingual names.
+- [ ] Surah list, saved visible anchor/current-surah positioning, reciter selection, player, and settings. `RootView`, `SurahListView` (anchor via `ScrollViewReader`), `ReciterListView`, `PlayerView` (play/pause, next/previous, seek, elapsed/duration, Retry), `SettingsView` **[written, uncompiled]**.
+- [ ] System/English/Arabic localization and right-to-left layout. `Localizable.xcstrings` (en, ar), `L10n` helper, layout direction switched from the app setting **[written, uncompiled]**.
+- [ ] Loading, buffering, retry, first-use, and completed-session states. Status text and Retry present in `PlayerView` **[written, uncompiled]**.
+- [ ] Dynamic Type and VoiceOver checks on key controls and bilingual names. Labels added; not checked on a device.
 
 Exit: a new user can select a surah, change reciter, pause, resume, seek, and change language; no account is required.
 
 ## Milestone 3 — CarPlay interface
 
-- [ ] Native Listen / Surahs / Reciters templates and native Now Playing.
-- [ ] Shared state synchronization across phone, car, and remote controls.
-- [ ] Implement proven list-position behavior; obtain owner agreement for any fallback.
-- [ ] Implement validated automatic resume policy and car-disconnection pause.
-- [ ] Handle scene reconnects, selection callbacks, loading cancellation, language rebuilds, and errors without losing playback position.
+- [ ] Native Listen / Surahs / Reciters templates and native Now Playing. **[written, uncompiled]**
+- [ ] Shared state synchronization across phone, car, and remote controls. One coordinator in `AppEnvironment.shared`; observers drive CarPlay and Now Playing **[written, uncompiled]**.
+- [ ] Implement proven list-position behavior; obtain owner agreement for any fallback. See FEASIBILITY.md §2; owner decision pending after prototype.
+- [ ] Implement validated automatic resume policy and car-disconnection pause. Policy **[macOS-tested]**; validation in car pending.
+- [ ] Handle scene reconnects, selection callbacks, loading cancellation, language rebuilds, and errors without losing playback position. Selection completion/timeout, in-place relocalization, failure alert **[written, uncompiled]**.
 
 Exit: ordinary listening works with the phone locked. Every confirmed behavior works or has a documented platform limitation and an owner-approved alternative.
 
@@ -92,3 +98,41 @@ Exit: ordinary listening works with the phone locked. Every confirmed behavior w
 Unit-test policy boundaries, queue progression, persistence, retry cancellation, stale callbacks, and catalog decoding with fixtures and an injected clock. Add a few UI tests for phone selection and settings. Use simulator/manual CarPlay checks for templates and physical-device checks for route, lifecycle, and audio behavior. Avoid making network availability a prerequisite for every test run.
 
 For each implementation handoff, record changed files, commands run, results, manual device evidence, known limitations, and the next unblocked milestone. Do not claim a build or test was run if prerequisites prevented it.
+
+## Handoff record
+
+### 2026-11-06 — Milestone 0 foundation (branch `codex/milestone-0-foundation`)
+
+**Added**
+- `Packages/QuranCarPlayerCore/` — SwiftPM package: `Domain/` (Surah, Reciter, RecordingID, PlaybackSession, AppSettings, Language), `Catalog/` (SurahCatalog + `surahs.json`, AudioCatalog protocol, FixtureAudioCatalog), `Playback/` (AudioEngine protocol, Scheduling/RetryPolicy, PlaybackState, PlaybackCoordinator), `Playback/Platform/` (AVPlayerEngine, NowPlayingBridge, AudioSessionController), `Persistence/` (file/UserDefaults/in-memory stores). Tests in `Tests/QuranCarPlayerCoreTests/`.
+- `App/` — iOS app sources (SwiftUI phone UI, CarPlay scene + template controller, composition root, localization), `Info.plist`, entitlements, `Assets.xcassets` placeholders, `Localizable.xcstrings`, `Resources/TestAudio/*.m4a`.
+- `AppTests/` — app-bundle smoke tests (Swift Testing; run only via Xcode).
+- `project.yml`, `QuranCarPlayer.xcodeproj` (generated, shared scheme), `Config/Shared.xcconfig`, `Config/Signing.xcconfig.example`, `Scripts/` (`test-core.sh`, `generate-project.sh`, `generate-test-audio.py`), `.gitignore`.
+- `docs/FEASIBILITY.md`, `docs/BUILD_AND_TEST.md`; updates to `ENVIRONMENT.md`, this file, `README.md`.
+
+**Commands run and results**
+- `Scripts/test-core.sh` → `48 tests in 7 suites passed` (macOS 27.0.1, Swift 6.4 CLT). Covers acceptance scenarios 1–11 (policy level), 13–17, plus persistence and catalog validation.
+- `swift build` in the package → clean, no warnings (includes AVPlayerEngine/NowPlayingBridge on macOS).
+- `swiftc -parse` on every file in `App/Sources` and `AppTests` → no syntax errors. **Not type-checked, not built.**
+- `Scripts/generate-project.sh` → project generated; pbxproj inspected for package link, resources, entitlements, scheme.
+- `xcodebuild` → **not run** (Xcode not installed).
+
+**Manual device evidence:** none. No simulator, phone, or car test has happened.
+
+**Known limitations / risks**
+- The iOS target has never been compiled. Expect some compile fixes when Xcode is available, particularly around SwiftUI API availability and CarPlay closure isolation. Core logic is isolated from this risk and is tested.
+- Surah names need proofreading against a trusted source (114 entries in `surahs.json`).
+- Test tones only. No Quran audio, no provider adapter, no attribution text for a real source.
+- No public CarPlay API for list scroll restoration (FEASIBILITY.md §2). Owner decision on fallback pending prototype.
+- Auto-resume: two open owner decisions (manually paused session; other app playing). In-car matrix not run.
+- SwiftUI `App` lifecycle plus a CarPlay scene declared only in Info.plist is a common pattern but is unverified here; if the CarPlay scene does not connect, add an `AppDelegate` implementing `application(_:configurationForConnecting:options:)` that returns the CarPlay configuration for `.carTemplateApplication`.
+- `AudioSessionController` uses `.playback` / `.default` mode; `.spokenAudio` was considered and left as a later decision.
+- App icon and CarPlay icon slots are empty placeholders.
+
+**Next concrete tasks (in order)**
+1. Owner: install Xcode, sign in, set `Config/Signing.xcconfig`, request the CarPlay audio entitlement (ENVIRONMENT.md "Owner actions").
+2. Agent: `xcodebuild … build` for the simulator; fix compile errors in `App/`; run `AppTests` in a simulator; record Xcode/SDK versions in ENVIRONMENT.md.
+3. Agent: launch in Simulator, open **I/O ▸ External Displays ▸ CarPlay**, and record: tab bar appears, 114 items listed, `maximumItemCount` log value, playing indicator, Now Playing push, Retry alert, whether returning to Surahs preserves scroll. Update FEASIBILITY.md §2.
+4. Agent (needs device + entitlement): run on the phone, verify lock-screen controls and background audio with test tones; then the in-car auto-resume matrix (FEASIBILITY.md §1).
+5. Owner + agent: resolve the two auto-resume policy decisions and the list-position fallback.
+6. Separately: production audio permission review (DESIGN.md §7) before any provider adapter is written.
