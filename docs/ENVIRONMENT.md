@@ -77,6 +77,16 @@ Rechecked on the same Mac after the planning session:
 - Device build for bundle ID `com.yehiafahmy.QuranCarPlayerApp` **BUILD SUCCEEDED**, signed `Apple Development: yehia.fahmy@uwaterloo.ca (3S7S6J2RD8)`.
 - Installed on the iPhone. The previous `com.yehiafahmy.QuranCarPlayer` app was uninstalled. After the owner trusted the certificate, launch showed the Surahs list with Maher Al-Muaiqly selected.
 
+## Observed later on November 14, 2026 (membership recheck)
+
+The owner reported that the paid Apple Developer Program membership had just been approved. A recheck the same afternoon did not find a paid team, so the CarPlay entitlement file was not switched and CarPlay was not opened.
+
+- Xcode Settings ▸ Apple Accounts for `yehia.fahmy@uwaterloo.ca` still lists one team. The row reads “YEHIA WALEED FAHMY”, role Admin, with the subtitle “Developer Team”, a check on Certificates, Identifiers, & Profiles, and “1 Provisioned Device”.
+- `IDEProvisioningTeamByIdentifier` for that account still has one entry: `isFreeProvisioningTeam = 1`, team ID `FUT64434V9`, name “YEHIA WALEED FAHMY (Personal Team)”, `teamType` “Personal Team”. The Accounts subtitle does not change that record.
+- Codesigning identities are unchanged: Waterloo certificate OU `FUT64434V9`, and the older iCloud certificate OU `MN7YP2FD68`. No other team ID.
+- The newest profile, `32f7f1ea-7738-46c2-95e8-5b19674518d0`, was created 2026-11-14 17:30:50Z and expires 2026-11-21 17:30:50Z (seven days). It is team `FUT64434V9`, bundle `com.yehiafahmy.QuranCarPlayerApp`, and has no `com.apple.developer.carplay-audio`. Download Manual Profiles did not add a team or a profile.
+- `xcodebuild … -destination 'platform=iOS,id=00008130-001C6C2C14DA001C' -allowProvisioningUpdates build` → **BUILD SUCCEEDED**, still using `App/QuranCarPlayerPhone.entitlements` and that seven-day profile. `Config/Signing.xcconfig` was left on team `FUT64434V9`. The phone stayed connected. CarPlay in Device Hub was not opened, and the app icon was not confirmed on a car Home Screen.
+
 ## 1. Install or select full Xcode
 
 Find an existing Xcode installation first. If absent, obtain a stable supported release from Apple. The owner may need to complete account sign-in, installation, license acceptance, and component installation. Choose a release compatible with the Mac, supported iPhone OS, and current App Store submission requirements; do not assume a version from this plan.
@@ -147,9 +157,9 @@ Record iPhone model/OS, Xcode version, car/head-unit model, and wired/wireless t
 - [x] Full Xcode selected; exact versions recorded. Xcode 27.2 (27B52), iOS SDK 27.2 (2026-11-06, later the same day).
 - [x] iOS runtime available and app builds in simulator. iOS 27.2 (24B8117); simulator build succeeded and app tests passed (5/5) on iPhone 17. Phone UI tests passed (3/3) on 2026-11-07.
 - [x] Shared scheme committed (`QuranCarPlayer.xcodeproj/xcshareddata/xcschemes/QuranCarPlayer.xcscheme`). Core test command verified (`Scripts/test-core.sh`, 48 tests pass). `xcodebuild` simulator test verified.
-- [x] Owner team and bundle ID configured locally (`Config/Signing.xcconfig`, gitignored): Apple ID `yehia.fahmy@uwaterloo.ca`, Personal Team `FUT64434V9`, bundle ID `com.yehiafahmy.QuranCarPlayerApp`. The owner trusted that certificate and the app launched on the iPhone (2026-11-14). A paid team is still not listed in Xcode.
-- [ ] CarPlay entitlement status and profile verified. Phone builds deliberately omit it. The paid team is not in Xcode yet. See IMPLEMENTATION.md "Open: CarPlay".
-- [ ] App runs on owner's phone and appears in CarPlay. The phone app runs and streamed recitation on 2026-11-14. The CarPlay icon is still a later step.
+- [x] Owner team and bundle ID configured locally (`Config/Signing.xcconfig`, gitignored): Apple ID `yehia.fahmy@uwaterloo.ca`, Personal Team `FUT64434V9`, bundle ID `com.yehiafahmy.QuranCarPlayerApp`. The owner trusted that certificate and the app launched on the iPhone (2026-11-14). A later recheck the same day, after the owner reported membership approval, still lists only this free team (`isFreeProvisioningTeam = 1`).
+- [ ] CarPlay entitlement status and profile verified. Phone builds deliberately omit it. The paid team was still absent on the 2026-11-14 afternoon recheck, so `QCP_CODE_SIGN_ENTITLEMENTS` was not pointed at `App/QuranCarPlayer.entitlements`. See IMPLEMENTATION.md "Open: CarPlay".
+- [ ] App runs on owner's phone and appears in CarPlay. The phone app runs and streamed recitation on 2026-11-14. CarPlay was not opened during the afternoon membership recheck, so the icon was not seen on a car Home Screen.
 - [x] Source permissions and catalog verification recorded. DESIGN.md §7 (2026-11-07) records the MP3Quran link permission. Streaming those links was heard on the phone on 2026-11-14. App Store redistribution and offline download remain out of scope.
 
 ## Official references

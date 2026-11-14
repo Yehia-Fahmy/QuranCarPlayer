@@ -88,6 +88,7 @@ Apple's documented path (checked 2026-11-07): with the app running in the iOS si
    `QCP_CODE_SIGN_ENTITLEMENTS`. `App/QuranCarPlayer.entitlements` still contains
    `com.apple.developer.carplay-audio`. Switch the setting to that file only after the paid
    team has the capability. A Personal Team cannot sign it.
+   On the afternoon of 2026-11-14, after the owner reported that paid membership was approved, Xcode still listed only Personal Team `FUT64434V9` (`isFreeProvisioningTeam = 1`). The CarPlay entitlements file was not selected. A device build with the phone entitlements and `-allowProvisioningUpdates` succeeded and reused the seven-day profile `32f7f1ea` (created 2026-11-14 17:30:50Z). That build is not a CarPlay test.
 4. Build and install:
 
 ```sh
