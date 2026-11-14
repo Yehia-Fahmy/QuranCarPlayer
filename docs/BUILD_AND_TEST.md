@@ -78,7 +78,7 @@ Apple's documented path (checked 2026-11-07): with the app running in the iOS si
 ### Device builds
 1. Copy `Config/Signing.xcconfig.example` to `Config/Signing.xcconfig` (gitignored) and set
    `QCP_DEVELOPMENT_TEAM` and a real `QCP_BUNDLE_ID`. This Mac already has a local file for
-   Personal Team `MN7YP2FD68` and `com.yehiafahmy.QuranCarPlayer`.
+   Personal Team `FUT64434V9` (`yehia.fahmy@uwaterloo.ca`) and `com.yehiafahmy.QuranCarPlayerApp`.
 2. Sign in under **Xcode ▸ Settings ▸ Accounts**. Without an account, device builds fail with
    "No Accounts" even when the team ID is set. That was the result on 2026-11-07 for
    Yehia's iPhone (`00008130-001C6C2C14DA001C`). On 2026-11-14 the app target built and
