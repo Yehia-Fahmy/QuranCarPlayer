@@ -9,7 +9,7 @@ Legend for evidence tags used below: **[macOS-tested]** verified by `Scripts/tes
 - [x] Establish the Xcode toolchain, app project, shared scheme, simulator, and device signing.
   - [x] App project, shared scheme, entitlements, Info.plist scene manifest, signing xcconfig mechanism.
   - [x] Xcode 27.2 (27B52), iOS SDK 27.2, iOS Simulator runtime 27.2 (24B8117). Simulator **build succeeded**; **5/5 app tests passed** on iPhone 17 (2026-11-07).
-  - [x] Device signing **[device, 2026-11-14]**. Current Apple ID is `yehia.fahmy@uwaterloo.ca`, Personal Team `FUT64434V9`. Bundle ID is `com.yehiafahmy.QuranCarPlayerApp` because `com.yehiafahmy.QuranCarPlayer` is registered to the previous iCloud Personal Team and cannot be reused. The owner trusted the new certificate, and launch showed the Surahs list with Maher Al-Muaiqly selected. Phone builds still use `App/QuranCarPlayerPhone.entitlements`. A same-day recheck after the owner reported paid-membership approval still shows only this free Personal Team (`isFreeProvisioningTeam = 1`). CarPlay entitlements were not enabled.
+  - [x] Device signing **[device, 2026-11-14]**. Current Apple ID is `yehia.fahmy@uwaterloo.ca`, Individual team `FUT64434V9` (`isFreeProvisioningTeam = 0`; earlier the same day this ID was still the free Personal Team). Bundle ID is `com.yehiafahmy.QuranCarPlayerApp` because `com.yehiafahmy.QuranCarPlayer` is registered to the previous iCloud Personal Team and cannot be reused. The owner trusted the new certificate, and launch showed the Surahs list with Maher Al-Muaiqly selected. Phone builds still use `App/QuranCarPlayerPhone.entitlements`. A later CarPlay signing attempt failed because `com.apple.developer.carplay-audio` is not on the App ID, and that override was reverted.
 - [ ] Verify/request CarPlay audio entitlement through the owner's account. **[blocked: owner]** Instructions in ENVIRONMENT.md "Owner actions".
 - [ ] Build a small native CarPlay list and Now Playing prototype with test-owned audio.
   - [x] Written and **[simulator-built]**: `CarPlaySceneDelegate`, `CarPlayTemplateController`, test tones bundled. App-bundle test confirms the CarPlay scene delegate class resolves at runtime.
@@ -102,9 +102,9 @@ For each implementation handoff, record changed files, commands run, results, ma
 
 ## Open: CarPlay (future agent)
 
-Leave these until the paid Developer Program membership is active and Apple has attached CarPlay Audio to the App ID. Do not delete the CarPlay source to make the phone build succeed.
+The paid Individual team is active (`FUT64434V9`, `isFreeProvisioningTeam = 0`). Leave the remaining items until Apple has attached CarPlay Audio to the App ID. Do not delete the CarPlay source to make the phone build succeed.
 
-- Switch `QCP_CODE_SIGN_ENTITLEMENTS` from `App/QuranCarPlayerPhone.entitlements` (current, empty) to `App/QuranCarPlayer.entitlements` (`com.apple.developer.carplay-audio`). Adding the Boolean does not grant the capability.
+- Switch `QCP_CODE_SIGN_ENTITLEMENTS` from `App/QuranCarPlayerPhone.entitlements` (current, empty) to `App/QuranCarPlayer.entitlements` (`com.apple.developer.carplay-audio`) only after the capability is enabled on the App ID. A 2026-11-14 device build with that file failed because the entitlement could not be included in the profile. Adding the Boolean does not grant the capability.
 - Install the signed app on the iPhone and confirm the icon appears in CarPlay Simulator. On this Mac, Xcode 27 uses Device Hub with the physical iPhone over USB (window title like "Yehia's iPhone / Standard"). The old Simulator menu I/O ▸ External Displays ▸ CarPlay is not the path that worked here. A car Home Screen was seen on 2026-11-07; QuranCarPlayer was absent because it was not installed and a free Personal Team cannot sign the CarPlay entitlement.
 - Run the in-car automatic-resume matrix (FEASIBILITY.md §1). Policy is unit-tested only. Two owner decisions remain: resume after a deliberate pause, and whether to skip resume when another app is playing.
 - List position: current `CPListTemplate` docs have no scroll API. Exact restoration is not possible with the public API. Any shortcut (for example a labelled Current Surah row) needs owner approval. Do not reorder the Quran list.
@@ -231,3 +231,23 @@ Leave these until the paid Developer Program membership is active and Apple has 
 **Next concrete tasks**
 1. Owner: in Xcode Settings ▸ Apple Accounts, sign out of `yehia.fahmy@uwaterloo.ca` and sign back in, then confirm a team whose provisioning record is not `isFreeProvisioningTeam = 1`. A seven-day profile and the Personal Team label mean the paid membership has not reached Xcode yet.
 2. After that paid team is listed, point `QCP_DEVELOPMENT_TEAM` at it and try signing `App/QuranCarPlayer.entitlements`. If Apple has not granted CarPlay Audio, submit the request at https://developer.apple.com/contact/carplay/ as Account Holder (app type Audio) for `com.yehiafahmy.QuranCarPlayerApp`, then enable CarPlay Audio on the App ID.
+
+### 2026-11-14 — Paid team is active; CarPlay is not on the App ID
+
+**Changed:** documentation only. Gitignored `Config/Signing.xcconfig` keeps team `FUT64434V9` and bundle ID `com.yehiafahmy.QuranCarPlayerApp`. `QCP_CODE_SIGN_ENTITLEMENTS` was set to `App/QuranCarPlayer.entitlements` for one device build, then removed after that build failed. The committed default remains `App/QuranCarPlayerPhone.entitlements`.
+
+**Why:** after the owner signed out of Xcode and back in as `yehia.fahmy@uwaterloo.ca`, the provisioning record for the same team ID changed from a free Personal Team to a paid Individual team. Paid membership still does not put CarPlay Audio on the App ID.
+
+**What was checked**
+- `defaults read com.apple.dt.Xcode IDEProvisioningTeamByIdentifier` → one account, one team: `isFreeProvisioningTeam = 0`, team ID `FUT64434V9`, name “YEHIA WALEED FAHMY”, `teamType` “Individual”. No Personal Team remains in that record.
+- Xcode Settings ▸ Apple Accounts shows Yehia Fahmy, `yehia.fahmy@uwaterloo.ca`. The team row is “YEHIA WALEED FAHMY”, role Admin, and no longer says “Personal Team”. Team detail says “Developer Team”, with a check on Certificates, Identifiers, & Profiles. Manage Certificates shows one Apple Development certificate for this account.
+- `security find-identity -p codesigning` → `Apple Development: yehia.fahmy@uwaterloo.ca (3S7S6J2RD8)`, OU `FUT64434V9`, organization “YEHIA WALEED FAHMY”. The older identity remains `Apple Development: yehiafahmy@icloud.com (N5D9H3GUWQ)`, OU `MN7YP2FD68`.
+- `com.yehiafahmy.QuranCarPlayer` was left on the iCloud Personal Team. This build kept `com.yehiafahmy.QuranCarPlayerApp`.
+
+**Commands run and results**
+- `xcodebuild -project QuranCarPlayer.xcodeproj -scheme QuranCarPlayer -destination 'platform=iOS,id=00008130-001C6C2C14DA001C' -allowProvisioningUpdates -derivedDataPath /tmp/QuranCarPlayer-DeviceDD build` with `QCP_CODE_SIGN_ENTITLEMENTS = App/QuranCarPlayer.entitlements` → **BUILD FAILED**. Exact error: `Entitlement com.apple.developer.carplay-audio not found and could not be included in profile. This likely is not a valid entitlement and should be removed from your entitlements file.`
+- The entitlements override was removed after that failure. No second device build was run. The app was not reinstalled. Device Hub CarPlay was not opened, and the QuranCarPlayer icon was not seen.
+
+**Next concrete tasks**
+1. Owner, as Account Holder: request CarPlay Audio at https://developer.apple.com/contact/carplay/ (app type Audio) for `com.yehiafahmy.QuranCarPlayerApp`. After Apple grants it, enable CarPlay Audio on that App ID, then point `QCP_CODE_SIGN_ENTITLEMENTS` at `App/QuranCarPlayer.entitlements` and install on the iPhone.
+2. On the phone, with the current install: lock-screen controls, background playback, and Retry after the network drops.

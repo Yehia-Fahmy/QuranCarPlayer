@@ -78,7 +78,8 @@ Apple's documented path (checked 2026-11-07): with the app running in the iOS si
 ### Device builds
 1. Copy `Config/Signing.xcconfig.example` to `Config/Signing.xcconfig` (gitignored) and set
    `QCP_DEVELOPMENT_TEAM` and a real `QCP_BUNDLE_ID`. This Mac already has a local file for
-   Personal Team `FUT64434V9` (`yehia.fahmy@uwaterloo.ca`) and `com.yehiafahmy.QuranCarPlayerApp`.
+   Individual team `FUT64434V9` (`yehia.fahmy@uwaterloo.ca`, `isFreeProvisioningTeam = 0`) and
+   `com.yehiafahmy.QuranCarPlayerApp`.
 2. Sign in under **Xcode ▸ Settings ▸ Accounts**. Without an account, device builds fail with
    "No Accounts" even when the team ID is set. That was the result on 2026-11-07 for
    Yehia's iPhone (`00008130-001C6C2C14DA001C`). On 2026-11-14 the app target built and
@@ -86,9 +87,10 @@ Apple's documented path (checked 2026-11-07): with the app running in the iOS si
    `xcodebuild` could not create a profile for `com.yehiafahmy.QuranCarPlayer.uitests.xctrunner`.
 3. Phone installs use `App/QuranCarPlayerPhone.entitlements` (empty), which is the default of
    `QCP_CODE_SIGN_ENTITLEMENTS`. `App/QuranCarPlayer.entitlements` still contains
-   `com.apple.developer.carplay-audio`. Switch the setting to that file only after the paid
-   team has the capability. A Personal Team cannot sign it.
+   `com.apple.developer.carplay-audio`. Switch the setting to that file only after the App ID
+   has the capability.
    On the afternoon of 2026-11-14, after the owner reported that paid membership was approved, Xcode still listed only Personal Team `FUT64434V9` (`isFreeProvisioningTeam = 1`). The CarPlay entitlements file was not selected. A device build with the phone entitlements and `-allowProvisioningUpdates` succeeded and reused the seven-day profile `32f7f1ea` (created 2026-11-14 17:30:50Z). That build is not a CarPlay test.
+   Later the same day, after the owner signed out and back in, the same team ID was `teamType` Individual and `isFreeProvisioningTeam = 0`. One device build with `QCP_CODE_SIGN_ENTITLEMENTS = App/QuranCarPlayer.entitlements` failed: `Entitlement com.apple.developer.carplay-audio not found and could not be included in profile.` The override was removed. Phone builds again use the empty entitlements file.
 4. Build and install:
 
 ```sh
