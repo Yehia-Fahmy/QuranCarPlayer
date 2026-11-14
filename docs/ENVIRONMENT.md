@@ -36,8 +36,8 @@ Rechecked on the same Mac after the planning session:
 ### Owner actions required
 
 1. ~~Install Xcode.~~ Done: Xcode 27.2 (27B52).
-2. ~~Sign in to Xcode~~ Owner reports signed in. No development certificate exists yet (`security find-identity` returned 0 identities); the first device build with a team selected will create one.
-3. **Choose a bundle ID** you control (reverse-DNS, e.g. based on a domain you own) and your Team ID; put them in `Config/Signing.xcconfig` (copy from `Config/Signing.xcconfig.example`). The committed default `local.placeholder.QuranCarPlayer` is for simulator builds only.
+2. ~~Sign in to Xcode~~ Done for the free Personal Team. On 2026-11-14 `security find-identity` showed one Apple Development certificate for `yehiafahmy@icloud.com`, team `MN7YP2FD68`. Xcode still lists only "Yehia Fahmy (Personal Team)".
+3. ~~Choose a bundle ID~~ Done locally in gitignored `Config/Signing.xcconfig`: `com.yehiafahmy.QuranCarPlayer`, team `MN7YP2FD68`. The committed default `local.placeholder.QuranCarPlayer` remains for simulator builds. Move this App ID to the paid team before requesting CarPlay.
 4. **Request the CarPlay audio entitlement** at https://developer.apple.com/contact/carplay/ for that bundle ID, describing the app as a Quran audio player for surah/reciter selection and playback in the car. Approval can take days to weeks and is required before the app will run on your phone with CarPlay. After approval, enable the CarPlay Audio capability on the App ID in Certificates, Identifiers & Profiles and regenerate the provisioning profile.
 5. Later: enable Developer Mode on the iPhone and pair it with Xcode for device testing; in-car testing needs you (or a passenger) with the parked car.
 
@@ -63,6 +63,13 @@ Rechecked on the same Mac after the planning session:
 - Physical device present and paired: Yehia's iPhone, iPhone 15 Pro Max, UDID `00008130-001C6C2C14DA001C`, iOS 27.0.1, Developer Mode on, USB. `devicectl list devices` shows it available.
 - Device build **failed**: Xcode has no Apple ID ("No Accounts"). Local gitignored `Config/Signing.xcconfig` names Personal Team `MN7YP2FD68` and bundle ID `com.yehiafahmy.QuranCarPlayer`. The committed default remains `local.placeholder.QuranCarPlayer`. Phone signing uses `App/QuranCarPlayerPhone.entitlements` so a free team can install once an account is signed in. CarPlay entitlements stay in `App/QuranCarPlayer.entitlements` and are not on the phone build.
 - CarPlay Simulator, observed earlier the same day with this phone in Device Hub: a car Home Screen appeared. QuranCarPlayer was not on it. A free Personal Team cannot sign `com.apple.developer.carplay-audio`, and the app was not installed. Paid membership was still waiting on Apple activation.
+
+## Observed on November 14, 2026 (phone streaming)
+
+- iPhone 15 Pro Max still connected (`00008130-001C6C2C14DA001C`, iOS 27.0.1). `devicectl device info apps` already listed QuranCarPlayer 0.1.0 before this session's rebuild.
+- Development certificate present: subject `Apple Development: yehiafahmy@icloud.com (N5D9H3GUWQ)`, OU `MN7YP2FD68`, organization Yehia Fahmy, valid from 2026-11-07 through 2027-11-07. Xcode's `IDEProvisioningTeamByIdentifier` has one team, `isFreeProvisioningTeam = 1`.
+- Device build and install succeeded with the existing 7-day profile (`e0478bbd`, created 2026-11-07 21:26, expires 2026-11-14 21:26). UI-test signing did not: no profile for `com.yehiafahmy.QuranCarPlayer.uitests.xctrunner`, and `xcodebuild` reported no account for team `MN7YP2FD68`.
+- On-device playback, driven from the Mac with the phone unlocked: saved session An-Nisa paused; Al-Fatihah streamed (0:05 then 0:27 of 0:38); Al-Baqarah followed with duration 1:47:59 and was left paused at 0:32. No test-audio banner. Details in IMPLEMENTATION.md.
 
 ## 1. Install or select full Xcode
 
@@ -134,10 +141,10 @@ Record iPhone model/OS, Xcode version, car/head-unit model, and wired/wireless t
 - [x] Full Xcode selected; exact versions recorded. Xcode 27.2 (27B52), iOS SDK 27.2 (2026-11-06, later the same day).
 - [x] iOS runtime available and app builds in simulator. iOS 27.2 (24B8117); simulator build succeeded and app tests passed (5/5) on iPhone 17. Phone UI tests passed (3/3) on 2026-11-07.
 - [x] Shared scheme committed (`QuranCarPlayer.xcodeproj/xcshareddata/xcschemes/QuranCarPlayer.xcscheme`). Core test command verified (`Scripts/test-core.sh`, 48 tests pass). `xcodebuild` simulator test verified.
-- [x] Owner team and bundle ID configured locally (`Config/Signing.xcconfig`, gitignored): Personal Team `MN7YP2FD68`, `com.yehiafahmy.QuranCarPlayer`. Xcode still needs the Apple ID signed in before a profile can be created.
-- [ ] CarPlay entitlement status and profile verified. Phone builds deliberately omit it. Approval still waiting on paid membership activation. See IMPLEMENTATION.md "Open: CarPlay".
-- [ ] App runs on owner's phone and appears in CarPlay. Phone install blocked on "No Accounts" (2026-11-07). CarPlay icon is a later step.
-- [ ] Source permissions and catalog verification recorded separately. Not started; app uses test tones.
+- [x] Owner team and bundle ID configured locally (`Config/Signing.xcconfig`, gitignored): Personal Team `MN7YP2FD68`, `com.yehiafahmy.QuranCarPlayer`. A development certificate exists and the phone app signs with it (2026-11-14). A paid team is still not listed in Xcode. New profiles from `xcodebuild` still fail with "No Account".
+- [ ] CarPlay entitlement status and profile verified. Phone builds deliberately omit it. The paid team is not in Xcode yet. See IMPLEMENTATION.md "Open: CarPlay".
+- [ ] App runs on owner's phone and appears in CarPlay. The phone app runs and streamed recitation on 2026-11-14. The CarPlay icon is still a later step.
+- [x] Source permissions and catalog verification recorded. DESIGN.md §7 (2026-11-07) records the MP3Quran link permission. Streaming those links was heard on the phone on 2026-11-14. App Store redistribution and offline download remain out of scope.
 
 ## Official references
 

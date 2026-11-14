@@ -81,7 +81,9 @@ Apple's documented path (checked 2026-11-07): with the app running in the iOS si
    Personal Team `MN7YP2FD68` and `com.yehiafahmy.QuranCarPlayer`.
 2. Sign in under **Xcode ▸ Settings ▸ Accounts**. Without an account, device builds fail with
    "No Accounts" even when the team ID is set. That was the result on 2026-11-07 for
-   Yehia's iPhone (`00008130-001C6C2C14DA001C`).
+   Yehia's iPhone (`00008130-001C6C2C14DA001C`). On 2026-11-14 the app target built and
+   installed with the existing Personal Team profile. A UI-test run still failed because
+   `xcodebuild` could not create a profile for `com.yehiafahmy.QuranCarPlayer.uitests.xctrunner`.
 3. Phone installs use `App/QuranCarPlayerPhone.entitlements` (empty), which is the default of
    `QCP_CODE_SIGN_ENTITLEMENTS`. `App/QuranCarPlayer.entitlements` still contains
    `com.apple.developer.carplay-audio`. Switch the setting to that file only after the paid

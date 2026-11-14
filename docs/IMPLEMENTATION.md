@@ -6,10 +6,10 @@ Legend for evidence tags used below: **[macOS-tested]** verified by `Scripts/tes
 
 ## Milestone 0 — Toolchain and feasibility
 
-- [ ] Establish the Xcode toolchain, app project, shared scheme, simulator, and device signing.
+- [x] Establish the Xcode toolchain, app project, shared scheme, simulator, and device signing.
   - [x] App project, shared scheme, entitlements, Info.plist scene manifest, signing xcconfig mechanism.
   - [x] Xcode 27.2 (27B52), iOS SDK 27.2, iOS Simulator runtime 27.2 (24B8117). Simulator **build succeeded**; **5/5 app tests passed** on iPhone 17 (2026-11-07).
-  - [ ] Device signing **[blocked: Xcode has no Apple ID]**. Local `Config/Signing.xcconfig` sets Personal Team `MN7YP2FD68` and `com.yehiafahmy.QuranCarPlayer`. Phone builds use `App/QuranCarPlayerPhone.entitlements` (no CarPlay capability). `xcodebuild` on the connected iPhone on 2026-11-07 failed with "No Accounts". Sign in under Xcode ▸ Settings ▸ Accounts, then rebuild with `-allowProvisioningUpdates`.
+  - [x] Device signing **[device, 2026-11-14]**. Personal Team `MN7YP2FD68` has an Apple Development certificate. `xcodebuild` for iPhone 15 Pro Max (`00008130-001C6C2C14DA001C`, iOS 27.0.1) **BUILD SUCCEEDED**, and the app installed as `com.yehiafahmy.QuranCarPlayer` 0.1.0. Phone builds still use `App/QuranCarPlayerPhone.entitlements`. Xcode lists only this free Personal Team. Creating a new UI-test profile still fails with "No Account for Team MN7YP2FD68"; the app signed with the existing profile, which expires the same day.
 - [ ] Verify/request CarPlay audio entitlement through the owner's account. **[blocked: owner]** Instructions in ENVIRONMENT.md "Owner actions".
 - [ ] Build a small native CarPlay list and Now Playing prototype with test-owned audio.
   - [x] Written and **[simulator-built]**: `CarPlaySceneDelegate`, `CarPlayTemplateController`, test tones bundled. App-bundle test confirms the CarPlay scene delegate class resolves at runtime.
@@ -27,13 +27,13 @@ Deliverable: reproducible prototype and a dated feasibility note with device/SDK
 - [x] Implement provider adapter and last-known-good catalog cache with fixture tests. `MP3QuranCatalog` loads `mp3quran-catalog.json` (snapshot retrieved 2026-11-07) and builds HTTPS URLs from the stored server. `FixtureAudioCatalog` remains for unit tests and UI tests (`-QCPUITestReset`). A saved session whose collection is not in the current catalog is discarded on launch.
 - [x] Build shared playback coordinator, intent-aware state transitions, retry cancellation, and stale-operation rejection. `PlaybackCoordinator` **[macOS-tested]**: scenarios 1–7, 13–17 covered by unit tests.
 - [x] Implement continuous ordered playback, next/previous boundaries, reciter changes, checkpoint restore, and completed-session handling **[macOS-tested]**.
-- [ ] Add audio-session handling, background playback, Now Playing metadata, and remote commands. `AVPlayerEngine`, `NowPlayingBridge`, `AudioSessionController` **[simulator-built]**. Background audio mode declared and asserted by an app test. Not exercised on a device or with lock-screen controls.
+- [ ] Add audio-session handling, background playback, Now Playing metadata, and remote commands. `AVPlayerEngine`, `NowPlayingBridge`, `AudioSessionController` **[simulator-built]**. Background audio mode declared and asserted by an app test. Foreground streaming **[device, 2026-11-14]**: Al-Fatihah moved from 0:05 to 0:27 of 0:38, then advanced to Al-Baqarah (duration 1:47:59); pause held at 0:32. Lock screen, background, and remote commands are still untested.
 
-Exit: playback works on the phone while locked, state survives a relaunch, controls act on one shared session, and policy tests pass without network access. → Policy tests pass without network **[macOS-tested]**; the rest is untested.
+Exit: playback works on the phone while locked, state survives a relaunch, controls act on one shared session, and policy tests pass without network access. → Policy tests pass without network **[macOS-tested]**. Foreground play, natural advance, and pause work on the phone **[device, 2026-11-14]**. Locked-phone playback and relaunch-after-streaming are still open.
 
 ## Milestone 2 — Phone interface
 
-- [x] Surah list, reciter selection, player, and settings. **[simulator-tested]** by `PhonePlaybackUITests` (2026-11-07): list reaches surah 114, selecting surah 1 starts test-tone playback, pause works, Next moves to surah 2, reciter change updates the header, Settings switches the UI to Arabic. Saved list-anchor restore is implemented; the UI tests reset storage, so anchor restore was not the thing those tests checked.
+- [x] Surah list, reciter selection, player, and settings. **[simulator-tested]** by `PhonePlaybackUITests` (2026-11-07): list reaches surah 114, selecting surah 1 starts test-tone playback, pause works, Next moves to surah 2, reciter change updates the header, Settings switches the UI to Arabic. Saved list-anchor restore is implemented; the UI tests reset storage, so anchor restore was not the thing those tests checked. **[device, 2026-11-14]**: launch restored An-Nisa paused under Maher Al-Muaiqly; tapping surah 1 opened Now Playing with no test-audio banner. Reciter change and Arabic were not repeated on the phone.
 - [x] System/English/Arabic localization. **[simulator-tested]** by the settings UI test (Arabic title "الإعدادات", list title "السور"). Right-to-left layout is set from the language but was not inspected visually.
 - [ ] Loading, buffering, retry, first-use, and completed-session states. Status text and Retry present in `PlayerView` **[simulator-built]**.
 - [ ] Dynamic Type and VoiceOver checks on key controls and bilingual names. Labels added; not checked on a device.
@@ -177,3 +177,24 @@ Leave these until the paid Developer Program membership is active and Apple has 
 1. Owner: sign in to Xcode Accounts. Agent: device build, install, launch, and confirm the test-tone banner and play/pause on the phone.
 2. Future agent, after paid membership and CarPlay entitlement: the "Open: CarPlay" list above.
 3. Still separate: proofread `surahs.json`, and do not add a production audio provider until DESIGN.md §7 permission is recorded.
+
+### 2026-11-14 — Phone streaming heard on the owner's iPhone
+
+**Changed:** documentation only. No application source changed. The working tree was clean before this note.
+
+**Commands run and results**
+- `xcodebuild … -destination 'platform=iOS,id=00008130-001C6C2C14DA001C' -allowProvisioningUpdates build` → **BUILD SUCCEEDED**. Signed with Apple Development `yehiafahmy@icloud.com` and the existing profile `e0478bbd-074c-40f6-811d-ab5b835eb4a1` (Personal Team `MN7YP2FD68`).
+- `devicectl device install app` → installed `com.yehiafahmy.QuranCarPlayer` 0.1.0. `devicectl device process launch` opened it.
+- `xcodebuild test` for `QuranCarPlayerUITests` on the phone → **TEST FAILED** before the test ran: "No Account for Team MN7YP2FD68" and no profile for `com.yehiafahmy.QuranCarPlayer.uitests.xctrunner`. The app target did not need a new profile.
+
+**Manual device evidence:** iPhone 15 Pro Max, iOS 27.0.1, unlocked, USB. Launch showed Surahs, "Reciter: Maher Al-Muaiqly", surah 4 marked with the speaker icon, and a mini player "4. An-Nisa / Paused". Tapping surah 1 opened Now Playing: "1. Al-Fatihah", "The Opening", "Maher Al-Muaiqly", status Playing, elapsed 0:05 of 0:38, pause control visible, no test-audio banner. A later capture showed 0:27 of 0:38. The next capture was "2. Al-Baqarah", "The Cow", duration 1:47:59, then Paused at 0:04 and later at 0:32. Left paused on Al-Baqarah. Lock screen, background (a home swipe did not leave the player), airplane mode, reciter change, and Arabic layout were not exercised. Xcode still shows only the free Personal Team, so CarPlay signing is unchanged.
+
+**Known limitations**
+- Free-team profiles created 2026-11-07 expire 2026-11-14. The installed app can stop launching until it is signed again.
+- Command-line provisioning cannot create a new profile until Xcode's account session is available to `xcodebuild`.
+- A paid Developer Program team is still absent from Xcode. CarPlay stays blocked on that, then on Apple's entitlement approval.
+
+**Next concrete tasks**
+1. Confirm whether the paid membership is active. If a second team appears in Xcode Settings ▸ Accounts, register the bundle ID there and request CarPlay Audio.
+2. On the phone: lock-screen controls, background playback, and Retry after the network drops.
+3. Proofread `surahs.json` before anyone else uses the app.

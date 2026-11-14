@@ -2,7 +2,7 @@
 
 A planned iPhone Quran audio player designed primarily for easy surah and reciter selection through Apple CarPlay. Initially for personal use, with a future free App Store release.
 
-**Status (November 7, 2026): phone app streams four Hafs recitations; CarPlay is left for a later agent.** Core playback logic is unit-tested on macOS. The iOS app builds for the simulator and has been installed on the owner's iPhone. Normal launches stream Maher Al-Muaiqly, Mishary Rashid Alafasy, Abdul Rahman Al-Sudais, and Saud Al-Shuraim from MP3Quran. Automated tests still use labelled synthetic tones. CarPlay entitlement, CarPlay Simulator icon, and in-car resume stay open. Offline downloads are not included.
+**Status (November 14, 2026): the phone app streams four Hafs recitations and has played them on the owner's iPhone.** Core playback logic is unit-tested on macOS. A normal launch restored a saved session, then Al-Fatihah streamed from MP3Quran and advanced into Al-Baqarah. Automated tests still use labelled synthetic tones. Lock-screen controls, background audio, the CarPlay entitlement, and in-car resume stay open. Offline downloads are not included.
 
 ## Start here
 
