@@ -102,6 +102,28 @@ struct AudioDownloadFileStoreTests {
 @Suite("Audio download manager")
 @MainActor
 struct AudioDownloadManagerTests {
+    @Test("Every bundled reciter collection is eligible for per-surah downloads")
+    func bundledCatalogEligibility() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("QuranCarPlayerEligibility-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let catalog = try MP3QuranCatalog.bundled()
+        let manager = AudioDownloadManager(
+            catalog: catalog,
+            store: try AudioDownloadFileStore(rootDirectory: directory),
+            client: ImmediateDownloadClient(result: .failure(TestDownloadError.failed))
+        )
+
+        #expect(catalog.reciters.count == 9)
+        for reciter in catalog.reciters {
+            for surahNumber in [1, 114] {
+                let recording = RecordingID(collection: reciter.collection.id,
+                                            surahNumber: surahNumber)
+                #expect(manager.canDownload(recording))
+            }
+        }
+    }
+
     @Test("Inventory rebuilds from persisted files with exact per-item sizes")
     func persistentInventory() throws {
         let directory = FileManager.default.temporaryDirectory

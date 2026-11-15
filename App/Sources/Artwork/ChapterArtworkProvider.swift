@@ -2,11 +2,11 @@ import UIKit
 import MediaPlayer
 import QuranCarPlayerCore
 
-/// Generates chapter artwork from three bundled, release-cleared portraits.
+/// Generates chapter artwork from eight bundled, release-cleared portraits.
 ///
-/// Artwork is rendered on demand instead of bundling 342 chapter/portrait combinations.
-/// The source portraits add less than 1 MB to the app and work fully offline. Mishary,
-/// fixture reciters, and unknown reciters deliberately use the typography fallback.
+/// Artwork is rendered on demand instead of bundling 912 chapter/portrait combinations.
+/// The source portraits work fully offline. Mishary, fixture reciters, and unknown
+/// reciters deliberately use the typography fallback.
 @MainActor
 final class ChapterArtworkProvider {
     enum SourceKind: Equatable {
@@ -43,6 +43,41 @@ final class ChapterArtworkProvider {
             detail: "Vice President’s Secretariat, Government of India · GODL-India · cropped and color-treated",
             sourceURL: URL(string: "https://commons.wikimedia.org/wiki/File:The_IMAM_of_Holy_Mosque_in_Makka_Al_Mukarramah,_Saudi_Arabia,_Sheikh_Dr._Saud_Bin_Ibrahem_Al_Shuraim_meeting_the_Vice_President,_Shri_Mohd._Hamid_Ansari,_in_New_Delhi_on_March_03,_2012_(cropped).jpg")!,
             licenseURL: URL(string: "https://data.gov.in/sites/default/files/Gazette_Notification_OGDL.pdf")!
+        ),
+        Attribution(
+            id: "mp3quran.saad",
+            title: "Saad Al-Ghamdi portrait",
+            detail: "Photo by الشيخ هيثم الدخين · CC BY-SA 4.0 · reframed, resized, and color-treated",
+            sourceURL: URL(string: "https://commons.wikimedia.org/wiki/File:Saad_al_Ghamdi.jpg")!,
+            licenseURL: URL(string: "https://creativecommons.org/licenses/by-sa/4.0/")!
+        ),
+        Attribution(
+            id: "mp3quran.hussary",
+            title: "Mahmoud Khalil Al-Hussary portrait",
+            detail: "Photo by Zubairkhan1 · worldwide public-domain release · reframed, resized, and color-treated",
+            sourceURL: URL(string: "https://commons.wikimedia.org/wiki/File:Hussary.jpg")!,
+            licenseURL: URL(string: "https://commons.wikimedia.org/wiki/File:Hussary.jpg#Licensing")!
+        ),
+        Attribution(
+            id: "mp3quran.minshawi",
+            title: "Mohammed Siddiq Al-Minshawi portrait",
+            detail: "Unknown photographer · public domain · reframed, resized, and color-treated",
+            sourceURL: URL(string: "https://commons.wikimedia.org/wiki/File:Elminshwey.jpg")!,
+            licenseURL: URL(string: "https://commons.wikimedia.org/wiki/Template:PD-Egypt")!
+        ),
+        Attribution(
+            id: "mp3quran.abdulbasit",
+            title: "Abdulbasit Abdulsamad portrait",
+            detail: "Prasar Bharati, Ministry of Information and Broadcasting, Government of India · GODL-India · reframed, resized, and color-treated",
+            sourceURL: URL(string: "https://commons.wikimedia.org/wiki/File:Abdul_Basit_Abdul_Samad_at_Centenary_Celebration_Of_Darul_Uloom_Deoband_1980.jpg")!,
+            licenseURL: URL(string: "https://data.gov.in/sites/default/files/Gazette_Notification_OGDL.pdf")!
+        ),
+        Attribution(
+            id: "mp3quran.yasser",
+            title: "Yasser Al-Dosari portrait",
+            detail: "Photo by MAL MALDIVE · CC BY-SA 4.0 · reframed, resized, and color-treated",
+            sourceURL: URL(string: "https://commons.wikimedia.org/wiki/File:Yasser_Al-Dosari.jpg")!,
+            licenseURL: URL(string: "https://creativecommons.org/licenses/by-sa/4.0/")!
         ),
     ]
 
@@ -156,6 +191,26 @@ final class ChapterArtworkProvider {
             return PortraitDescriptor(assetName: "ReciterShuraim",
                                       color: UIColor(red: 0.36, green: 0.22, blue: 0.17, alpha: 1),
                                       verticalFocus: 0.37)
+        case "mp3quran.saad":
+            return PortraitDescriptor(assetName: "ReciterSaad",
+                                      color: UIColor(red: 0.27, green: 0.12, blue: 0.13, alpha: 1),
+                                      verticalFocus: 0.50)
+        case "mp3quran.hussary":
+            return PortraitDescriptor(assetName: "ReciterHussary",
+                                      color: UIColor(red: 0.24, green: 0.20, blue: 0.10, alpha: 1),
+                                      verticalFocus: 0.50)
+        case "mp3quran.minshawi":
+            return PortraitDescriptor(assetName: "ReciterMinshawi",
+                                      color: UIColor(red: 0.14, green: 0.18, blue: 0.24, alpha: 1),
+                                      verticalFocus: 0.50)
+        case "mp3quran.abdulbasit":
+            return PortraitDescriptor(assetName: "ReciterAbdulbasit",
+                                      color: UIColor(red: 0.12, green: 0.16, blue: 0.13, alpha: 1),
+                                      verticalFocus: 0.50)
+        case "mp3quran.yasser":
+            return PortraitDescriptor(assetName: "ReciterYasser",
+                                      color: UIColor(red: 0.34, green: 0.25, blue: 0.12, alpha: 1),
+                                      verticalFocus: 0.50)
         default:
             // Mishary has no bundled portrait until its reuse rights are independently cleared.
             return nil

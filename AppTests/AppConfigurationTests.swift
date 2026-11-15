@@ -53,7 +53,7 @@ struct AppConfigurationTests {
         #expect(L10n.string("downloads.empty.title", .arabic) == "لا توجد تنزيلات")
     }
 
-    @Test("Composition root streams the four MP3Quran reciters, with Maher selected")
+    @Test("Composition root streams nine MP3Quran reciters, with Maher selected")
     @MainActor
     func environmentComposes() throws {
         let environment = AppEnvironment.shared
@@ -62,6 +62,8 @@ struct AppConfigurationTests {
         let reciters = environment.coordinator.audioCatalog.reciters
         #expect(reciters.map(\.id.rawValue) == [
             "mp3quran.maher", "mp3quran.mishary", "mp3quran.sudais", "mp3quran.shuraim",
+            "mp3quran.saad", "mp3quran.hussary", "mp3quran.minshawi",
+            "mp3quran.abdulbasit", "mp3quran.yasser",
         ])
         #expect(reciters.allSatisfy { $0.collection.isTestFixture == false })
         #expect(environment.coordinator.selectedReciter?.englishName == "Maher Al-Muaiqly")
@@ -74,11 +76,21 @@ struct AppConfigurationTests {
         #expect(provider.sourceKind(for: ReciterID("mp3quran.maher")) == .licensedPortrait)
         #expect(provider.sourceKind(for: ReciterID("mp3quran.sudais")) == .licensedPortrait)
         #expect(provider.sourceKind(for: ReciterID("mp3quran.shuraim")) == .licensedPortrait)
+        #expect(provider.sourceKind(for: ReciterID("mp3quran.saad")) == .licensedPortrait)
+        #expect(provider.sourceKind(for: ReciterID("mp3quran.hussary")) == .licensedPortrait)
+        #expect(provider.sourceKind(for: ReciterID("mp3quran.minshawi")) == .licensedPortrait)
+        #expect(provider.sourceKind(for: ReciterID("mp3quran.abdulbasit")) == .licensedPortrait)
+        #expect(provider.sourceKind(for: ReciterID("mp3quran.yasser")) == .licensedPortrait)
         #expect(provider.sourceKind(for: ReciterID("mp3quran.mishary")) == .typographyFallback)
         #expect(provider.sourceKind(for: ReciterID("fixture.toneA")) == .typographyFallback)
         #expect(UIImage(named: "ReciterMaher") != nil)
         #expect(UIImage(named: "ReciterSudais") != nil)
         #expect(UIImage(named: "ReciterShuraim") != nil)
+        #expect(UIImage(named: "ReciterSaad") != nil)
+        #expect(UIImage(named: "ReciterHussary") != nil)
+        #expect(UIImage(named: "ReciterMinshawi") != nil)
+        #expect(UIImage(named: "ReciterAbdulbasit") != nil)
+        #expect(UIImage(named: "ReciterYasser") != nil)
         #expect(UIImage(named: "ReciterMishary") == nil)
     }
 
@@ -119,6 +131,20 @@ struct AppConfigurationTests {
         #expect(fallback.size == CGSize(width: 1_024, height: 1_024))
         #expect(portrait.pngData() != fallback.pngData())
         #expect(portraitEnglish.pngData() != portraitArabic.pngData())
+        for reciterID in [
+            "mp3quran.saad", "mp3quran.hussary", "mp3quran.minshawi",
+            "mp3quran.abdulbasit", "mp3quran.yasser",
+        ] {
+            let reciter = try #require(reciters.first { $0.id == ReciterID(reciterID) })
+            let generated = environment.artworkProvider.image(
+                for: surah,
+                reciter: reciter,
+                language: .english,
+                size: CGSize(width: 1_024, height: 1_024)
+            )
+            #expect(generated.size == CGSize(width: 1_024, height: 1_024))
+            #expect(generated.pngData() != fallback.pngData())
+        }
 
         let nowPlaying = environment.artworkProvider.nowPlayingArtwork(
             for: surah,
@@ -137,6 +163,8 @@ struct AppConfigurationTests {
     func artworkAttributionComplete() throws {
         #expect(ChapterArtworkProvider.attributions.map(\.id) == [
             "mp3quran.maher", "mp3quran.sudais", "mp3quran.shuraim",
+            "mp3quran.saad", "mp3quran.hussary", "mp3quran.minshawi",
+            "mp3quran.abdulbasit", "mp3quran.yasser",
         ])
         #expect(ChapterArtworkProvider.attributions.allSatisfy {
             $0.sourceURL.scheme == "https" && $0.licenseURL.scheme == "https"
