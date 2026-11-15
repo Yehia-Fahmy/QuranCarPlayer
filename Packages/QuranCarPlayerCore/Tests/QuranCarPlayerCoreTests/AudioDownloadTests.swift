@@ -19,6 +19,7 @@ struct AudioDownloadFileStoreTests {
         let localURL = try #require(store.localURL(for: recording))
         #expect(try Data(contentsOf: localURL) == Data("audio bytes".utf8))
         #expect(store.localURL(for: Fixtures.recording(19)) == nil)
+        #expect(store.storedRecordings() == Set([recording]))
         #expect(store.storageSummary() == DownloadStorageSummary(fileCount: 1, byteCount: 11))
 
         try store.remove(recording)
@@ -46,6 +47,52 @@ struct AudioDownloadFileStoreTests {
         #expect(store.localURL(for: Fixtures.recording(1)) == nil)
     }
 
+    @Test("Collection path encoding is collision-free and migrates legacy downloads")
+    func collectionPathEncodingAndMigration() throws {
+        let directory = temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let firstRecording = RecordingID(
+            collection: RecordingCollectionID(provider: "a:b", collection: "c"),
+            surahNumber: 1
+        )
+        let secondRecording = RecordingID(
+            collection: RecordingCollectionID(provider: "a", collection: "b:c"),
+            surahNumber: 1
+        )
+        let first = directory.deletingLastPathComponent()
+            .appendingPathComponent("collision-first-\(UUID().uuidString)")
+        let second = directory.deletingLastPathComponent()
+            .appendingPathComponent("collision-second-\(UUID().uuidString)")
+        try Data("first".utf8).write(to: first)
+        try Data("second".utf8).write(to: second)
+        let store = try AudioDownloadFileStore(rootDirectory: directory)
+
+        try store.installDownloadedFile(at: first, for: firstRecording)
+        try store.installDownloadedFile(at: second, for: secondRecording)
+
+        let firstURL = try #require(store.localURL(for: firstRecording))
+        let secondURL = try #require(store.localURL(for: secondRecording))
+        #expect(try Data(contentsOf: firstURL) == Data("first".utf8))
+        #expect(try Data(contentsOf: secondURL) == Data("second".utf8))
+        #expect(store.storedRecordings() == Set([firstRecording, secondRecording]))
+
+        let legacyRoot = directory.deletingLastPathComponent()
+            .appendingPathComponent("QuranCarPlayerLegacy-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: legacyRoot) }
+        let legacyKey = Data("remote:1".utf8).base64EncodedString()
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: "+", with: "-")
+            .replacingOccurrences(of: "=", with: "")
+        let legacyDirectory = legacyRoot.appendingPathComponent(legacyKey, isDirectory: true)
+        try FileManager.default.createDirectory(at: legacyDirectory, withIntermediateDirectories: true)
+        try Data("legacy".utf8).write(to: legacyDirectory.appendingPathComponent("018.audio"))
+
+        let migrated = try AudioDownloadFileStore(rootDirectory: legacyRoot)
+        #expect(migrated.storedRecordings() == Set([FixtureRemoteCatalog.recording]))
+        let migratedURL = try #require(migrated.localURL(for: FixtureRemoteCatalog.recording))
+        #expect(try Data(contentsOf: migratedURL) == Data("legacy".utf8))
+    }
+
     private func temporaryDirectory() -> URL {
         FileManager.default.temporaryDirectory
             .appendingPathComponent("QuranCarPlayerTests-\(UUID().uuidString)", isDirectory: true)
@@ -55,6 +102,47 @@ struct AudioDownloadFileStoreTests {
 @Suite("Audio download manager")
 @MainActor
 struct AudioDownloadManagerTests {
+    @Test("Inventory rebuilds from persisted files with exact per-item sizes")
+    func persistentInventory() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("QuranCarPlayerInventory-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let store = try AudioDownloadFileStore(rootDirectory: directory)
+        let recording18 = FixtureRemoteCatalog.recording
+        let recording19 = RecordingID(collection: FixtureRemoteCatalog.collection.id, surahNumber: 19)
+        let orphan = RecordingID(
+            collection: RecordingCollectionID(provider: "retired", collection: "old-reciter"),
+            surahNumber: 5
+        )
+
+        let first = directory.deletingLastPathComponent()
+            .appendingPathComponent("inventory-first-\(UUID().uuidString)")
+        let second = directory.deletingLastPathComponent()
+            .appendingPathComponent("inventory-second-\(UUID().uuidString)")
+        let third = directory.deletingLastPathComponent()
+            .appendingPathComponent("inventory-third-\(UUID().uuidString)")
+        try Data(repeating: 1, count: 12).write(to: first)
+        try Data(repeating: 2, count: 34).write(to: second)
+        try Data(repeating: 3, count: 7).write(to: third)
+        try store.installDownloadedFile(at: first, for: recording18)
+        try store.installDownloadedFile(at: second, for: recording19)
+        try store.installDownloadedFile(at: third, for: orphan)
+
+        let manager = AudioDownloadManager(catalog: FixtureRemoteCatalog(),
+                                           store: store,
+                                           client: ImmediateDownloadClient(
+                                            result: .failure(TestDownloadError.failed)
+                                           ))
+        let items = manager.downloadItems
+
+        #expect(items == [
+            AudioDownloadItem(recording: recording18, state: .downloaded, byteCount: 12),
+            AudioDownloadItem(recording: recording19, state: .downloaded, byteCount: 34),
+            AudioDownloadItem(recording: orphan, state: .downloaded, byteCount: 7)
+        ])
+        #expect(manager.storageSummary == DownloadStorageSummary(fileCount: 3, byteCount: 53))
+    }
+
     @Test("Successful downloads publish progress and become persistent")
     func successfulDownload() async throws {
         let directory = FileManager.default.temporaryDirectory
@@ -94,6 +182,11 @@ struct AudioDownloadManagerTests {
 
         #expect(store.localURL(for: FixtureRemoteCatalog.recording) == nil)
         #expect(manager.storageSummary == .empty)
+        #expect(manager.downloadItems == [
+            AudioDownloadItem(recording: FixtureRemoteCatalog.recording,
+                              state: .failed(.network),
+                              byteCount: nil)
+        ])
     }
 
     @Test("Cancellation returns to streaming state without installing a file")
@@ -109,11 +202,17 @@ struct AudioDownloadManagerTests {
 
         manager.download(FixtureRemoteCatalog.recording)
         await waitUntil { client.isStarted }
+        #expect(manager.downloadItems == [
+            AudioDownloadItem(recording: FixtureRemoteCatalog.recording,
+                              state: .downloading(progress: nil),
+                              byteCount: nil)
+        ])
         manager.cancel(FixtureRemoteCatalog.recording)
         await Task.yield()
 
         #expect(client.isStarted)
         #expect(manager.state(for: FixtureRemoteCatalog.recording) == .notDownloaded)
+        #expect(manager.downloadItems.isEmpty)
         #expect(store.localURL(for: FixtureRemoteCatalog.recording) == nil)
     }
 

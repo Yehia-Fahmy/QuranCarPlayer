@@ -242,7 +242,7 @@ private struct RecordingDownloadControl: View {
                     .font(.caption)
                     .foregroundStyle(.orange)
                 Button {
-                    downloadManager.download(recording)
+                    downloadManager.retry(recording)
                 } label: {
                     Label(L10n.string("player.retry", language), systemImage: "arrow.clockwise")
                 }

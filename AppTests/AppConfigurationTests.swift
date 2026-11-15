@@ -47,6 +47,10 @@ struct AppConfigurationTests {
         #expect(L10n.time(nil, language: .english) == "--:--")
         #expect(L10n.time(3725, language: .english) == "1:02:05")
         #expect(L10n.time(65, language: .arabic) == "1:05")
+        #expect(L10n.string("downloads.manage", .english) == "Manage Downloads")
+        #expect(L10n.string("downloads.manage", .arabic) == "إدارة التنزيلات")
+        #expect(L10n.string("downloads.empty.title", .english) == "No Downloads")
+        #expect(L10n.string("downloads.empty.title", .arabic) == "لا توجد تنزيلات")
     }
 
     @Test("Composition root streams the four MP3Quran reciters, with Maher selected")

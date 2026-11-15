@@ -9,6 +9,7 @@ struct RootView: View {
     @State private var showPlayer = false
     @State private var showSettings = false
     @State private var showReciters = false
+    @State private var showDownloads = false
 
     private var language: ResolvedLanguage { coordinator.snapshot.language.resolved() }
 
@@ -28,7 +29,16 @@ struct RootView: View {
                         }
                         .accessibilityHint(coordinator.selectedReciter?.displayName(for: language) ?? "")
                     }
-                    ToolbarItem(placement: .topBarTrailing) {
+                    ToolbarItemGroup(placement: .topBarTrailing) {
+                        if downloadManager != nil {
+                            Button {
+                                showDownloads = true
+                            } label: {
+                                Label(L10n.string("downloads.title", language),
+                                      systemImage: "arrow.down.circle")
+                            }
+                            .accessibilityHint(L10n.string("downloads.manage.hint", language))
+                        }
                         Button {
                             showSettings = true
                         } label: {
@@ -58,6 +68,20 @@ struct RootView: View {
                             Button(L10n.string("player.done", language)) { showReciters = false }
                         }
                     }
+            }
+        }
+        .sheet(isPresented: $showDownloads) {
+            if let downloadManager {
+                NavigationStack {
+                    DownloadsView(coordinator: coordinator, downloadManager: downloadManager)
+                        .toolbar {
+                            ToolbarItem(placement: .confirmationAction) {
+                                Button(L10n.string("player.done", language)) {
+                                    showDownloads = false
+                                }
+                            }
+                        }
+                }
             }
         }
         .sheet(isPresented: $showSettings) {

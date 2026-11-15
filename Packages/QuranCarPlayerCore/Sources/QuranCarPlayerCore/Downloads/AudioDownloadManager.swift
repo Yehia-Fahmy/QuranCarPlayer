@@ -14,12 +14,26 @@ public enum AudioDownloadState: Equatable, Sendable {
     case failed(AudioDownloadFailure)
 }
 
+public struct AudioDownloadItem: Identifiable, Equatable, Sendable {
+    public var id: RecordingID { recording }
+    public let recording: RecordingID
+    public let state: AudioDownloadState
+    public let byteCount: Int64?
+
+    public init(recording: RecordingID, state: AudioDownloadState, byteCount: Int64?) {
+        self.recording = recording
+        self.state = state
+        self.byteCount = byteCount
+    }
+}
+
 /// Coordinates user-initiated recording downloads and exposes per-recording UI state.
 @Observable
 @MainActor
 public final class AudioDownloadManager {
     private var stateRevision = 0
     private var summaryRevision = 0
+    public private(set) var cleanupFailed = false
 
     @ObservationIgnored private let catalog: AudioCatalog
     @ObservationIgnored private let store: AudioDownloadFileStore
@@ -27,6 +41,8 @@ public final class AudioDownloadManager {
     @ObservationIgnored private var states: [RecordingID: AudioDownloadState] = [:]
     @ObservationIgnored private var tasks: [RecordingID: Task<Void, Never>] = [:]
     @ObservationIgnored private var operationIDs: [RecordingID: UUID] = [:]
+    @ObservationIgnored private var downloadedRecordings: Set<RecordingID> = []
+    @ObservationIgnored private var catalogOrder: [RecordingID: Int] = [:]
 
     public init(catalog: AudioCatalog,
                 store: AudioDownloadFileStore,
@@ -34,6 +50,17 @@ public final class AudioDownloadManager {
         self.catalog = catalog
         self.store = store
         self.client = client
+        downloadedRecordings = store.storedRecordings()
+        var order = 0
+        var seenCollections = Set<RecordingCollectionID>()
+        for reciter in catalog.reciters where seenCollections.insert(reciter.collection.id).inserted {
+            for surahNumber in Surah.numberRange {
+                let recording = RecordingID(collection: reciter.collection.id,
+                                            surahNumber: surahNumber)
+                catalogOrder[recording] = order
+                order += 1
+            }
+        }
     }
 
     public var storageSummary: DownloadStorageSummary {
@@ -41,15 +68,28 @@ public final class AudioDownloadManager {
         return store.storageSummary()
     }
 
+    /// Durable downloads plus in-flight and failed operations, in catalog/surah order.
+    ///
+    /// The file store remains the source of truth, so this remains useful after relaunch and
+    /// while offline without introducing a second download database.
+    public var downloadItems: [AudioDownloadItem] {
+        _ = stateRevision
+        _ = summaryRevision
+        let recordings = downloadedRecordings.union(states.keys).sorted(by: inventoryOrder)
+        var items: [AudioDownloadItem] = []
+        for recording in recordings {
+            let state = resolvedState(for: recording)
+            guard state != .notDownloaded else { continue }
+            items.append(AudioDownloadItem(recording: recording,
+                                           state: state,
+                                           byteCount: store.byteCount(for: recording)))
+        }
+        return items
+    }
+
     public func state(for recording: RecordingID) -> AudioDownloadState {
         _ = stateRevision
-        if let state = states[recording] {
-            if state == .downloaded, store.localURL(for: recording) == nil {
-                return .notDownloaded
-            }
-            return state
-        }
-        return store.localURL(for: recording) == nil ? .notDownloaded : .downloaded
+        return resolvedState(for: recording)
     }
 
     public func canDownload(_ recording: RecordingID) -> Bool {
@@ -83,6 +123,7 @@ public final class AudioDownloadManager {
                 guard let self, self.operationIDs[recording] == operationID else { return }
                 self.tasks[recording] = nil
                 self.operationIDs[recording] = nil
+                self.downloadedRecordings.insert(recording)
                 self.updateState(.downloaded, for: recording)
                 self.summaryRevision &+= 1
             } catch is CancellationError {
@@ -111,10 +152,20 @@ public final class AudioDownloadManager {
         updateState(.notDownloaded, for: recording)
     }
 
+    public func retry(_ recording: RecordingID) {
+        if case .failed(.storage) = resolvedState(for: recording),
+           store.localURL(for: recording) != nil {
+            remove(recording)
+        } else {
+            download(recording)
+        }
+    }
+
     public func remove(_ recording: RecordingID) {
         cancel(recording)
         do {
             try store.remove(recording)
+            downloadedRecordings.remove(recording)
             updateState(.notDownloaded, for: recording)
             summaryRevision &+= 1
         } catch {
@@ -123,22 +174,58 @@ public final class AudioDownloadManager {
     }
 
     public func removeAll() {
+        cleanupFailed = false
         operationIDs.removeAll()
         for task in tasks.values { task.cancel() }
         tasks.removeAll()
+        states.removeAll()
+        stateRevision &+= 1
         do {
             try store.removeAll()
-            states.removeAll()
-            stateRevision &+= 1
+            downloadedRecordings.removeAll()
             summaryRevision &+= 1
         } catch {
             // The computed summary continues to report files that could not be removed.
+            downloadedRecordings = store.storedRecordings()
+            cleanupFailed = true
             summaryRevision &+= 1
         }
     }
 
     private func updateState(_ state: AudioDownloadState, for recording: RecordingID) {
-        states[recording] = state
+        if state == .notDownloaded {
+            states[recording] = nil
+        } else {
+            states[recording] = state
+        }
         stateRevision &+= 1
+    }
+
+    private func resolvedState(for recording: RecordingID) -> AudioDownloadState {
+        if let state = states[recording] {
+            if state == .downloaded, store.localURL(for: recording) == nil {
+                return .notDownloaded
+            }
+            return state
+        }
+        return downloadedRecordings.contains(recording) && store.localURL(for: recording) != nil
+            ? .downloaded
+            : .notDownloaded
+    }
+
+    private func inventoryOrder(_ lhs: RecordingID, _ rhs: RecordingID) -> Bool {
+        switch (catalogOrder[lhs], catalogOrder[rhs]) {
+        case let (left?, right?): return left < right
+        case (_?, nil): return true
+        case (nil, _?): return false
+        case (nil, nil):
+            if lhs.collection.provider != rhs.collection.provider {
+                return lhs.collection.provider < rhs.collection.provider
+            }
+            if lhs.collection.collection != rhs.collection.collection {
+                return lhs.collection.collection < rhs.collection.collection
+            }
+            return lhs.surahNumber < rhs.surahNumber
+        }
     }
 }
