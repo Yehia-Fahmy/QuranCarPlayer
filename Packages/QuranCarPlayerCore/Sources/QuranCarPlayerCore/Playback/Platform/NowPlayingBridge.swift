@@ -15,15 +15,20 @@ public struct NowPlayingLabels: Sendable {
 public final class NowPlayingBridge {
     private let coordinator: PlaybackCoordinator
     private let labels: @MainActor (ResolvedLanguage) -> NowPlayingLabels
+    private let artworkProvider: @MainActor (Surah, Reciter?, ResolvedLanguage) -> MPMediaItemArtwork?
     private let infoCenter = MPNowPlayingInfoCenter.default()
     private let commandCenter = MPRemoteCommandCenter.shared()
     private var observation: ObservationToken?
     private var targets: [(MPRemoteCommand, Any)] = []
 
-    public init(coordinator: PlaybackCoordinator,
-                labels: @escaping @MainActor (ResolvedLanguage) -> NowPlayingLabels) {
+    public init(
+        coordinator: PlaybackCoordinator,
+        labels: @escaping @MainActor (ResolvedLanguage) -> NowPlayingLabels,
+        artworkProvider: @escaping @MainActor (Surah, Reciter?, ResolvedLanguage) -> MPMediaItemArtwork? = { _, _, _ in nil }
+    ) {
         self.coordinator = coordinator
         self.labels = labels
+        self.artworkProvider = artworkProvider
         registerCommands()
         observation = coordinator.addObserver { [weak self] snapshot in
             self?.update(with: snapshot)
@@ -96,8 +101,12 @@ public final class NowPlayingBridge {
             MPNowPlayingInfoPropertyPlaybackRate: snapshot.transport == .playing ? 1.0 : 0.0,
             MPNowPlayingInfoPropertyDefaultPlaybackRate: 1.0,
         ]
-        if let reciter = coordinator.currentReciter {
+        let reciter = coordinator.currentReciter
+        if let reciter {
             info[MPMediaItemPropertyArtist] = reciter.displayName(for: language)
+        }
+        if let artwork = artworkProvider(surah, reciter, language) {
+            info[MPMediaItemPropertyArtwork] = artwork
         }
         if snapshot.isTestAudio {
             info[MPMediaItemPropertyAlbumTitle] = labels(language).testAudioNotice

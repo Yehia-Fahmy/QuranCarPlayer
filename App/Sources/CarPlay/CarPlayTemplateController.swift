@@ -10,6 +10,7 @@ import QuranCarPlayerCore
 final class CarPlayTemplateController: NSObject {
     private let interfaceController: CPInterfaceController
     private let coordinator: PlaybackCoordinator
+    private let artworkProvider: ChapterArtworkProvider
 
     private var tabBar: CPTabBarTemplate?
     private var listenTemplate: CPListTemplate?
@@ -32,9 +33,12 @@ final class CarPlayTemplateController: NSObject {
     private var shouldPresentNowPlayingWhenReady = false
     private var didReportFailure: PlaybackFailure?
 
-    init(interfaceController: CPInterfaceController, coordinator: PlaybackCoordinator) {
+    init(interfaceController: CPInterfaceController,
+         coordinator: PlaybackCoordinator,
+         artworkProvider: ChapterArtworkProvider) {
         self.interfaceController = interfaceController
         self.coordinator = coordinator
+        self.artworkProvider = artworkProvider
         self.language = coordinator.snapshot.language.resolved()
         super.init()
     }
@@ -101,7 +105,9 @@ final class CarPlayTemplateController: NSObject {
 
     private func buildSurahItems() {
         surahItems = coordinator.surahCatalog.surahs.map { surah in
-            let item = CPListItem(text: surahText(surah), detailText: surah.secondaryName(for: language))
+            let item = CPListItem(text: surahText(surah),
+                                  detailText: surah.secondaryName(for: language),
+                                  image: chapterImage(surah: surah, reciter: coordinator.selectedReciter))
             item.userInfo = surah.number
             item.playingIndicatorLocation = .trailing
             item.handler = { [weak self] _, completion in
@@ -153,8 +159,12 @@ final class CarPlayTemplateController: NSObject {
         var items: [CPListItem] = []
 
         if case .failed(let failure) = snapshot.transport {
+            let image = coordinator.currentSurah.map {
+                chapterImage(surah: $0, reciter: coordinator.currentReciter)
+            }
             let item = CPListItem(text: L10n.failureMessage(failure.reason, language),
-                                  detailText: currentDescription(snapshot))
+                                  detailText: currentDescription(snapshot),
+                                  image: image)
             item.accessoryType = .disclosureIndicator
             item.handler = { [weak self] _, completion in
                 guard let self else { completion(); return }
@@ -167,8 +177,12 @@ final class CarPlayTemplateController: NSObject {
         if let session = snapshot.resumableSession, !snapshot.isActivelyPlaying, snapshot.transport != .completed {
             let surahName = coordinator.surahCatalog.surah(session.recording.surahNumber)?.displayName(for: language) ?? ""
             let reciterName = coordinator.reciter(for: session)?.displayName(for: language) ?? ""
+            let image = coordinator.surahCatalog.surah(session.recording.surahNumber).map {
+                chapterImage(surah: $0, reciter: coordinator.reciter(for: session))
+            }
             let item = CPListItem(text: L10n.string("listen.continue", language),
-                                  detailText: "\(session.recording.surahNumber). \(surahName) · \(reciterName) · \(L10n.time(session.elapsedSeconds, language: language))")
+                                  detailText: "\(session.recording.surahNumber). \(surahName) · \(reciterName) · \(L10n.time(session.elapsedSeconds, language: language))",
+                                  image: image)
             item.handler = { [weak self] _, completion in
                 guard let self else { completion(); return }
                 self.beginSelection(expecting: session.recording, presentNowPlaying: true, completion: completion)
@@ -178,7 +192,12 @@ final class CarPlayTemplateController: NSObject {
         }
 
         if snapshot.currentRecording != nil {
-            let item = CPListItem(text: L10n.string("listen.nowPlaying", language), detailText: currentDescription(snapshot))
+            let image = coordinator.currentSurah.map {
+                chapterImage(surah: $0, reciter: coordinator.currentReciter)
+            }
+            let item = CPListItem(text: L10n.string("listen.nowPlaying", language),
+                                  detailText: currentDescription(snapshot),
+                                  image: image)
             item.accessoryType = .disclosureIndicator
             item.handler = { [weak self] _, completion in
                 self?.pushNowPlaying()
@@ -237,6 +256,10 @@ final class CarPlayTemplateController: NSObject {
                 item.setDetailText(isSelected ? L10n.string("reciter.selected", language)
                                               : coordinator.audioCatalog.reciter(id)?.collection.riwayah)
             }
+            for (index, item) in surahItems.enumerated() {
+                guard let surah = coordinator.surahCatalog.surah(index + 1) else { continue }
+                item.setImage(chapterImage(surah: surah, reciter: coordinator.selectedReciter))
+            }
             surahsTemplate?.updateSections([surahSection()])
         }
 
@@ -257,6 +280,7 @@ final class CarPlayTemplateController: NSObject {
             guard let surah = coordinator.surahCatalog.surah(index + 1) else { continue }
             item.setText(surahText(surah))
             item.setDetailText(surah.secondaryName(for: language))
+            item.setImage(chapterImage(surah: surah, reciter: coordinator.selectedReciter))
         }
         for (id, item) in reciterItems {
             if let reciter = coordinator.audioCatalog.reciter(id) {
@@ -270,6 +294,13 @@ final class CarPlayTemplateController: NSObject {
         surahsTemplate?.updateSections([surahSection()])
         recitersTemplate?.updateSections([reciterSection()])
         if let snapshot = lastSnapshot { listenTemplate?.updateSections([listenSection(snapshot)]) }
+    }
+
+    private func chapterImage(surah: Surah, reciter: Reciter?) -> UIImage {
+        artworkProvider.image(for: surah,
+                              reciter: reciter,
+                              language: language,
+                              size: CGSize(width: 120, height: 120))
     }
 
     // MARK: Selection completion handling

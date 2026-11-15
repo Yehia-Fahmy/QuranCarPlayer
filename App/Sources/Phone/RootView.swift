@@ -5,6 +5,7 @@ import QuranCarPlayerCore
 struct RootView: View {
     let coordinator: PlaybackCoordinator
     let downloadManager: AudioDownloadManager?
+    let artworkProvider: ChapterArtworkProvider
     @State private var showPlayer = false
     @State private var showSettings = false
     @State private var showReciters = false
@@ -13,7 +14,10 @@ struct RootView: View {
 
     var body: some View {
         NavigationStack {
-            SurahListView(coordinator: coordinator, language: language, openPlayer: { showPlayer = true })
+            SurahListView(coordinator: coordinator,
+                          artworkProvider: artworkProvider,
+                          language: language,
+                          openPlayer: { showPlayer = true })
                 .navigationTitle(L10n.string("surahs.title", language))
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
@@ -34,12 +38,16 @@ struct RootView: View {
                 }
                 .safeAreaInset(edge: .bottom) {
                     if coordinator.snapshot.currentRecording != nil {
-                        MiniPlayerView(coordinator: coordinator, language: language) { showPlayer = true }
+                        MiniPlayerView(coordinator: coordinator,
+                                       artworkProvider: artworkProvider,
+                                       language: language) { showPlayer = true }
                     }
                 }
         }
         .sheet(isPresented: $showPlayer) {
-            PlayerView(coordinator: coordinator, downloadManager: downloadManager)
+            PlayerView(coordinator: coordinator,
+                       downloadManager: downloadManager,
+                       artworkProvider: artworkProvider)
         }
         .sheet(isPresented: $showReciters) {
             NavigationStack {
@@ -70,6 +78,7 @@ struct RootView: View {
 /// Compact bar showing the current surah and a play/pause control.
 struct MiniPlayerView: View {
     let coordinator: PlaybackCoordinator
+    let artworkProvider: ChapterArtworkProvider
     let language: ResolvedLanguage
     let open: () -> Void
 
@@ -77,16 +86,31 @@ struct MiniPlayerView: View {
         let snapshot = coordinator.snapshot
         HStack(spacing: 12) {
             Button(action: open) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(verbatim: titleText(snapshot))
-                        .font(.headline)
-                        .lineLimit(1)
-                    Text(verbatim: L10n.status(for: snapshot, language: language))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
+                HStack(spacing: 12) {
+                    if let surah = coordinator.currentSurah {
+                        Image(uiImage: artworkProvider.image(
+                            for: surah,
+                            reciter: coordinator.currentReciter,
+                            language: language,
+                            size: CGSize(width: 96, height: 96)
+                        ))
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 48, height: 48)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .accessibilityHidden(true)
+                    }
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(verbatim: titleText(snapshot))
+                            .font(.headline)
+                            .lineLimit(1)
+                        Text(verbatim: L10n.status(for: snapshot, language: language))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)

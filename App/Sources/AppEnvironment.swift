@@ -9,6 +9,7 @@ final class AppEnvironment {
 
     let coordinator: PlaybackCoordinator
     let downloadManager: AudioDownloadManager?
+    let artworkProvider: ChapterArtworkProvider
     let engine: AVPlayerEngine
     let nowPlaying: NowPlayingBridge
     let audioSession: AudioSessionController
@@ -86,9 +87,17 @@ final class AppEnvironment {
                                           settingsStore: settingsStore,
                                           defaultReciter: defaultReciter,
                                           downloadedAudioResolver: downloadStore)
-        nowPlaying = NowPlayingBridge(coordinator: coordinator) { language in
-            NowPlayingLabels(testAudioNotice: L10n.string("testAudio.short", language))
-        }
+        let artworkProvider = ChapterArtworkProvider()
+        self.artworkProvider = artworkProvider
+        nowPlaying = NowPlayingBridge(
+            coordinator: coordinator,
+            labels: { language in
+                NowPlayingLabels(testAudioNotice: L10n.string("testAudio.short", language))
+            },
+            artworkProvider: { surah, reciter, language in
+                artworkProvider.nowPlayingArtwork(for: surah, reciter: reciter, language: language)
+            }
+        )
         audioSession = AudioSessionController(coordinator: coordinator, engine: engine)
     }
 }

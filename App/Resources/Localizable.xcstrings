@@ -277,6 +277,30 @@
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Recitation streams from MP3Quran. Local storage is currently unavailable, so playback needs an internet connection. See the source attribution below." } }
       }
     },
+    "settings.artwork" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "مصادر صور القرّاء" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Reciter portrait sources" } }
+      }
+    },
+    "settings.artwork.footer" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "تُنشأ صور السور على الجهاز وتعمل دون اتصال. تُستخدم لوحة كتابية بدلًا من الصورة عندما لا تكون حقوق صورة القارئ موثقة." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Chapter artwork is generated on-device and works offline. Typography replaces the portrait whenever image rights are not documented." } }
+      }
+    },
+    "settings.artwork.source" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "المصدر" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Source" } }
+      }
+    },
+    "settings.artwork.license" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "الترخيص" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "License" } }
+      }
+    },
     "downloads.title" : {
       "localizations" : {
         "ar" : { "stringUnit" : { "state" : "translated", "value" : "التنزيلات" } },

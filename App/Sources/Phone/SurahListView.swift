@@ -5,6 +5,7 @@ import QuranCarPlayerCore
 /// when the list appears; the anchor is a stable surah ID, never a pixel offset.
 struct SurahListView: View {
     let coordinator: PlaybackCoordinator
+    let artworkProvider: ChapterArtworkProvider
     let language: ResolvedLanguage
     let openPlayer: () -> Void
 
@@ -20,7 +21,10 @@ struct SurahListView: View {
                             coordinator.continueListening()
                             openPlayer()
                         } label: {
-                            ContinueListeningRow(coordinator: coordinator, session: session, language: language)
+                            ContinueListeningRow(coordinator: coordinator,
+                                                 artworkProvider: artworkProvider,
+                                                 session: session,
+                                                 language: language)
                         }
                     }
                 }
@@ -32,6 +36,8 @@ struct SurahListView: View {
                             openPlayer()
                         } label: {
                             SurahRow(surah: surah,
+                                     reciter: coordinator.selectedReciter,
+                                     artworkProvider: artworkProvider,
                                      language: language,
                                      isCurrent: snapshot.currentSurahNumber == surah.number,
                                      isPlaying: snapshot.currentSurahNumber == surah.number && snapshot.isActivelyPlaying)
@@ -57,16 +63,25 @@ struct SurahListView: View {
 
 struct SurahRow: View {
     let surah: Surah
+    let reciter: Reciter?
+    let artworkProvider: ChapterArtworkProvider
     let language: ResolvedLanguage
     let isCurrent: Bool
     let isPlaying: Bool
 
     var body: some View {
         HStack(spacing: 12) {
-            Text(verbatim: "\(surah.number)")
-                .font(.subheadline.monospacedDigit())
-                .foregroundStyle(.secondary)
-                .frame(minWidth: 32, alignment: .trailing)
+            Image(uiImage: artworkProvider.image(
+                for: surah,
+                reciter: reciter,
+                language: language,
+                size: CGSize(width: 96, height: 96)
+            ))
+            .resizable()
+            .scaledToFill()
+            .frame(width: 46, height: 46)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 2) {
                 Text(verbatim: surah.displayName(for: language))
                     .font(.body)
@@ -83,20 +98,32 @@ struct SurahRow: View {
             }
         }
         .contentShape(Rectangle())
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(surah.number). \(surah.displayName(for: language)), \(surah.secondaryName(for: language))")
     }
 }
 
 struct ContinueListeningRow: View {
     let coordinator: PlaybackCoordinator
+    let artworkProvider: ChapterArtworkProvider
     let session: PlaybackSession
     let language: ResolvedLanguage
 
     var body: some View {
         HStack(spacing: 12) {
-            Image(systemName: "play.circle.fill")
-                .font(.title)
-                .foregroundStyle(.tint)
+            if let surah = coordinator.surahCatalog.surah(session.recording.surahNumber) {
+                Image(uiImage: artworkProvider.image(
+                    for: surah,
+                    reciter: coordinator.reciter(for: session),
+                    language: language,
+                    size: CGSize(width: 96, height: 96)
+                ))
+                .resizable()
+                .scaledToFill()
+                .frame(width: 46, height: 46)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .accessibilityHidden(true)
+            }
             VStack(alignment: .leading, spacing: 2) {
                 Text(verbatim: L10n.string("listen.continue", language))
                     .font(.headline)

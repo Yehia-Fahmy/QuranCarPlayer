@@ -13,7 +13,8 @@ final class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegat
                                   didConnect interfaceController: CPInterfaceController) {
         let environment = AppEnvironment.shared
         let controller = CarPlayTemplateController(interfaceController: interfaceController,
-                                                   coordinator: environment.coordinator)
+                                                   coordinator: environment.coordinator,
+                                                   artworkProvider: environment.artworkProvider)
         templateController = controller
         controller.start()
         // Automatic resume policy is evaluated by the coordinator (at most once per connection).
