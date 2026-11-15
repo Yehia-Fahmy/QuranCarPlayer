@@ -6,10 +6,11 @@ Mishary Rashid Alafasy does **not** use a portrait. The available candidate did 
 
 ## Maher Al-Muaiqly
 
-- Source: [Maher Al Mueaqly.jpg](https://commons.wikimedia.org/wiki/File:Maher_Al_Mueaqly.jpg)
-- Author: الشيخ هيثم الدخين
-- License: [Creative Commons Attribution-ShareAlike 3.0](https://creativecommons.org/licenses/by-sa/3.0/)
+- Source: [Professor Maher Al-Mu'aiqly.jpg](https://commons.wikimedia.org/wiki/File:Professor_Maher_Al-Mu%27aiqly.jpg)
+- Author: Real avdulmouhd
+- License: [Creative Commons Attribution-ShareAlike 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
 - Modification: cropped and color-treated; chapter labels and number added.
+- Notice: no endorsement by the subject or photographer is implied.
 
 ## Abdul Rahman Al-Sudais
 

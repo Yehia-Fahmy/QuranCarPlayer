@@ -26,9 +26,9 @@ final class ChapterArtworkProvider {
         Attribution(
             id: "mp3quran.maher",
             title: "Maher Al-Muaiqly portrait",
-            detail: "Photo by الشيخ هيثم الدخين · CC BY-SA 3.0 · cropped and color-treated",
-            sourceURL: URL(string: "https://commons.wikimedia.org/wiki/File:Maher_Al_Mueaqly.jpg")!,
-            licenseURL: URL(string: "https://creativecommons.org/licenses/by-sa/3.0/")!
+            detail: "Photo by Real avdulmouhd · CC BY-SA 4.0 · cropped and color-treated",
+            sourceURL: URL(string: "https://commons.wikimedia.org/wiki/File:Professor_Maher_Al-Mu%27aiqly.jpg")!,
+            licenseURL: URL(string: "https://creativecommons.org/licenses/by-sa/4.0/")!
         ),
         Attribution(
             id: "mp3quran.sudais",
@@ -147,7 +147,7 @@ final class ChapterArtworkProvider {
         case "mp3quran.maher":
             return PortraitDescriptor(assetName: "ReciterMaher",
                                       color: UIColor(red: 0.09, green: 0.30, blue: 0.26, alpha: 1),
-                                      verticalFocus: 0.34)
+                                      verticalFocus: 0.43)
         case "mp3quran.sudais":
             return PortraitDescriptor(assetName: "ReciterSudais",
                                       color: UIColor(red: 0.09, green: 0.21, blue: 0.32, alpha: 1),

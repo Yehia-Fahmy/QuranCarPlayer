@@ -134,12 +134,20 @@ struct AppConfigurationTests {
 
     @Test("Every bundled portrait has a source and license record")
     @MainActor
-    func artworkAttributionComplete() {
+    func artworkAttributionComplete() throws {
         #expect(ChapterArtworkProvider.attributions.map(\.id) == [
             "mp3quran.maher", "mp3quran.sudais", "mp3quran.shuraim",
         ])
         #expect(ChapterArtworkProvider.attributions.allSatisfy {
             $0.sourceURL.scheme == "https" && $0.licenseURL.scheme == "https"
         })
+        let maher = try #require(ChapterArtworkProvider.attributions.first {
+            $0.id == "mp3quran.maher"
+        })
+        #expect(maher.detail.contains("Real avdulmouhd"))
+        #expect(maher.sourceURL.absoluteString ==
+                "https://commons.wikimedia.org/wiki/File:Professor_Maher_Al-Mu%27aiqly.jpg")
+        #expect(maher.licenseURL.absoluteString ==
+                "https://creativecommons.org/licenses/by-sa/4.0/")
     }
 }
