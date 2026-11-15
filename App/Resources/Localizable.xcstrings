@@ -97,6 +97,36 @@
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Cancel" } }
       }
     },
+    "download.action" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "تنزيل للاستماع دون اتصال" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Download for Offline" } }
+      }
+    },
+    "download.downloading" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "جارٍ التنزيل…" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Downloading…" } }
+      }
+    },
+    "download.availableOffline" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "متاحة دون اتصال" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Available Offline" } }
+      }
+    },
+    "download.remove" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "إزالة التنزيل" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Remove Download" } }
+      }
+    },
+    "download.failed" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "تعذّر التنزيل" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Download failed" } }
+      }
+    },
     "player.seek" : {
       "localizations" : {
         "ar" : { "stringUnit" : { "state" : "translated", "value" : "موضع التشغيل" } },
@@ -237,8 +267,44 @@
     },
     "settings.source.mp3quran" : {
       "localizations" : {
-        "ar" : { "stringUnit" : { "state" : "translated", "value" : "التلاوة تُبث من موقع MP3Quran ولا تُحفظ داخل التطبيق. يحتاج التشغيل إلى اتصال بالإنترنت. المصدر يسمح باستخدام الروابط المنشورة على موقعه. التنزيل للاستخدام دون اتصال غير مضاف." } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Recitation is streamed from MP3Quran and is not stored in the app. Playback needs an internet connection. The source allows use of links published on its site. Offline download is not included." } }
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "تُبث التلاوة من MP3Quran عند عدم تنزيلها. يمكن حفظ السور التي تختارها على هذا الجهاز للاستماع دون اتصال. يُرجى مراجعة معلومات المصدر والإسناد أدناه." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Recitation streams from MP3Quran when it has not been downloaded. Surahs you choose can be saved on this device for offline listening. See the source attribution below." } }
+      }
+    },
+    "settings.source.mp3quran.streamingOnly" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "تُبث التلاوة من MP3Quran. التخزين المحلي غير متاح حاليًا، لذا يحتاج التشغيل إلى اتصال بالإنترنت. يُرجى مراجعة معلومات المصدر والإسناد أدناه." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Recitation streams from MP3Quran. Local storage is currently unavailable, so playback needs an internet connection. See the source attribution below." } }
+      }
+    },
+    "downloads.title" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "التنزيلات" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Downloads" } }
+      }
+    },
+    "downloads.saved" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "المحفوظ على الجهاز" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Saved on Device" } }
+      }
+    },
+    "downloads.removeAll" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "إزالة كل التنزيلات" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Remove All Downloads" } }
+      }
+    },
+    "downloads.removeAll.confirm" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "هل تريد إزالة جميع الملفات الصوتية التي تم تنزيلها؟" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Remove all downloaded audio?" } }
+      }
+    },
+    "downloads.footer" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "تُحفظ التنزيلات على هذا الجهاز ولا تُضمّن في النسخ الاحتياطية. يستمر البث تلقائيًا عند عدم وجود ملف محفوظ." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Downloads stay on this device and are excluded from backups. Streaming remains available automatically when no saved file exists." } }
       }
     },
     "settings.about" : {

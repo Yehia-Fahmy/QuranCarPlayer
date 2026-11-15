@@ -141,7 +141,8 @@ struct Harness {
     init(savedSession: PlaybackSession? = nil,
          settings: AppSettings? = nil,
          unavailableSurahs: Set<Int> = [],
-         retryPolicy: RetryPolicy = RetryPolicy()) throws {
+         retryPolicy: RetryPolicy = RetryPolicy(),
+         downloadedAudioResolver: DownloadedAudioResolving? = nil) throws {
         sessionStore = InMemorySessionStore(checkpoint: savedSession.map { SessionCheckpoint(session: $0) })
         settingsStore = InMemorySettingsStore(settings: settings)
         catalog = FixtureAudioCatalog(fixtureURLs: Fixtures.toneURLs, unavailableSurahs: unavailableSurahs)
@@ -153,7 +154,8 @@ struct Harness {
                                           settingsStore: settingsStore,
                                           defaultReciter: FixtureAudioCatalog.defaultReciterID,
                                           clock: clock,
-                                          retryPolicy: retryPolicy)
+                                          retryPolicy: retryPolicy,
+                                          downloadedAudioResolver: downloadedAudioResolver)
     }
 
     var snapshot: PlaybackSnapshot { coordinator.snapshot }
@@ -162,5 +164,13 @@ struct Harness {
     func startPlaying(_ surah: Int, duration: TimeInterval? = 120) {
         coordinator.selectSurah(surah)
         engine.becomeReady(duration: duration)
+    }
+}
+
+struct StubDownloadedAudioResolver: DownloadedAudioResolving {
+    let urls: [RecordingID: URL]
+
+    func localURL(for recording: RecordingID) -> URL? {
+        urls[recording]
     }
 }
