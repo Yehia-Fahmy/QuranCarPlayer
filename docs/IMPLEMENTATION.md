@@ -13,7 +13,7 @@ Legend for evidence tags used below: **[macOS-tested]** verified by `Scripts/tes
 - [x] Verify/request CarPlay audio entitlement through the owner's account. **[device, 2026-11-15]** Profile `c2077eb7` includes `com.apple.developer.carplay-audio`. Details in ENVIRONMENT.md.
 - [ ] Build a small native CarPlay list and Now Playing prototype with test-owned audio.
   - [x] Written and **[simulator-built]**: `CarPlaySceneDelegate`, `CarPlayTemplateController`, test tones bundled. App-bundle test confirms the CarPlay scene delegate class resolves at runtime.
-  - [ ] Shown in CarPlay. On 2026-11-15 the iPhone 17 simulator launched the phone UI. Xcode 27 Device Hub has no I/O ▸ External Displays ▸ CarPlay for a simulator, and the attached CarPlay screen produced no framebuffer. The icon and Listen/Surahs/Reciters templates were not seen.
+  - [x] Shown in CarPlay. **[device, 2026-11-15]** Device Hub ▸ Device ▸ CarPlay Simulator connected to the plugged-in iPhone 15 Pro Max and showed a live car dashboard. The owner then confirmed the manual test works. The iPhone 17 simulator still has no CarPlay framebuffer. Template-by-template checks stay open below.
 - [ ] Test 114-item browsing, native playing indicators, returning to a list, tab switching, reconnecting, and list-position restoration using public APIs. **Documentation finding (FEASIBILITY.md §2): no public scroll/position API on `CPListTemplate`.** Runtime behaviour untested.
 - [ ] Test automatic resume in all lifecycle cases listed in DESIGN.md. Resolve the manually-paused-session and other-audio-app policies with the owner using findings. Policy implemented and unit-tested (FEASIBILITY.md §1) **[macOS-tested]**; in-car matrix **[blocked: Xcode, device, car]**; two owner decisions open.
 - [x] Verify production audio provider permissions, attribution, and the four candidate recording collections. **2026-11-07:** MP3Quran v3 returned complete Hafs murattal collections for Maher Al-Muaiqly (moshaf 102), Mishary Rashid Alafasy (123), Abdul Rahman Al-Sudais (54), and Saud Al-Shuraim (31). Their copyright note allows use of site links. The app streams those URLs and shows attribution in Settings. Offline download and App Store redistribution are still not covered by that note. See DESIGN.md §7.
@@ -105,7 +105,7 @@ For each implementation handoff, record changed files, commands run, results, ma
 The paid Individual team is active (`FUT64434V9`, `isFreeProvisioningTeam = 0`). As of 2026-11-15 the App ID can include CarPlay Audio. Do not delete the CarPlay source.
 
 - This Mac’s gitignored `Config/Signing.xcconfig` sets `QCP_CODE_SIGN_ENTITLEMENTS` to `App/QuranCarPlayer.entitlements`. Leave that override. The committed default in `Config/Shared.xcconfig` is still `App/QuranCarPlayerPhone.entitlements`, so a checkout without the local file does not request the entitlement. A 2026-11-14 device build, and the first 2026-11-15 device build, failed because the entitlement could not be included in the profile. A second 2026-11-15 build embedded profile `c2077eb7` with `com.apple.developer.carplay-audio` true.
-- That signed build is installed on the iPhone and was launched on 2026-11-15. Open CarPlay from Device Hub on the physical phone. Xcode 27 has no simulator I/O ▸ External Displays ▸ CarPlay menu. On 2026-11-15 `enableCarPlay` attached a 720×480 CarPlay screen to the iPhone 17 simulator, and that screen had no framebuffer. A car Home Screen was seen on 2026-11-07; QuranCarPlayer was absent. The 2026-11-15 simulator session showed the phone Surahs list only.
+- That signed build is installed on the iPhone. On 2026-11-15 Device Hub ▸ Device ▸ CarPlay Simulator connected to the plugged-in phone and showed a live car dashboard; the owner confirmed the manual test works. Xcode 27 has no simulator I/O ▸ External Displays ▸ CarPlay menu. `enableCarPlay` attached a 720×480 CarPlay screen to the iPhone 17 simulator with no framebuffer.
 - Run the in-car automatic-resume matrix (FEASIBILITY.md §1). Policy is unit-tested only. Two owner decisions remain: resume after a deliberate pause, and whether to skip resume when another app is playing.
 - List position: current `CPListTemplate` docs have no scroll API. Exact restoration is not possible with the public API. Any shortcut (for example a labelled Current Surah row) needs owner approval. Do not reorder the Quran list.
 - Lock screen, steering-wheel, and background audio on a real device are untested.
@@ -272,3 +272,19 @@ The paid Individual team is active (`FUT64434V9`, `isFreeProvisioningTeam = 0`).
 **Next concrete tasks**
 1. Open CarPlay from Device Hub while the phone is plugged in, or from the car while parked. The signed build is already installed and was launched. Look for the QuranCarPlayer icon and the Listen, Surahs, and Reciters templates. Do not treat a simulator picture as approval; the profile above is the approval.
 2. On the phone: lock-screen controls, background playback, and Retry after the network drops.
+
+### 2026-11-15 — CarPlay Simulator connected on the plugged-in iPhone
+
+**Changed:** documentation only.
+
+**Why:** the owner asked whether the CarPlay simulator can be tested with the phone plugged in and unlocked, then reported that the manual test works.
+
+**What was checked**
+- iPhone 15 Pro Max `00008130-001C6C2C14DA001C` was connected and unlocked. Device Hub was already showing that phone.
+- Device ▸ CarPlay Simulator opened a window titled “CarPlay Simulator - Yehia’s iPhone”. The toolbar read Connected. One captured frame was another audio app’s Home. The Home control then showed the car dashboard: Maps near King St W and Spadina Ave, and Now Playing reading “Not Playing”.
+- The owner confirmed the manual test works. This session did not walk the Listen, Surahs, and Reciters templates, and it did not exercise automatic resume.
+
+**Next concrete tasks**
+1. Walk Listen, Surahs, and Reciters on the car screen, including play, next, and return to the list.
+2. On the phone: lock-screen controls, background playback, and Retry after the network drops.
+3. Run the in-car automatic-resume matrix. Two owner decisions remain: resume after a deliberate pause, and whether to skip resume when another app is playing.
