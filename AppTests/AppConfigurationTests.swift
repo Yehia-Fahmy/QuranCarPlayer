@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 import Testing
 import QuranCarPlayerCore
 @testable import QuranCarPlayer
@@ -60,5 +61,81 @@ struct AppConfigurationTests {
         ])
         #expect(reciters.allSatisfy { $0.collection.isTestFixture == false })
         #expect(environment.coordinator.selectedReciter?.englishName == "Maher Al-Muaiqly")
+    }
+
+    @Test("Cleared reciters use portraits while Mishary and fixtures use typography")
+    @MainActor
+    func artworkSourcePolicy() throws {
+        let provider = ChapterArtworkProvider()
+        #expect(provider.sourceKind(for: ReciterID("mp3quran.maher")) == .licensedPortrait)
+        #expect(provider.sourceKind(for: ReciterID("mp3quran.sudais")) == .licensedPortrait)
+        #expect(provider.sourceKind(for: ReciterID("mp3quran.shuraim")) == .licensedPortrait)
+        #expect(provider.sourceKind(for: ReciterID("mp3quran.mishary")) == .typographyFallback)
+        #expect(provider.sourceKind(for: ReciterID("fixture.toneA")) == .typographyFallback)
+        #expect(UIImage(named: "ReciterMaher") != nil)
+        #expect(UIImage(named: "ReciterSudais") != nil)
+        #expect(UIImage(named: "ReciterShuraim") != nil)
+        #expect(UIImage(named: "ReciterMishary") == nil)
+    }
+
+    @Test("Artwork renders offline at list and Now Playing sizes")
+    @MainActor
+    func artworkRenders() throws {
+        let environment = AppEnvironment.shared
+        let surah = try #require(environment.coordinator.surahCatalog.surah(74))
+        let reciters = environment.coordinator.audioCatalog.reciters
+        let maher = try #require(reciters.first { $0.id == ReciterID("mp3quran.maher") })
+        let mishary = try #require(reciters.first { $0.id == ReciterID("mp3quran.mishary") })
+
+        let portrait = environment.artworkProvider.image(
+            for: surah,
+            reciter: maher,
+            language: .english,
+            size: CGSize(width: 96, height: 96)
+        )
+        let fallback = environment.artworkProvider.image(
+            for: surah,
+            reciter: mishary,
+            language: .arabic,
+            size: CGSize(width: 1_024, height: 1_024)
+        )
+        let portraitEnglish = environment.artworkProvider.image(
+            for: surah,
+            reciter: maher,
+            language: .english,
+            size: CGSize(width: 1_024, height: 1_024)
+        )
+        let portraitArabic = environment.artworkProvider.image(
+            for: surah,
+            reciter: maher,
+            language: .arabic,
+            size: CGSize(width: 1_024, height: 1_024)
+        )
+        #expect(portrait.size == CGSize(width: 96, height: 96))
+        #expect(fallback.size == CGSize(width: 1_024, height: 1_024))
+        #expect(portrait.pngData() != fallback.pngData())
+        #expect(portraitEnglish.pngData() != portraitArabic.pngData())
+
+        let nowPlaying = environment.artworkProvider.nowPlayingArtwork(
+            for: surah,
+            reciter: maher,
+            language: .english
+        )
+        #expect(nowPlaying.bounds.size == CGSize(width: 1_024, height: 1_024))
+        let commonSize = try #require(nowPlaying.image(at: CGSize(width: 256, height: 256)))
+        let customSize = try #require(nowPlaying.image(at: CGSize(width: 300, height: 300)))
+        #expect(commonSize.size == CGSize(width: 256, height: 256))
+        #expect(customSize.size == CGSize(width: 300, height: 300))
+    }
+
+    @Test("Every bundled portrait has a source and license record")
+    @MainActor
+    func artworkAttributionComplete() {
+        #expect(ChapterArtworkProvider.attributions.map(\.id) == [
+            "mp3quran.maher", "mp3quran.sudais", "mp3quran.shuraim",
+        ])
+        #expect(ChapterArtworkProvider.attributions.allSatisfy {
+            $0.sourceURL.scheme == "https" && $0.licenseURL.scheme == "https"
+        })
     }
 }

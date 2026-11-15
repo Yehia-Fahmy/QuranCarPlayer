@@ -49,6 +49,27 @@ struct SettingsView: View {
                 }
             }
 
+            Section(L10n.string("settings.artwork", language)) {
+                Text(verbatim: L10n.string("settings.artwork.footer", language))
+                    .font(.footnote)
+                ForEach(ChapterArtworkProvider.attributions) { attribution in
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(verbatim: attribution.title)
+                            .font(.subheadline)
+                        Text(verbatim: attribution.detail)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        HStack {
+                            Link(L10n.string("settings.artwork.source", language),
+                                 destination: attribution.sourceURL)
+                            Link(L10n.string("settings.artwork.license", language),
+                                 destination: attribution.licenseURL)
+                        }
+                        .font(.caption)
+                    }
+                }
+            }
+
             if let downloadManager,
                !coordinator.audioCatalog.reciters.allSatisfy({ $0.collection.isTestFixture }) {
                 Section {

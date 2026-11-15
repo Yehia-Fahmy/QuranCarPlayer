@@ -8,7 +8,8 @@ struct QuranCarPlayerApp: App {
             // Production composition lives in `AppEnvironment`; the phone and CarPlay scenes
             // both read from this single instance so there is exactly one playback session.
             RootView(coordinator: AppEnvironment.shared.coordinator,
-                     downloadManager: AppEnvironment.shared.downloadManager)
+                     downloadManager: AppEnvironment.shared.downloadManager,
+                     artworkProvider: AppEnvironment.shared.artworkProvider)
         }
     }
 }

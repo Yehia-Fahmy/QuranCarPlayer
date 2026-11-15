@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		0B16234D88E0544E6D614BB3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7D40A3383B22775E91CD8972 /* Assets.xcassets */; };
+		10A31E61B5414E9A9D51A001 /* ChapterArtworkProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A31E61B5414E9A9D51A002 /* ChapterArtworkProvider.swift */; };
 		1D8094950C274AF9D58FB544 /* test-tone-c.m4a in Resources */ = {isa = PBXBuildFile; fileRef = 3BAA5917EA15E4B613E4A185 /* test-tone-c.m4a */; };
 		215764A7729E414C28841734 /* ReciterListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC13DB91DD918016C8150294 /* ReciterListView.swift */; };
 		2BC59633A6B99CBF1638C53E /* test-tone-b.m4a in Resources */ = {isa = PBXBuildFile; fileRef = 78B577F87AB849C7050A269F /* test-tone-b.m4a */; };
@@ -46,6 +47,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		10A31E61B5414E9A9D51A002 /* ChapterArtworkProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChapterArtworkProvider.swift; sourceTree = "<group>"; };
 		171D7667ED419A97C1622BC2 /* CarPlaySceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlaySceneDelegate.swift; sourceTree = "<group>"; };
 		2045B3812E8826F3983EAA31 /* QuranCarPlayerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuranCarPlayerApp.swift; sourceTree = "<group>"; };
 		33317718FAC06656AF85AFB9 /* PhonePlaybackUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhonePlaybackUITests.swift; sourceTree = "<group>"; };
@@ -90,6 +92,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		10A31E61B5414E9A9D51A003 /* Artwork */ = {
+			isa = PBXGroup;
+			children = (
+				10A31E61B5414E9A9D51A002 /* ChapterArtworkProvider.swift */,
+			);
+			path = Artwork;
+			sourceTree = "<group>";
+		};
 		2373A8EBAD01AF01FD9ED967 /* Phone */ = {
 			isa = PBXGroup;
 			children = (
@@ -139,6 +149,7 @@
 		668C1F9AD6D1DE0F8B055DFA /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				10A31E61B5414E9A9D51A003 /* Artwork */,
 				95AEFF4AC0CEC40AF9FB7003 /* CarPlay */,
 				2373A8EBAD01AF01FD9ED967 /* Phone */,
 				C838F095302A9BF10886F972 /* AppEnvironment.swift */,
@@ -336,6 +347,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				10A31E61B5414E9A9D51A001 /* ChapterArtworkProvider.swift in Sources */,
 				85AD30F4CDC7920C3FBE5E59 /* AppEnvironment.swift in Sources */,
 				6B860D115F5926B8D0B796AD /* CarPlaySceneDelegate.swift in Sources */,
 				FEE2126612294D6CDCABD746 /* CarPlayTemplateController.swift in Sources */,

@@ -5,6 +5,7 @@ import QuranCarPlayerCore
 struct PlayerView: View {
     let coordinator: PlaybackCoordinator
     let downloadManager: AudioDownloadManager?
+    let artworkProvider: ChapterArtworkProvider
     @Environment(\.dismiss) private var dismiss
 
     @State private var isScrubbing = false
@@ -21,6 +22,21 @@ struct PlayerView: View {
                 }
 
                 Spacer(minLength: 0)
+
+                if let surah = coordinator.currentSurah {
+                    Image(uiImage: artworkProvider.image(
+                        for: surah,
+                        reciter: coordinator.currentReciter,
+                        language: language,
+                        size: CGSize(width: 640, height: 640)
+                    ))
+                    .resizable()
+                    .scaledToFit()
+                    .frame(maxWidth: 280, maxHeight: 280)
+                    .clipShape(RoundedRectangle(cornerRadius: 18))
+                    .shadow(color: .black.opacity(0.16), radius: 12, y: 6)
+                    .accessibilityHidden(true)
+                }
 
                 VStack(spacing: 8) {
                     if let surah = coordinator.currentSurah {
