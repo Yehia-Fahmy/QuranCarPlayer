@@ -121,6 +121,12 @@
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Remove Download" } }
       }
     },
+    "download.remove.confirm" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "إزالة تنزيل" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Remove download for" } }
+      }
+    },
     "download.failed" : {
       "localizations" : {
         "ar" : { "stringUnit" : { "state" : "translated", "value" : "تعذّر التنزيل" } },
@@ -307,6 +313,60 @@
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Downloads" } }
       }
     },
+    "downloads.manage" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "إدارة التنزيلات" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Manage Downloads" } }
+      }
+    },
+    "downloads.manage.hint" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "عرض التسجيلات المحفوظة والتنزيلات الجارية" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "View saved recordings and active downloads" } }
+      }
+    },
+    "downloads.empty.title" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "لا توجد تنزيلات" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No Downloads" } }
+      }
+    },
+    "downloads.empty.description" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "افتح سورة في شاشة التشغيل الآن لتنزيلها والاستماع إليها دون اتصال." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Open a surah in Now Playing to download it for offline listening." } }
+      }
+    },
+    "downloads.active" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "نشطة" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Active" } }
+      }
+    },
+    "downloads.totalStorage" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "إجمالي مساحة التخزين" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Total Storage" } }
+      }
+    },
+    "downloads.itemCount" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "الملفات المحفوظة: %d" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Saved files: %d" } }
+      }
+    },
+    "downloads.itemSize" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "حجم التنزيل" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Download size" } }
+      }
+    },
+    "downloads.unknownReciter" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "قارئ غير متاح (%@)" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Unavailable reciter (%@)" } }
+      }
+    },
     "downloads.saved" : {
       "localizations" : {
         "ar" : { "stringUnit" : { "state" : "translated", "value" : "المحفوظ على الجهاز" } },
@@ -319,6 +379,12 @@
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Remove All Downloads" } }
       }
     },
+    "downloads.removeAll.short" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "مسح الكل" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Clear All" } }
+      }
+    },
     "downloads.removeAll.confirm" : {
       "localizations" : {
         "ar" : { "stringUnit" : { "state" : "translated", "value" : "هل تريد إزالة جميع الملفات الصوتية التي تم تنزيلها؟" } },
@@ -329,6 +395,30 @@
       "localizations" : {
         "ar" : { "stringUnit" : { "state" : "translated", "value" : "تُحفظ التنزيلات على هذا الجهاز ولا تُضمّن في النسخ الاحتياطية. يستمر البث تلقائيًا عند عدم وجود ملف محفوظ." } },
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Downloads stay on this device and are excluded from backups. Streaming remains available automatically when no saved file exists." } }
+      }
+    },
+    "downloads.cleanupFailed" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "تعذّرت إزالة بعض التنزيلات. حاول مرة أخرى." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Some downloads could not be removed. Try again." } }
+      }
+    },
+    "downloads.error.network" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "فشل التنزيل. تحقق من الاتصال وحاول مرة أخرى." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Download failed. Check your connection and try again." } }
+      }
+    },
+    "downloads.error.storage" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "تعذّر حفظ الملف أو إزالته." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "The file could not be saved or removed." } }
+      }
+    },
+    "downloads.error.unavailable" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "هذا التسجيل غير متاح للتنزيل." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "This recording is unavailable for download." } }
       }
     },
     "settings.about" : {

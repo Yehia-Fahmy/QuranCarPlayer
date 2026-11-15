@@ -4,7 +4,6 @@ import QuranCarPlayerCore
 struct SettingsView: View {
     let coordinator: PlaybackCoordinator
     let downloadManager: AudioDownloadManager?
-    @State private var confirmRemoveAll = false
 
     private var language: ResolvedLanguage { coordinator.snapshot.language.resolved() }
 
@@ -73,12 +72,12 @@ struct SettingsView: View {
             if let downloadManager,
                !coordinator.audioCatalog.reciters.allSatisfy({ $0.collection.isTestFixture }) {
                 Section {
-                    LabeledContent(L10n.string("downloads.saved", language),
-                                   value: downloadSummary)
-                    Button(L10n.string("downloads.removeAll", language), role: .destructive) {
-                        confirmRemoveAll = true
+                    NavigationLink {
+                        DownloadsView(coordinator: coordinator, downloadManager: downloadManager)
+                    } label: {
+                        LabeledContent(L10n.string("downloads.manage", language),
+                                       value: downloadSummary)
                     }
-                    .disabled(downloadManager.storageSummary.fileCount == 0)
                 } header: {
                     Text(verbatim: L10n.string("downloads.title", language))
                 } footer: {
@@ -92,14 +91,6 @@ struct SettingsView: View {
         }
         .navigationTitle(L10n.string("settings.title", language))
         .navigationBarTitleDisplayMode(.inline)
-        .confirmationDialog(L10n.string("downloads.removeAll.confirm", language),
-                            isPresented: $confirmRemoveAll,
-                            titleVisibility: .visible) {
-            Button(L10n.string("downloads.removeAll", language), role: .destructive) {
-                downloadManager?.removeAll()
-            }
-            Button(L10n.string("player.cancel", language), role: .cancel) {}
-        }
     }
 
     private var versionString: String {

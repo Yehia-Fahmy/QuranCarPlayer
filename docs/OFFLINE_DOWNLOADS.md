@@ -3,8 +3,22 @@
 QuranCarPlayer supports user-initiated, per-surah downloads on the iPhone. Open a surah in
 Now Playing and choose **Download for Offline**. The control shows determinate progress when the
 server provides a content length, supports cancellation and retry, and changes to
-**Available Offline** when installation succeeds. Its menu removes that recording. Settings shows
-the stored file count and size and can remove all downloads.
+**Available Offline** when installation succeeds. Its menu removes that recording.
+
+The Surahs screen has a Downloads toolbar button, and Settings has a **Manage Downloads** row. The
+dedicated screen rebuilds its inventory from app-owned files, so saved items remain visible without
+a network connection or a separate database. Files from a collection no longer present in the
+current catalog remain removable and are labeled with their stored collection identity. Legacy
+PR #2 paths are migrated to collision-free structured paths on launch. The screen shows:
+
+- active transfers and failures with localized progress or error state;
+- the surah and reciter for every item;
+- per-recording size, total file count, and total storage;
+- cancel, retry, and per-item remove actions when appropriate;
+- confirmed **Clear All**, an empty state, and cleanup failure feedback.
+
+The screen follows the app's English/Arabic setting, including right-to-left layout, Dynamic Type,
+and explicit accessibility labels for progress, size, and management controls.
 
 ## Playback and storage behavior
 
@@ -33,7 +47,8 @@ current terms or obtain permission before publicly shipping offline downloads.
 ## Verification
 
 Core tests cover atomic persistent storage, rejection and cleanup of incomplete files, exact-recording
-local resolution, streaming fallback, successful download state, and failures. Run:
+local resolution, streaming fallback, successful download state, failures, and rebuilding the
+management inventory with exact per-item sizes. Run:
 
 ```sh
 Scripts/test-core.sh
