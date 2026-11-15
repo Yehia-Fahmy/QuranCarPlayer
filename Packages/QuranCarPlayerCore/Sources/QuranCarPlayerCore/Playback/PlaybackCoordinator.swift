@@ -47,6 +47,7 @@ public final class PlaybackCoordinator {
     @ObservationIgnored private let clock: Clock
     @ObservationIgnored private let sessionStore: SessionStore
     @ObservationIgnored private let settingsStore: SettingsStore
+    @ObservationIgnored private let downloadedAudioResolver: DownloadedAudioResolving?
 
     // MARK: Observable state
 
@@ -58,6 +59,8 @@ public final class PlaybackCoordinator {
     /// Engine item that is allowed to affect state. Nil means nothing is loaded
     /// (lazy load on play) or the loaded item is considered dead.
     @ObservationIgnored private var currentItemID: EngineItemID?
+    @ObservationIgnored private var currentItemUsesDownloadedAudio = false
+    @ObservationIgnored private var bypassDownloadedAudioForCurrentRecording = false
     @ObservationIgnored private var hasHandledEnd = false
     @ObservationIgnored private var isSessionCompleted = false
 
@@ -82,7 +85,8 @@ public final class PlaybackCoordinator {
                 defaultReciter: ReciterID,
                 clock: Clock = SystemClock(),
                 retryPolicy: RetryPolicy = RetryPolicy(),
-                checkpointInterval: TimeInterval = 5) {
+                checkpointInterval: TimeInterval = 5,
+                downloadedAudioResolver: DownloadedAudioResolving? = nil) {
         self.surahCatalog = surahCatalog
         self.audioCatalog = audioCatalog
         self.engine = engine
@@ -92,6 +96,7 @@ public final class PlaybackCoordinator {
         self.clock = clock
         self.retryPolicy = retryPolicy
         self.checkpointInterval = checkpointInterval
+        self.downloadedAudioResolver = downloadedAudioResolver
 
         var loadedSettings = settingsStore.load() ?? AppSettings(preferredReciter: defaultReciter)
         if audioCatalog.reciter(loadedSettings.preferredReciter) == nil {
@@ -212,7 +217,10 @@ public final class PlaybackCoordinator {
             snapshot.intent = .play
             snapshot.pauseReason = nil
             if currentItemID == nil {
-                load(recording: recording, startAt: snapshot.elapsed, intent: .play)
+                load(recording: recording,
+                     startAt: snapshot.elapsed,
+                     intent: .play,
+                     allowDownloadedAudio: !bypassDownloadedAudioForCurrentRecording)
             } else {
                 engine.play()
                 if snapshot.transport == .paused { snapshot.transport = .playing }
@@ -366,19 +374,27 @@ public final class PlaybackCoordinator {
         currentItemID = nil
         engine.stop()
         if wasActive, let recording = snapshot.currentRecording {
-            load(recording: recording, startAt: snapshot.elapsed, intent: .play)
+            load(recording: recording,
+                 startAt: snapshot.elapsed,
+                 intent: .play,
+                 allowDownloadedAudio: !bypassDownloadedAudioForCurrentRecording)
         }
     }
 
     // MARK: Loading
 
     /// Single entry point for every selection. Each call invalidates all prior engine callbacks.
-    private func load(recording: RecordingID, startAt: TimeInterval, intent: PlaybackIntent) {
+    private func load(recording: RecordingID,
+                      startAt: TimeInterval,
+                      intent: PlaybackIntent,
+                      allowDownloadedAudio: Bool = true) {
         cancelRetry()
         resetRetryState()
         hasHandledEnd = false
         isSessionCompleted = false
         currentItemID = nil
+        currentItemUsesDownloadedAudio = false
+        bypassDownloadedAudioForCurrentRecording = !allowDownloadedAudio
 
         snapshot.currentRecording = recording
         snapshot.elapsed = max(0, startAt)
@@ -388,7 +404,9 @@ public final class PlaybackCoordinator {
 
         let source: RecordingSource
         do {
-            source = try audioCatalog.source(for: recording)
+            let resolution = try resolvedSource(for: recording)
+            source = resolution.source
+            currentItemUsesDownloadedAudio = resolution.isDownloaded
         } catch {
             engine.stop()
             snapshot.isTestAudio = false
@@ -421,10 +439,16 @@ public final class PlaybackCoordinator {
                 checkpoint(force: true)
                 return
             }
-            load(recording: recording, startAt: 0, intent: snapshot.intent)
+            load(recording: recording,
+                 startAt: 0,
+                 intent: snapshot.intent,
+                 allowDownloadedAudio: !bypassDownloadedAudioForCurrentRecording)
         default:
             let intent: PlaybackIntent = snapshot.isActivelyPlaying ? .play : .pause
-            load(recording: recording, startAt: 0, intent: intent)
+            load(recording: recording,
+                 startAt: 0,
+                 intent: intent,
+                 allowDownloadedAudio: !bypassDownloadedAudioForCurrentRecording)
         }
     }
 
@@ -559,6 +583,10 @@ public final class PlaybackCoordinator {
     // MARK: Failure and retry
 
     private func handleFailure(_ failure: EngineFailure) {
+        if currentItemUsesDownloadedAudio {
+            fallBackToStreaming(afterLocalFailure: failure)
+            return
+        }
         let reason: PlaybackFailureReason
         switch failure.kind {
         case .network: reason = .networkUnavailable
@@ -569,6 +597,37 @@ public final class PlaybackCoordinator {
         if snapshot.intent == .play, failure.isRetriable {
             scheduleRetry(position: snapshot.elapsed, killItem: true, exhaustedReason: reason)
         } else {
+            fail(with: reason, position: snapshot.elapsed)
+        }
+    }
+
+    private func fallBackToStreaming(afterLocalFailure failure: EngineFailure) {
+        guard let recording = snapshot.currentRecording else { return }
+        currentItemID = nil
+        currentItemUsesDownloadedAudio = false
+        bypassDownloadedAudioForCurrentRecording = true
+        engine.stop()
+        downloadedAudioResolver?.invalidateDownloadedAudio(for: recording)
+        do {
+            let remote = try audioCatalog.source(for: recording)
+            guard snapshot.intent == .play else {
+                snapshot.transport = .paused
+                checkpoint(force: true)
+                return
+            }
+            let item = EngineItem(url: remote.url, startAt: snapshot.elapsed)
+            currentItemID = item.id
+            engine.load(item)
+            snapshot.transport = .loading
+            checkpoint(force: true)
+        } catch {
+            let reason: PlaybackFailureReason
+            switch failure.kind {
+            case .network: reason = .networkUnavailable
+            case .missingRecording: reason = .recordingUnavailable
+            case .notPermitted: reason = .notPermitted
+            case .unknown: reason = .unknown(failure.message)
+            }
             fail(with: reason, position: snapshot.elapsed)
         }
     }
@@ -608,8 +667,9 @@ public final class PlaybackCoordinator {
         guard snapshot.intent == .play, case .retrying = snapshot.transport, let recording = snapshot.currentRecording else { return }
         hasHandledEnd = false
         do {
-            let source = try audioCatalog.source(for: recording)
-            let item = EngineItem(url: source.url, startAt: retryResumePosition)
+            let source = try resolvedSource(for: recording)
+            let item = EngineItem(url: source.source.url, startAt: retryResumePosition)
+            currentItemUsesDownloadedAudio = source.isDownloaded
             currentItemID = item.id
             snapshot.elapsed = retryResumePosition
             engine.load(item)
@@ -630,6 +690,17 @@ public final class PlaybackCoordinator {
     private func resetRetryState() {
         retryAttempt = 0
         firstFailureDate = nil
+    }
+
+    /// Prefer a verified app-owned file for this exact recording, preserving the catalog URL as
+    /// a streaming fallback when no local file exists.
+    private func resolvedSource(for recording: RecordingID) throws -> (source: RecordingSource, isDownloaded: Bool) {
+        let remote = try audioCatalog.source(for: recording)
+        guard !bypassDownloadedAudioForCurrentRecording,
+              let localURL = downloadedAudioResolver?.localURL(for: recording) else {
+            return (remote, false)
+        }
+        return (RecordingSource(id: recording, url: localURL, isTestFixture: remote.isTestFixture), true)
     }
 
     // MARK: Checkpoints

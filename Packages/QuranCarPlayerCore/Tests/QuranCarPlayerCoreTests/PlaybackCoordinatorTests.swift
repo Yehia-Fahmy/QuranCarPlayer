@@ -20,6 +20,37 @@ struct SelectionTests {
         #expect(h.engine.commands.isEmpty, "play with nothing selected must not start arbitrary audio")
     }
 
+    @Test("Playback prefers an exact downloaded recording and otherwise streams")
+    func downloadedSourcePreference() throws {
+        let downloaded = URL(fileURLWithPath: "/downloads/018.audio")
+        let resolver = StubDownloadedAudioResolver(urls: [Fixtures.recording(18): downloaded])
+        let h = try Harness(downloadedAudioResolver: resolver)
+
+        h.coordinator.selectSurah(18)
+        #expect(h.engine.currentItem?.url == downloaded)
+
+        h.coordinator.selectSurah(19)
+        #expect(h.engine.currentItem?.url == Fixtures.toneURLs[(19 - 1) % 3],
+                "missing local media must retain the catalog streaming fallback")
+    }
+
+    @Test("An unusable downloaded file falls back to streaming once")
+    func invalidDownloadedSourceFallsBack() throws {
+        let downloaded = URL(fileURLWithPath: "/downloads/018.audio")
+        let resolver = StubDownloadedAudioResolver(urls: [Fixtures.recording(18): downloaded])
+        let h = try Harness(downloadedAudioResolver: resolver)
+
+        h.coordinator.selectSurah(18)
+        h.engine.failCurrent(.missingRecording)
+
+        #expect(h.snapshot.transport == .loading)
+        #expect(h.engine.currentItem?.url == Fixtures.toneURLs[(18 - 1) % 3])
+        h.engine.failCurrent(.missingRecording)
+        #expect(h.snapshot.transport == .failed(
+            PlaybackFailure(recording: Fixtures.recording(18), reason: .recordingUnavailable)
+        ))
+    }
+
     @Test("Scenario 1: selecting surah 18 loads it at zero with the selected reciter and plays")
     func selectSurahPlaysFromZero() throws {
         let h = try Harness()

@@ -23,7 +23,7 @@ Success means a user can perform ordinary listening tasks with the phone locked 
 - Next skips to the next surah. Previous restarts the current surah when more than three seconds in; otherwise it goes to the previous surah.
 - Briefly retry interrupted streaming; retain position and offer Retry if recovery fails. Never silently skip surahs or substitute reciters.
 - System / English / العربية language setting, initially following the phone. Apply to phone and CarPlay, including names. Arabic uses right-to-left layout.
-- Listening only. Quran text, translations, memorization, verse repeat, Siri selection, downloads, and custom playlists are outside v1.
+- Listening only. Quran text, translations, memorization, verse repeat, Siri selection, and custom playlists are outside v1. Per-surah offline downloads were added later as an explicit scope extension; see `OFFLINE_DOWNLOADS.md`.
 
 ## 3. Proposed defaults to make implementation concrete
 
@@ -136,7 +136,7 @@ Use IDs rather than localized names as keys. Recording identity includes provide
 
 Inject catalog, player abstraction, clock/retry scheduler, and persistence for deterministic behavior tests. Keep production composition in the app entry point. A CarPlay scene disconnect must not destroy the global session or lose progress.
 
-Future downloads should slot behind an audio-source resolver choosing verified local media or a remote URL for the same RecordingID. Do not implement a download database, background transfers, or storage management in v1. Future Siri selection requires a separate feasibility and Arabic-name recognition investigation.
+Offline downloads slot behind an audio-source resolver choosing verified local media or a remote URL for the same RecordingID. The implemented first version uses file presence as its durable index, foreground transfers, per-file removal, and remove-all storage management; it does not claim background transfers. See `OFFLINE_DOWNLOADS.md`. Future Siri selection requires a separate feasibility and Arabic-name recognition investigation.
 
 ## 9. Privacy and release readiness
 

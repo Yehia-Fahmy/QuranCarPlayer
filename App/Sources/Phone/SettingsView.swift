@@ -3,6 +3,8 @@ import QuranCarPlayerCore
 
 struct SettingsView: View {
     let coordinator: PlaybackCoordinator
+    let downloadManager: AudioDownloadManager?
+    @State private var confirmRemoveAll = false
 
     private var language: ResolvedLanguage { coordinator.snapshot.language.resolved() }
 
@@ -32,7 +34,12 @@ struct SettingsView: View {
 
             Section(L10n.string("settings.source", language)) {
                 let usesTestTones = coordinator.audioCatalog.reciters.allSatisfy { $0.collection.isTestFixture }
-                Text(verbatim: L10n.string(usesTestTones ? "settings.source.fixture" : "settings.source.mp3quran", language))
+                let sourceKey = usesTestTones
+                    ? "settings.source.fixture"
+                    : (downloadManager == nil
+                       ? "settings.source.mp3quran.streamingOnly"
+                       : "settings.source.mp3quran")
+                Text(verbatim: L10n.string(sourceKey, language))
                     .font(.footnote)
                 ForEach(coordinator.audioCatalog.reciters) { reciter in
                     VStack(alignment: .leading, spacing: 2) {
@@ -42,17 +49,47 @@ struct SettingsView: View {
                 }
             }
 
+            if let downloadManager,
+               !coordinator.audioCatalog.reciters.allSatisfy({ $0.collection.isTestFixture }) {
+                Section {
+                    LabeledContent(L10n.string("downloads.saved", language),
+                                   value: downloadSummary)
+                    Button(L10n.string("downloads.removeAll", language), role: .destructive) {
+                        confirmRemoveAll = true
+                    }
+                    .disabled(downloadManager.storageSummary.fileCount == 0)
+                } header: {
+                    Text(verbatim: L10n.string("downloads.title", language))
+                } footer: {
+                    Text(verbatim: L10n.string("downloads.footer", language))
+                }
+            }
+
             Section(L10n.string("settings.about", language)) {
                 LabeledContent(L10n.string("settings.version", language), value: versionString)
             }
         }
         .navigationTitle(L10n.string("settings.title", language))
         .navigationBarTitleDisplayMode(.inline)
+        .confirmationDialog(L10n.string("downloads.removeAll.confirm", language),
+                            isPresented: $confirmRemoveAll,
+                            titleVisibility: .visible) {
+            Button(L10n.string("downloads.removeAll", language), role: .destructive) {
+                downloadManager?.removeAll()
+            }
+            Button(L10n.string("player.cancel", language), role: .cancel) {}
+        }
     }
 
     private var versionString: String {
         let short = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "?"
         let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "?"
         return "\(short) (\(build))"
+    }
+
+    private var downloadSummary: String {
+        guard let summary = downloadManager?.storageSummary else { return "" }
+        let bytes = ByteCountFormatter.string(fromByteCount: summary.byteCount, countStyle: .file)
+        return "\(summary.fileCount) · \(bytes)"
     }
 }

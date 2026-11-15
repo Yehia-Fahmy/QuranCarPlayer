@@ -8,6 +8,7 @@ final class AppEnvironment {
     static let shared = AppEnvironment()
 
     let coordinator: PlaybackCoordinator
+    let downloadManager: AudioDownloadManager?
     let engine: AVPlayerEngine
     let nowPlaying: NowPlayingBridge
     let audioSession: AudioSessionController
@@ -65,13 +66,26 @@ final class AppEnvironment {
 
         let engine = AVPlayerEngine()
         self.engine = engine
+        let downloadStore: AudioDownloadFileStore?
+        if isUITest {
+            let directory = FileManager.default.temporaryDirectory
+                .appendingPathComponent("QuranCarPlayer-UI-Downloads", isDirectory: true)
+            try? FileManager.default.removeItem(at: directory)
+            downloadStore = try? AudioDownloadFileStore(rootDirectory: directory)
+        } else {
+            downloadStore = try? AudioDownloadFileStore.applicationSupport()
+        }
+        downloadManager = downloadStore.map {
+            AudioDownloadManager(catalog: audioCatalog, store: $0)
+        }
         coordinator = PlaybackCoordinator(surahCatalog: surahCatalog,
                                           audioCatalog: audioCatalog,
                                           engine: engine,
                                           scheduler: DispatchWorkScheduler(),
                                           sessionStore: sessionStore,
                                           settingsStore: settingsStore,
-                                          defaultReciter: defaultReciter)
+                                          defaultReciter: defaultReciter,
+                                          downloadedAudioResolver: downloadStore)
         nowPlaying = NowPlayingBridge(coordinator: coordinator) { language in
             NowPlayingLabels(testAudioNotice: L10n.string("testAudio.short", language))
         }

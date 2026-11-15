@@ -4,6 +4,7 @@ import QuranCarPlayerCore
 /// Phone root: surah list with a compact player, reciter picker, and settings.
 struct RootView: View {
     let coordinator: PlaybackCoordinator
+    let downloadManager: AudioDownloadManager?
     @State private var showPlayer = false
     @State private var showSettings = false
     @State private var showReciters = false
@@ -38,7 +39,7 @@ struct RootView: View {
                 }
         }
         .sheet(isPresented: $showPlayer) {
-            PlayerView(coordinator: coordinator)
+            PlayerView(coordinator: coordinator, downloadManager: downloadManager)
         }
         .sheet(isPresented: $showReciters) {
             NavigationStack {
@@ -53,7 +54,7 @@ struct RootView: View {
         }
         .sheet(isPresented: $showSettings) {
             NavigationStack {
-                SettingsView(coordinator: coordinator)
+                SettingsView(coordinator: coordinator, downloadManager: downloadManager)
                     .toolbar {
                         ToolbarItem(placement: .confirmationAction) {
                             Button(L10n.string("player.done", language)) { showSettings = false }

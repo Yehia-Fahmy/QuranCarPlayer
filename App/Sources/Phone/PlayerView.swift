@@ -4,6 +4,7 @@ import QuranCarPlayerCore
 /// Full playback screen: title, reciter, status, seek slider, transport controls.
 struct PlayerView: View {
     let coordinator: PlaybackCoordinator
+    let downloadManager: AudioDownloadManager?
     @Environment(\.dismiss) private var dismiss
 
     @State private var isScrubbing = false
@@ -44,6 +45,14 @@ struct PlayerView: View {
                 .padding(.horizontal)
 
                 statusView(snapshot)
+
+                if let downloadManager,
+                   let recording = snapshot.currentRecording,
+                   downloadManager.canDownload(recording) {
+                    RecordingDownloadControl(downloadManager: downloadManager,
+                                             recording: recording,
+                                             language: language)
+                }
 
                 seekView(snapshot)
 
@@ -156,6 +165,73 @@ struct PlayerView: View {
             }
             .disabled(!snapshot.canSkipForward)
             .accessibilityLabel(L10n.string("player.next", language))
+        }
+    }
+}
+
+private struct RecordingDownloadControl: View {
+    let downloadManager: AudioDownloadManager
+    let recording: RecordingID
+    let language: ResolvedLanguage
+
+    var body: some View {
+        switch downloadManager.state(for: recording) {
+        case .notDownloaded:
+            Button {
+                downloadManager.download(recording)
+            } label: {
+                Label(L10n.string("download.action", language), systemImage: "arrow.down.circle")
+            }
+            .buttonStyle(.bordered)
+
+        case .downloading(let progress):
+            VStack(spacing: 8) {
+                HStack(spacing: 8) {
+                    if let progress {
+                        ProgressView(value: progress)
+                            .frame(maxWidth: 180)
+                        Text(verbatim: "\(Int((progress * 100).rounded()))%")
+                            .font(.caption.monospacedDigit())
+                            .foregroundStyle(.secondary)
+                    } else {
+                        ProgressView()
+                        Text(verbatim: L10n.string("download.downloading", language))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                Button(L10n.string("player.cancel", language), role: .cancel) {
+                    downloadManager.cancel(recording)
+                }
+                .font(.caption)
+            }
+            .accessibilityElement(children: .combine)
+
+        case .downloaded:
+            Menu {
+                Button(L10n.string("download.remove", language), role: .destructive) {
+                    downloadManager.remove(recording)
+                }
+            } label: {
+                Label(L10n.string("download.availableOffline", language),
+                      systemImage: "checkmark.circle.fill")
+            }
+            .buttonStyle(.bordered)
+            .tint(.green)
+
+        case .failed:
+            VStack(spacing: 8) {
+                Label(L10n.string("download.failed", language),
+                      systemImage: "exclamationmark.triangle.fill")
+                    .font(.caption)
+                    .foregroundStyle(.orange)
+                Button {
+                    downloadManager.download(recording)
+                } label: {
+                    Label(L10n.string("player.retry", language), systemImage: "arrow.clockwise")
+                }
+                .buttonStyle(.bordered)
+            }
         }
     }
 }
