@@ -73,7 +73,7 @@ Phone UI tests pass `-QCPUITestReset`. `AppEnvironment` then uses in-memory stor
 previous test's language or reciter does not leak. Do not pass that argument for a normal launch.
 
 ### CarPlay in the simulator
-Apple's documented path (checked 2026-11-07): with the app running in the iOS simulator, choose **I/O ▸ External Displays ▸ CarPlay**. Xcode 27.2 does not ship `Simulator.app` at the old Developer/Applications path; DeviceHub (`Xcode.app/Contents/Applications/DeviceHub.app`) is the device UI. Record the exact successful menu path for this Xcode in ENVIRONMENT.md once the CarPlay window is opened. The CarPlay Simulator cannot establish real connection/auto-resume behaviour.
+Apple's documented path (checked 2026-11-07): with the app running in the iOS simulator, choose **I/O ▸ External Displays ▸ CarPlay**. Xcode 27.2 does not ship `Simulator.app` at the old Developer/Applications path; DeviceHub (`Xcode.app/Contents/Applications/DeviceHub.app`) is the device UI. On 2026-11-15 that menu was not present for a simulator. `SimDevice enableCarPlay:error:` attached a 720×480 CarPlay screen, and `simctl io screenshot` of it timed out with no surface. Device Hub’s CarPlay plugin requires a physical iPhone. A simulator picture is not entitlement approval. The CarPlay Simulator cannot establish real connection/auto-resume behaviour.
 
 ### Device builds
 1. Copy `Config/Signing.xcconfig.example` to `Config/Signing.xcconfig` (gitignored) and set
@@ -91,6 +91,7 @@ Apple's documented path (checked 2026-11-07): with the app running in the iOS si
    has the capability.
    On the afternoon of 2026-11-14, after the owner reported that paid membership was approved, Xcode still listed only Personal Team `FUT64434V9` (`isFreeProvisioningTeam = 1`). The CarPlay entitlements file was not selected. A device build with the phone entitlements and `-allowProvisioningUpdates` succeeded and reused the seven-day profile `32f7f1ea` (created 2026-11-14 17:30:50Z). That build is not a CarPlay test.
    Later the same day, after the owner signed out and back in, the same team ID was `teamType` Individual and `isFreeProvisioningTeam = 0`. One device build with `QCP_CODE_SIGN_ENTITLEMENTS = App/QuranCarPlayer.entitlements` failed: `Entitlement com.apple.developer.carplay-audio not found and could not be included in profile.` The override was removed. Phone builds again use the empty entitlements file.
+   On 2026-11-15 the first device build with the CarPlay entitlements failed with that same error. A later `-allowProvisioningUpdates` build succeeded and embedded profile `c2077eb7`, which contains `com.apple.developer.carplay-audio`. This Mac’s gitignored `Signing.xcconfig` now keeps `QCP_CODE_SIGN_ENTITLEMENTS = App/QuranCarPlayer.entitlements`. The committed default is still the empty phone file.
 4. Build and install:
 
 ```sh

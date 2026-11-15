@@ -9,11 +9,11 @@ Legend for evidence tags used below: **[macOS-tested]** verified by `Scripts/tes
 - [x] Establish the Xcode toolchain, app project, shared scheme, simulator, and device signing.
   - [x] App project, shared scheme, entitlements, Info.plist scene manifest, signing xcconfig mechanism.
   - [x] Xcode 27.2 (27B52), iOS SDK 27.2, iOS Simulator runtime 27.2 (24B8117). Simulator **build succeeded**; **5/5 app tests passed** on iPhone 17 (2026-11-07).
-  - [x] Device signing **[device, 2026-11-14]**. Current Apple ID is `yehia.fahmy@uwaterloo.ca`, Individual team `FUT64434V9` (`isFreeProvisioningTeam = 0`; earlier the same day this ID was still the free Personal Team). Bundle ID is `com.yehiafahmy.QuranCarPlayerApp` because `com.yehiafahmy.QuranCarPlayer` is registered to the previous iCloud Personal Team and cannot be reused. The owner trusted the new certificate, and launch showed the Surahs list with Maher Al-Muaiqly selected. Phone builds still use `App/QuranCarPlayerPhone.entitlements`. A later CarPlay signing attempt failed because `com.apple.developer.carplay-audio` is not on the App ID, and that override was reverted.
-- [ ] Verify/request CarPlay audio entitlement through the owner's account. **[blocked: owner]** Instructions in ENVIRONMENT.md "Owner actions".
+  - [x] Device signing **[device, 2026-11-14]**. Current Apple ID is `yehia.fahmy@uwaterloo.ca`, Individual team `FUT64434V9` (`isFreeProvisioningTeam = 0`; earlier the same day this ID was still the free Personal Team). Bundle ID is `com.yehiafahmy.QuranCarPlayerApp` because `com.yehiafahmy.QuranCarPlayer` is registered to the previous iCloud Personal Team and cannot be reused. The owner trusted the new certificate, and launch showed the Surahs list with Maher Al-Muaiqly selected. Phone builds used `App/QuranCarPlayerPhone.entitlements` after a 2026-11-14 CarPlay signing attempt failed. On 2026-11-15 this Mac’s gitignored signing file points at `App/QuranCarPlayer.entitlements` again, and a device build embedded that entitlement.
+- [x] Verify/request CarPlay audio entitlement through the owner's account. **[device, 2026-11-15]** Profile `c2077eb7` includes `com.apple.developer.carplay-audio`. Details in ENVIRONMENT.md.
 - [ ] Build a small native CarPlay list and Now Playing prototype with test-owned audio.
   - [x] Written and **[simulator-built]**: `CarPlaySceneDelegate`, `CarPlayTemplateController`, test tones bundled. App-bundle test confirms the CarPlay scene delegate class resolves at runtime.
-  - [ ] Shown in CarPlay Simulator (I/O ▸ External Displays ▸ CarPlay not yet opened on this Mac).
+  - [ ] Shown in CarPlay. On 2026-11-15 the iPhone 17 simulator launched the phone UI. Xcode 27 Device Hub has no I/O ▸ External Displays ▸ CarPlay for a simulator, and the attached CarPlay screen produced no framebuffer. The icon and Listen/Surahs/Reciters templates were not seen.
 - [ ] Test 114-item browsing, native playing indicators, returning to a list, tab switching, reconnecting, and list-position restoration using public APIs. **Documentation finding (FEASIBILITY.md §2): no public scroll/position API on `CPListTemplate`.** Runtime behaviour untested.
 - [ ] Test automatic resume in all lifecycle cases listed in DESIGN.md. Resolve the manually-paused-session and other-audio-app policies with the owner using findings. Policy implemented and unit-tested (FEASIBILITY.md §1) **[macOS-tested]**; in-car matrix **[blocked: Xcode, device, car]**; two owner decisions open.
 - [x] Verify production audio provider permissions, attribution, and the four candidate recording collections. **2026-11-07:** MP3Quran v3 returned complete Hafs murattal collections for Maher Al-Muaiqly (moshaf 102), Mishary Rashid Alafasy (123), Abdul Rahman Al-Sudais (54), and Saud Al-Shuraim (31). Their copyright note allows use of site links. The app streams those URLs and shows attribution in Settings. Offline download and App Store redistribution are still not covered by that note. See DESIGN.md §7.
@@ -42,7 +42,7 @@ Exit: a new user can select a surah, change reciter, pause, resume, seek, and ch
 
 ## Milestone 3 — CarPlay interface
 
-- [ ] Native Listen / Surahs / Reciters templates and native Now Playing. **[simulator-built]**; not shown in CarPlay Simulator.
+- [ ] Native Listen / Surahs / Reciters templates and native Now Playing. **[simulator-built]**; not shown. A 2026-11-15 attempt to open a CarPlay display for the iPhone 17 simulator produced no picture.
 - [ ] Shared state synchronization across phone, car, and remote controls. One coordinator in `AppEnvironment.shared` **[simulator-tested]** by composition-root test. Car/remote surfaces untested.
 - [ ] Implement proven list-position behavior; obtain owner agreement for any fallback. See FEASIBILITY.md §2; owner decision pending after prototype.
 - [ ] Implement validated automatic resume policy and car-disconnection pause. Policy **[macOS-tested]**; validation in car pending.
@@ -102,10 +102,10 @@ For each implementation handoff, record changed files, commands run, results, ma
 
 ## Open: CarPlay (future agent)
 
-The paid Individual team is active (`FUT64434V9`, `isFreeProvisioningTeam = 0`). Leave the remaining items until Apple has attached CarPlay Audio to the App ID. Do not delete the CarPlay source to make the phone build succeed.
+The paid Individual team is active (`FUT64434V9`, `isFreeProvisioningTeam = 0`). As of 2026-11-15 the App ID can include CarPlay Audio. Do not delete the CarPlay source.
 
-- Switch `QCP_CODE_SIGN_ENTITLEMENTS` from `App/QuranCarPlayerPhone.entitlements` (current, empty) to `App/QuranCarPlayer.entitlements` (`com.apple.developer.carplay-audio`) only after the capability is enabled on the App ID. A 2026-11-14 device build with that file failed because the entitlement could not be included in the profile. Adding the Boolean does not grant the capability.
-- Install the signed app on the iPhone and confirm the icon appears in CarPlay Simulator. On this Mac, Xcode 27 uses Device Hub with the physical iPhone over USB (window title like "Yehia's iPhone / Standard"). The old Simulator menu I/O ▸ External Displays ▸ CarPlay is not the path that worked here. A car Home Screen was seen on 2026-11-07; QuranCarPlayer was absent because it was not installed and a free Personal Team cannot sign the CarPlay entitlement.
+- This Mac’s gitignored `Config/Signing.xcconfig` sets `QCP_CODE_SIGN_ENTITLEMENTS` to `App/QuranCarPlayer.entitlements`. Leave that override. The committed default in `Config/Shared.xcconfig` is still `App/QuranCarPlayerPhone.entitlements`, so a checkout without the local file does not request the entitlement. A 2026-11-14 device build, and the first 2026-11-15 device build, failed because the entitlement could not be included in the profile. A second 2026-11-15 build embedded profile `c2077eb7` with `com.apple.developer.carplay-audio` true.
+- Install that signed build on the iPhone and open CarPlay from Device Hub on the physical phone. Xcode 27 has no simulator I/O ▸ External Displays ▸ CarPlay menu. On 2026-11-15 `enableCarPlay` attached a 720×480 CarPlay screen to the iPhone 17 simulator, and that screen had no framebuffer. A car Home Screen was seen on 2026-11-07; QuranCarPlayer was absent. The 2026-11-15 simulator session showed the phone Surahs list only.
 - Run the in-car automatic-resume matrix (FEASIBILITY.md §1). Policy is unit-tested only. Two owner decisions remain: resume after a deliberate pause, and whether to skip resume when another app is playing.
 - List position: current `CPListTemplate` docs have no scroll API. Exact restoration is not possible with the public API. Any shortcut (for example a labelled Current Surah row) needs owner approval. Do not reorder the Quran list.
 - Lock screen, steering-wheel, and background audio on a real device are untested.
@@ -251,3 +251,23 @@ The paid Individual team is active (`FUT64434V9`, `isFreeProvisioningTeam = 0`).
 **Next concrete tasks**
 1. Owner, as Account Holder: request CarPlay Audio at https://developer.apple.com/contact/carplay/ (app type Audio) for `com.yehiafahmy.QuranCarPlayerApp`. After Apple grants it, enable CarPlay Audio on that App ID, then point `QCP_CODE_SIGN_ENTITLEMENTS` at `App/QuranCarPlayer.entitlements` and install on the iPhone.
 2. On the phone, with the current install: lock-screen controls, background playback, and Retry after the network drops.
+
+### 2026-11-15 — CarPlay Audio is in the profile; the simulator showed no CarPlay window
+
+**Changed:** documentation, plus the gitignored `Config/Signing.xcconfig` on this Mac. `QCP_CODE_SIGN_ENTITLEMENTS` stays `App/QuranCarPlayer.entitlements`. Team `FUT64434V9` and bundle ID `com.yehiafahmy.QuranCarPlayerApp` are unchanged. The committed default in `Config/Shared.xcconfig` is still the empty phone entitlements file. `Config/Signing.xcconfig` is not committed.
+
+**Why:** the owner asked for a fresh check of whether Apple had granted CarPlay Audio, and for a simulator launch. A successful device sign whose embedded profile contains `com.apple.developer.carplay-audio` is the approval evidence. A simulator picture is not.
+
+**What was checked**
+- `IDEProvisioningTeamByIdentifier` is still one paid Individual team: `FUT64434V9`, “YEHIA WALEED FAHMY”, `isFreeProvisioningTeam = 0`.
+- The iPhone 15 Pro Max (`00008130-001C6C2C14DA001C`) was connected. It was used for signing only. The new build was not installed, and Device Hub on that phone was not driven.
+
+**Commands run and results**
+- First `xcodebuild -project QuranCarPlayer.xcodeproj -scheme QuranCarPlayer -destination 'platform=iOS,id=00008130-001C6C2C14DA001C' -allowProvisioningUpdates -derivedDataPath /tmp/QuranCarPlayer-CarPlayCheck-Device build` → **BUILD FAILED**. Exact error: `Entitlement com.apple.developer.carplay-audio not found and could not be included in profile. This likely is not a valid entitlement and should be removed from your entitlements file.`
+- Later the same morning, the same destination and `-allowProvisioningUpdates` (`-derivedDataPath /tmp/QuranCarPlayer-CarPlayCheck-Device2`) → **BUILD SUCCEEDED**. Signed `Apple Development: yehia.fahmy@uwaterloo.ca (3S7S6J2RD8)`. Embedded profile UUID `c2077eb7-8387-4eac-bee5-316bb11be5cf`, created 2026-11-15 15:38:16Z, expires 2027-11-15 15:38:16Z. `security cms -D` on `embedded.mobileprovision` shows `com.apple.developer.carplay-audio` true for `FUT64434V9.com.yehiafahmy.QuranCarPlayerApp`. `codesign -d --entitlements` shows the same key.
+- Simulator build for iPhone 17 (`6A7BEB9D-5E0D-455D-A67E-B920AFC202FE`, iOS 27.2) → **BUILD SUCCEEDED**. Installed and launched `com.yehiafahmy.QuranCarPlayerApp`. The framebuffer was the Surahs list, “Reciter: Maher Al-Muaiqly”, starting at Al-Fatihah. The simulator ad-hoc signature’s entitlements plist was empty.
+- `simctl` has no CarPlay subcommand. `SimDevice enableCarPlay:error:` succeeded and enumerated a Wireless screen, type CarPlay, 720×480. `simctl io screenshot` of that display timed out waiting for a surface. A host window bound to the screen stayed black. Device Hub has no I/O ▸ External Displays menu for a simulator; its CarPlay plugin requires a physical iPhone. The QuranCarPlayer icon and the Listen/Surahs/Reciters templates were not seen.
+
+**Next concrete tasks**
+1. Install this signed build on the iPhone and open CarPlay from Device Hub while the phone is plugged in, or from the car while parked. Look for the QuranCarPlayer icon and the Listen, Surahs, and Reciters templates. Do not treat a simulator picture as approval; the profile above is the approval.
+2. On the phone: lock-screen controls, background playback, and Retry after the network drops.

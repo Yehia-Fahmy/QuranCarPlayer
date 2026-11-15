@@ -2,7 +2,7 @@
 
 A planned iPhone Quran audio player designed primarily for easy surah and reciter selection through Apple CarPlay. Initially for personal use, with a future free App Store release.
 
-**Status (November 14, 2026): the phone app streams four Hafs recitations and has played them on the owner's iPhone.** Signing uses `yehia.fahmy@uwaterloo.ca`, paid Individual team `FUT64434V9` (`isFreeProvisioningTeam = 0`), and bundle ID `com.yehiafahmy.QuranCarPlayerApp`. A device build that requested `com.apple.developer.carplay-audio` failed because that capability is not on the App ID, so phone builds still omit it. CarPlay was not opened, and the icon was not seen. Core playback logic is unit-tested on macOS. Automated tests still use labelled synthetic tones. Lock-screen controls, background audio, the CarPlay entitlement, and in-car resume stay open. Offline downloads are not included.
+**Status (November 15, 2026): CarPlay Audio is on the development profile, and the phone app streams four Hafs recitations.** Signing uses `yehia.fahmy@uwaterloo.ca`, paid Individual team `FUT64434V9` (`isFreeProvisioningTeam = 0`), and bundle ID `com.yehiafahmy.QuranCarPlayerApp`. A device build with `-allowProvisioningUpdates` now embeds `com.apple.developer.carplay-audio` (profile `c2077eb7`). An earlier build the same morning still failed with the entitlement-not-in-profile error. The iPhone 17 simulator launched the Surahs list. Xcode 27's Device Hub did not open a CarPlay window for that simulator, so the icon and the Listen/Surahs/Reciters templates were not seen. A simulator framebuffer is not entitlement approval. Lock-screen controls, background audio, and in-car resume stay open. Offline downloads are not included.
 
 ## Start here
 
