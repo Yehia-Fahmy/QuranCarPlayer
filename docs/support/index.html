@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Support — Quran CarPlayer</title>
+  <meta name="description" content="Support for Quran CarPlayer by Yehia Fahmy">
+  <link rel="canonical" href="https://yehiafahmy.github.io/QuranCarPlayer/support/">
+  <style>
+:root {
+  color-scheme: light dark;
+  --bg: #f7f5f1;
+  --fg: #1c1b19;
+  --muted: #5c574f;
+  --link: #0b5fff;
+  --rule: #d9d3c8;
+  --card: #ffffffcc;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #121314;
+    --fg: #f3f1ec;
+    --muted: #b7b1a6;
+    --link: #8cb4ff;
+    --rule: #2c2e31;
+    --card: #1b1c1ecc;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  background:
+    radial-gradient(1200px 600px at 10% -10%, #e8efe8 0%, transparent 55%),
+    radial-gradient(900px 500px at 100% 0%, #efe6d8 0%, transparent 50%),
+    var(--bg);
+  color: var(--fg);
+  line-height: 1.55;
+}
+main {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: 2.5rem 1.25rem 4rem;
+}
+header {
+  margin-bottom: 1.75rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--rule);
+}
+header p {
+  margin: 0.25rem 0 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+nav {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin: 0 0 1.25rem;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 0.9rem;
+}
+a { color: var(--link); }
+h1 { font-size: 1.85rem; line-height: 1.2; margin: 0 0 0.5rem; }
+h2 { font-size: 1.25rem; margin-top: 1.75rem; }
+h3 { font-size: 1.05rem; margin-top: 1.25rem; }
+p, li { font-size: 1.02rem; }
+ul { padding-left: 1.2rem; }
+blockquote {
+  margin: 1rem 0;
+  padding: 0.75rem 1rem;
+  border-left: 3px solid var(--rule);
+  background: var(--card);
+  color: var(--muted);
+}
+footer {
+  margin-top: 2.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--rule);
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+</style>
+</head>
+<body>
+  <main>
+    <nav>
+      <a href="../privacy/">Privacy Policy</a>
+      <a href="../support/">Support</a>
+    </nav>
+    <article>
+<h1>Support — Quran CarPlayer</h1>
+<p><strong>App:</strong> Quran CarPlayer<br />
+<strong>Developer:</strong> Yehia Fahmy<br />
+<strong>Support email:</strong> <a href="mailto:support@yehiafahmy.com">support@yehiafahmy.com</a></p>
+<p>Thank you for using Quran CarPlayer — a free Quran audio player for iPhone with Apple CarPlay support. This page covers how to get help, common questions, and what the App does and does not include.</p>
+<h2>Contact</h2>
+<p>Email <strong><a href="mailto:support@yehiafahmy.com">support@yehiafahmy.com</a></strong> with:</p>
+<ul>
+<li>your iPhone model and iOS version,</li>
+<li>whether the issue is on <strong>iPhone</strong>, <strong>CarPlay</strong>, or both,</li>
+<li>what you expected vs what happened,</li>
+<li>the reciter and surah (if playback-related).</li>
+</ul>
+<p>We aim to reply as soon as practical. There is no in-app chat or account login.</p>
+<h2>What the app does</h2>
+<ul>
+<li>Stream complete <strong>Hafs Murattal</strong> Quran recitations from MP3Quran over HTTPS.</li>
+<li>Optionally <strong>download</strong> surahs you choose for offline listening.</li>
+<li>Continue listening from a local on-device checkpoint.</li>
+<li>Use the App on iPhone and with <strong>Apple CarPlay®</strong> (Audio).</li>
+<li>Switch UI language between system default, English, and Arabic.</li>
+</ul>
+<h2>What the app does not include (v1)</h2>
+<ul>
+<li>Accounts, cloud sync, or social features</li>
+<li>Ads, in-app purchases, or subscriptions</li>
+<li>Analytics or advertising tracking SDKs</li>
+<li>Microphone, location, contacts, photos, or camera access</li>
+</ul>
+<h2>Getting started</h2>
+<ol>
+<li>Open <strong>Quran CarPlayer</strong> on iPhone.</li>
+<li>Choose a <strong>reciter</strong>, then a <strong>surah</strong>, and press play.</li>
+<li>For CarPlay: connect your iPhone to a CarPlay-capable vehicle (or use Apple’s CarPlay Simulator / Device Hub tools during development). Launch Quran CarPlayer from the CarPlay home screen.</li>
+<li>Optional: download surahs from the phone UI for offline use (Downloads management is in Settings).</li>
+</ol>
+<h2>FAQ</h2>
+<h3>Why does the app need a network connection?</h3>
+<p>Streaming fetches audio from the MP3Quran CDN. Offline playback works only for surahs you have already downloaded. The reciter list itself is bundled in the App, but audio files are not all preloaded.</p>
+<h3>How do offline downloads work?</h3>
+<p>On iPhone, open <strong>Settings → Downloads</strong> (or the Downloads management entry in Settings). Download individual surahs, cancel in-progress transfers, retry failures, remove one file, or remove all. Downloads are stored only on your device and are excluded from iCloud backup. In Airplane Mode, previously downloaded surahs can play locally; undownloaded surahs need network streaming.</p>
+<h3>Does the app collect my personal data?</h3>
+<p>Preferences, listening progress, and downloads stay on your device. The developer does not run accounts or analytics backends. Streaming and download requests go to the audio CDN so the files can be delivered. See the <a href="../privacy/">Privacy Policy</a>.</p>
+<h3>Can I delete local data?</h3>
+<ul>
+<li>Remove offline audio in <strong>Downloads</strong>.</li>
+<li>Change or reset preferences in <strong>Settings</strong>.</li>
+<li>Delete the App from your iPhone to remove the App’s local data container on that device.</li>
+</ul>
+<h3>CarPlay: playback won’t start or resumes unexpectedly</h3>
+<ul>
+<li>Confirm CarPlay Audio entitlement builds are installed (development vs distribution profiles differ).</li>
+<li>If another audio app is already playing, Quran CarPlayer is designed <strong>not</strong> to steal audio when reconnecting.</li>
+<li>After you deliberately pause, the App is configured <strong>not</strong> to auto-resume merely because CarPlay reconnects.</li>
+<li>Try play again from the CarPlay Listen / Surahs / Reciters templates, or start playback on iPhone first.</li>
+</ul>
+<h3>CarPlay: I can’t find my place in the surah list</h3>
+<p>Exact scroll restoration is limited by CarPlay list APIs. Use the labeled <strong>Current Surah</strong> shortcut / selection when available, or open the current surah from Listen / Now Playing.</p>
+<h3>Audio stops, stalls, or fails to load</h3>
+<ul>
+<li>Check network connectivity for streaming.</li>
+<li>Retry from the failure alert when shown.</li>
+<li>Confirm the surah is downloaded if you expect offline playback.</li>
+<li>Force-quit and reopen the App, then try again.</li>
+<li>Email support with reciter, surah number, and whether you were streaming or offline.</li>
+</ul>
+<h3>Languages</h3>
+<p>The App supports English and Arabic strings. Choose <strong>System</strong>, <strong>English</strong>, or <strong>Arabic</strong> in Settings. Some reciter names and attributions may still appear in a mixed form depending on source metadata.</p>
+<h3>Attribution and audio source</h3>
+<p>Audio is streamed/downloaded from <strong>MP3Quran</strong> (mp3quran.net). Reciter portrait artwork (where shown) includes source and license links in Settings. The Quran text itself is not sold by this App; this product is an audio player.</p>
+<h3>Pricing</h3>
+<p>Quran CarPlayer is <strong>free</strong>. There are no subscriptions or in-app purchases in v1.</p>
+<h3>Privacy Policy</h3>
+<p>Read the full policy: <a href="../privacy/">Privacy Policy</a>.</p>
+<h2>Safety while driving</h2>
+<p>Use CarPlay controls that minimize distraction. Interact with complex settings on iPhone when it is safe and legal to do so. Follow local laws about device use while driving.</p>
+<h2>App Store &amp; feedback</h2>
+<p>If you contacted support about a bug, including your App version (Settings → About) helps. Feature requests are welcome at the same email; v1 scope stays focused on reliable listening, offline downloads, and CarPlay.</p>
+<p>© 2026 Yehia Fahmy<br />
+Apple CarPlay is a trademark of Apple Inc. Quran CarPlayer is not affiliated with or endorsed by Apple.</p>
+    </article>
+  </main>
+</body>
+</html>
