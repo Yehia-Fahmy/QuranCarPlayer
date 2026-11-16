@@ -29,6 +29,32 @@ struct AppConfigurationTests {
         #expect(modes.contains("audio"))
     }
 
+    @Test("App icon catalog merges into the bundle so CarPlay can resolve both scales")
+    func appIconEmbeddedForCarPlay() throws {
+        // actool merges CFBundleIcons from the AppIcon set into the processed
+        // Info.plist. If this dictionary is missing, CarPlay/SpringBoard fall back
+        // to stale cached icons and the large home-grid glyph can disagree with
+        // the small sidebar glyph.
+        let icons = try #require(bundle.object(forInfoDictionaryKey: "CFBundleIcons") as? [String: Any])
+        let primary = try #require(icons["CFBundlePrimaryIcon"] as? [String: Any])
+        #expect(primary["CFBundleIconName"] as? String == "AppIcon")
+        let files = try #require(primary["CFBundleIconFiles"] as? [String])
+        #expect(files.contains("AppIcon60x60"))
+
+        // Loose PNG emitted beside Assets.car for the phone primary icon.
+        let iconURL = try #require(bundle.url(forResource: "AppIcon60x60@2x", withExtension: "png"))
+        let size = try #require(try FileManager.default.attributesOfItem(atPath: iconURL.path)[.size] as? Int)
+        #expect(size > 1000)
+
+        // CarPlay 60pt @2x/@3x slots live in Assets.car; the catalog source files
+        // must exist in the app resources tree used to build that car.
+        let catalog = try #require(bundle.url(forResource: "Assets", withExtension: "car"))
+        let catalogSize = try #require(
+            try FileManager.default.attributesOfItem(atPath: catalog.path)[.size] as? Int
+        )
+        #expect(catalogSize > 100_000, "Assets.car should include AppIcon + artwork, not AccentColor alone")
+    }
+
     @Test("Test-tone fixtures are bundled and non-empty")
     func fixturesBundled() throws {
         for name in AppEnvironment.fixtureNames {

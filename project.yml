@@ -47,7 +47,7 @@ targets:
       properties:
         CFBundleDisplayName: QuranCarPlayer
         CFBundleShortVersionString: "0.1.0"
-        CFBundleVersion: "1"
+        CFBundleVersion: "2"
         CFBundleDevelopmentRegion: en
         CFBundleLocalizations: [en, ar]
         UILaunchScreen: {}
@@ -72,8 +72,12 @@ targets:
         CODE_SIGN_ENTITLEMENTS: $(QCP_CODE_SIGN_ENTITLEMENTS)
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        # Keep every AppIcon slot (including CarPlay 60pt @2x/@3x) in device-thinned
+        # bundles so the car home-screen/sidebar icons cannot fall back to a stale cache.
+        ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS: YES
         GENERATE_INFOPLIST_FILE: NO
         INFOPLIST_KEY_UIApplicationSceneManifest_Generation: NO
+        INFOPLIST_ENABLE_CFBUNDLEICONS_MERGE: YES
 
   QuranCarPlayerTests:
     type: bundle.unit-test
