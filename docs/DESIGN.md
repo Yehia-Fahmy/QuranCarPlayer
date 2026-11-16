@@ -31,7 +31,7 @@ These can be refined without reopening the core product concept:
 
 - Working app name: QuranCarPlayer; final branding remains open.
 - Default reciter: Maher Al-Muaiqly (ماهر المعيقلي).
-- Candidate additional reciters: Mishary Rashid Alafasy (مشاري العفاسي), Abdul Rahman Al-Sudais (عبد الرحمن السديس), and Saud Al-Shuraim (سعود الشريم). Inclusion depends on complete, permitted recordings; this is a curated shortlist, not a verified popularity ranking.
+- Bundled reciters: Maher Al-Muaiqly, Mishary Rashid Alafasy, Abdul Rahman Al-Sudais, Saud Al-Shuraim, Saad Al-Ghamdi, Mahmoud Khalil Al-Hussary, Mohammed Siddiq Al-Minshawi, Abdulbasit Abdulsamad, and Yasser Al-Dosari. This is a curated selection, not a verified popularity ranking.
 - Use one complete Hafs an Asim recording collection per reciter initially. Verify collection identity and all 114 recordings. Do not mix riwayat or collections implicitly.
 - No accounts, ads, payments, analytics SDK, cloud sync, or custom backend for v1. Free distribution does not itself settle audio usage rights.
 - Provisional deployment target: iOS 17+, subject to the owner's phone and actual SDK compatibility. Build with a stable Xcode version supported by the development Mac; record exact versions once installed.
@@ -117,7 +117,7 @@ Bundle canonical bilingual surah metadata from a verified, permitted source so b
 
 If provider terms remain unclear, keep implementation moving with test-owned audio and a mock catalog; production distribution remains blocked on the source decision.
 
-Reviewed 2026-11-07. The live v3 endpoint `https://mp3quran.net/api/v3/reciters` returned the four proposed reciters, each with one Hafs an Asim murattal moshaf whose `surah_list` is 1–114. Audio URLs are `{server}{surah as three digits}.mp3` using the `server` value from that response (HTTPS on `cdn.mp3quran.net`). Sample files for surahs 1, 2, 18, and 114 returned `audio/mpeg`. MP3Quran's English privacy page, copyrights section, says all rights are available to everyone and any visitor or developer may copy material or use any link on the site. The app streams those links and does not store the files. That sentence is not a separate written license for App Store redistribution or offline downloads; those stay out of scope until a clearer grant exists. Automated tests keep using the synthetic tones.
+Reviewed 2026-11-15. The live v3 endpoint `https://mp3quran.net/api/v3/reciters` returned all nine bundled reciters with the selected Hafs an Asim murattal moshaf reporting `surah_list` 1–114. Audio URLs are `{server}{surah as three digits}.mp3` using the `server` value from that response (HTTPS on `cdn.mp3quran.net`). Representative files returned `audio/mpeg` with byte-range support. MP3Quran's English privacy and contact pages say all rights are available to everyone and visitors or developers may copy material or use links on the site. That broad statement is not a conventional license that expressly distinguishes streaming from App Store offline distribution; retain dated evidence and seek clearer confirmation before public release. Automated tests keep using the synthetic tones.
 
 ## 8. Proposed architecture and data
 

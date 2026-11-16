@@ -5,14 +5,16 @@ public enum MP3QuranCatalogError: Error, Equatable {
     case invalidSnapshot(String)
 }
 
-/// Last-known-good snapshot of four complete Hafs murattal collections from
+/// Last-known-good snapshot of complete Hafs murattal collections from
 /// MP3Quran's public v3 reciters API. Audio is streamed from the `server`
-/// URL the API returned; files are not copied into the app.
+/// URL the API returned and can also be saved by the user through the app's
+/// offline-download manager.
 ///
-/// Retrieved 2026-11-07 from `https://mp3quran.net/api/v3/reciters`.
-/// Each chosen moshaf reports `surah_total` 114 and a surah list of 1...114.
+/// Retrieved 2026-11-15 from `https://mp3quran.net/api/v3/reciters`.
+/// Every chosen moshaf reports `surah_total` 114 and a surah list of 1...114.
 /// MP3Quran's published copyright note allows any visitor or developer to use
-/// links on the site. This catalog does not grant offline-download rights.
+/// links or copy material from the site. Preserve the provider evidence because
+/// it is a broad permission statement rather than a conventional license.
 public struct MP3QuranCatalog: AudioCatalog {
     public static let providerKey = "mp3quran"
     public static let defaultReciterID = ReciterID("mp3quran.maher")
@@ -35,12 +37,19 @@ public struct MP3QuranCatalog: AudioCatalog {
         var reciters: [Reciter] = []
         var servers: [RecordingCollectionID: URL] = [:]
         var seenIDs = Set<String>()
+        var seenCollections = Set<RecordingCollectionID>()
         for row in snapshot.reciters {
             guard seenIDs.insert(row.id).inserted else {
                 throw MP3QuranCatalogError.invalidSnapshot("duplicate reciter \(row.id)")
             }
             guard !row.arabicName.isEmpty, !row.englishName.isEmpty else {
                 throw MP3QuranCatalogError.invalidSnapshot("empty name for \(row.id)")
+            }
+            guard row.surahNumbers == Array(1...114) else {
+                throw MP3QuranCatalogError.invalidSnapshot("incomplete surah list for \(row.id)")
+            }
+            guard row.riwayah == "Hafs an Asim", row.style == "Murattal" else {
+                throw MP3QuranCatalogError.invalidSnapshot("unsupported collection type for \(row.id)")
             }
             guard let server = URL(string: row.server),
                   server.scheme == "https",
@@ -49,6 +58,9 @@ public struct MP3QuranCatalog: AudioCatalog {
                 throw MP3QuranCatalogError.invalidSnapshot("server must be an https directory URL: \(row.server)")
             }
             let collectionID = RecordingCollectionID(provider: MP3QuranCatalog.providerKey, collection: String(row.moshafId))
+            guard seenCollections.insert(collectionID).inserted else {
+                throw MP3QuranCatalogError.invalidSnapshot("duplicate collection \(row.moshafId)")
+            }
             let collection = RecordingCollection(
                 id: collectionID,
                 riwayah: "\(row.riwayah) · \(row.style)",
@@ -94,4 +106,5 @@ private struct Row: Decodable {
     let riwayah: String
     let style: String
     let server: String
+    let surahNumbers: [Int]
 }
