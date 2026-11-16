@@ -142,7 +142,8 @@ struct Harness {
          settings: AppSettings? = nil,
          unavailableSurahs: Set<Int> = [],
          retryPolicy: RetryPolicy = RetryPolicy(),
-         downloadedAudioResolver: DownloadedAudioResolving? = nil) throws {
+         downloadedAudioResolver: DownloadedAudioResolving? = nil,
+         isOtherAudioPlaying: @escaping () -> Bool = { false }) throws {
         sessionStore = InMemorySessionStore(checkpoint: savedSession.map { SessionCheckpoint(session: $0) })
         settingsStore = InMemorySettingsStore(settings: settings)
         catalog = FixtureAudioCatalog(fixtureURLs: Fixtures.toneURLs, unavailableSurahs: unavailableSurahs)
@@ -155,7 +156,8 @@ struct Harness {
                                           defaultReciter: FixtureAudioCatalog.defaultReciterID,
                                           clock: clock,
                                           retryPolicy: retryPolicy,
-                                          downloadedAudioResolver: downloadedAudioResolver)
+                                          downloadedAudioResolver: downloadedAudioResolver,
+                                          isOtherAudioPlaying: isOtherAudioPlaying)
     }
 
     var snapshot: PlaybackSnapshot { coordinator.snapshot }

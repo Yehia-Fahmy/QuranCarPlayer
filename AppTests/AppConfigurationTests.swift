@@ -29,6 +29,43 @@ struct AppConfigurationTests {
         #expect(modes.contains("audio"))
     }
 
+    @Test("Display name and marketing version match the 1.0 store candidate")
+    func displayNameAndVersion() throws {
+        #expect(bundle.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String == "Quran CarPlayer")
+        #expect(bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String == "1.0.0")
+        let build = try #require(bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String)
+        #expect((Int(build) ?? 0) >= 3)
+    }
+
+    @Test("Privacy manifest declares UserDefaults CA92.1 only")
+    func privacyManifestPresent() throws {
+        let url = try #require(bundle.url(forResource: "PrivacyInfo", withExtension: "xcprivacy"))
+        let data = try Data(contentsOf: url)
+        let plist = try #require(PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any])
+        #expect(plist["NSPrivacyTracking"] as? Bool == false)
+        let accessed = try #require(plist["NSPrivacyAccessedAPITypes"] as? [[String: Any]])
+        #expect(accessed.count == 1)
+        let entry = try #require(accessed.first)
+        #expect(entry["NSPrivacyAccessedAPIType"] as? String == "NSPrivacyAccessedAPICategoryUserDefaults")
+        #expect(entry["NSPrivacyAccessedAPITypeReasons"] as? [String] == ["CA92.1"])
+    }
+
+    @Test("Settings legal URLs are HTTPS placeholders Yehia can host")
+    func legalURLsConfigured() {
+        #expect(AppLegalURLs.privacyPolicy.scheme == "https")
+        #expect(AppLegalURLs.support.scheme == "https")
+        #expect(AppLegalURLs.privacyPolicy.host == "yehiafahmy.github.io")
+        #expect(AppLegalURLs.support.host == "yehiafahmy.github.io")
+        #expect(AppLegalURLs.privacyPolicy.path.contains("privacy"))
+        #expect(AppLegalURLs.support.path.contains("support"))
+        #expect(L10n.string("settings.privacyPolicy", .english) == "Privacy Policy")
+        #expect(L10n.string("settings.support", .english) == "Support")
+        #expect(L10n.string("settings.privacyPolicy", .arabic) == "سياسة الخصوصية")
+        #expect(L10n.string("settings.support", .arabic) == "الدعم")
+        #expect(L10n.string("surahs.current", .english) == "Current Surah")
+        #expect(L10n.string("app.title", .english) == "Quran CarPlayer")
+    }
+
     @Test("App icon catalog merges into the bundle so CarPlay can resolve both scales")
     func appIconEmbeddedForCarPlay() throws {
         // actool merges CFBundleIcons from the AppIcon set into the processed

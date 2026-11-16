@@ -10,8 +10,10 @@ public enum AutoResumeDecision: Equatable, Sendable {
     case skippedNoSession
     case skippedSessionCompleted
     case skippedFailed
-    /// Open policy decision (see DESIGN.md §6): a deliberately paused session is not auto-resumed.
+    /// Locked policy: a deliberately paused session is not auto-resumed on CarPlay reconnect.
     case skippedUserPaused
+    /// Locked policy: do not steal audio when another app is already playing.
+    case skippedOtherAudioPlaying
 }
 
 /// Token returned by `addObserver`. Observation stops when the token is deallocated or cancelled.
@@ -48,6 +50,8 @@ public final class PlaybackCoordinator {
     @ObservationIgnored private let sessionStore: SessionStore
     @ObservationIgnored private let settingsStore: SettingsStore
     @ObservationIgnored private let downloadedAudioResolver: DownloadedAudioResolving?
+    /// Platform probe for competing audio (e.g. `AVAudioSession.isOtherAudioPlaying`). Defaults to false.
+    @ObservationIgnored private let isOtherAudioPlaying: () -> Bool
 
     // MARK: Observable state
 
@@ -86,7 +90,8 @@ public final class PlaybackCoordinator {
                 clock: Clock = SystemClock(),
                 retryPolicy: RetryPolicy = RetryPolicy(),
                 checkpointInterval: TimeInterval = 5,
-                downloadedAudioResolver: DownloadedAudioResolving? = nil) {
+                downloadedAudioResolver: DownloadedAudioResolving? = nil,
+                isOtherAudioPlaying: @escaping () -> Bool = { false }) {
         self.surahCatalog = surahCatalog
         self.audioCatalog = audioCatalog
         self.engine = engine
@@ -97,6 +102,7 @@ public final class PlaybackCoordinator {
         self.retryPolicy = retryPolicy
         self.checkpointInterval = checkpointInterval
         self.downloadedAudioResolver = downloadedAudioResolver
+        self.isOtherAudioPlaying = isOtherAudioPlaying
 
         var loadedSettings = settingsStore.load() ?? AppSettings(preferredReciter: defaultReciter)
         if audioCatalog.reciter(loadedSettings.preferredReciter) == nil {
@@ -322,6 +328,7 @@ public final class PlaybackCoordinator {
         case .idle: return .skippedNoSession
         case .paused:
             if snapshot.pauseReason == .user { return .skippedUserPaused }
+            if isOtherAudioPlaying() { return .skippedOtherAudioPlaying }
             return .resume
         }
     }

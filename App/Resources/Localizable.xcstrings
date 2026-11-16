@@ -3,8 +3,8 @@
   "strings" : {
     "app.title" : {
       "localizations" : {
-        "ar" : { "stringUnit" : { "state" : "translated", "value" : "QuranCarPlayer" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "QuranCarPlayer" } }
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "Quran CarPlayer" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Quran CarPlayer" } }
       }
     },
     "surahs.title" : {
@@ -421,6 +421,24 @@
         "en" : { "stringUnit" : { "state" : "translated", "value" : "This recording is unavailable for download." } }
       }
     },
+    "settings.legal" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "الخصوصية والدعم" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Privacy & Support" } }
+      }
+    },
+    "settings.privacyPolicy" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "سياسة الخصوصية" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Privacy Policy" } }
+      }
+    },
+    "settings.support" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "الدعم" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Support" } }
+      }
+    },
     "settings.about" : {
       "localizations" : {
         "ar" : { "stringUnit" : { "state" : "translated", "value" : "حول التطبيق" } },
@@ -431,6 +449,12 @@
       "localizations" : {
         "ar" : { "stringUnit" : { "state" : "translated", "value" : "الإصدار" } },
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Version" } }
+      }
+    },
+    "surahs.current" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "السورة الحالية" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Current Surah" } }
       }
     },
     "carplay.listLimit" : {

@@ -37,12 +37,22 @@ and explicit accessibility labels for progress, size, and management controls.
 - Removing a file affects future loads. An already-open player item may continue until it is
   replaced; subsequent playback streams if the local file is gone.
 
-## Source permission caveat
+## Source permission (Phase 0 = A provisional)
 
-The code enables local storage but does not establish legal permission to distribute that feature.
-The provider review in `docs/DESIGN.md` found language permitting use of published links, but not a
-separate, explicit offline-download or App Store redistribution license. Confirm the provider's
-current terms or obtain permission before publicly shipping offline downloads.
+Offline downloads remain **enabled** for the 1.0 store candidate under a provisional Phase 0 = A
+decision: ship streaming + user-initiated offline copies while relying on MP3Quran’s published
+copyright/contact language that allows developers to copy material or use links, plus archived
+dated evidence for App Review. Residual Guideline 5.2 risk remains until a written MP3Quran reply
+arrives; do not gate downloads off unless that decision is reversed.
+
+**Public copyright evidence path (project store / App Review package):**
+
+`docs/app-store-connect/rights-evidence/`
+
+Dated captures include MP3Quran English privacy and contact pages (for example
+`2026-11-15-mp3quran-privacy-en.html` / `.excerpt.md` and the matching `eng-contact-us` /
+`eng-privacy` archives). Attach that package with App Review notes. Repo context:
+`docs/DESIGN.md` §7.
 
 ## Verification
 

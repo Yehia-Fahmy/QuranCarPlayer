@@ -367,7 +367,7 @@ struct ResumeTests {
         #expect(done.engine.commands.isEmpty)
     }
 
-    @Test("Auto-resume respects the setting and (open policy) a deliberate user pause")
+    @Test("Auto-resume respects the setting and a deliberate user pause")
     func autoResumePolicyGates() throws {
         let userPaused = PlaybackSession(recording: Fixtures.recording(18), elapsedSeconds: 40,
                                          checkpointDate: Date(), lastPauseReason: .user)
@@ -381,6 +381,16 @@ struct ResumeTests {
                               settings: AppSettings(preferredReciter: Fixtures.reciterA.id, automaticCarPlayResume: false))
         #expect(off.coordinator.carPlayDidConnect() == .skippedDisabled)
         #expect(off.engine.commands.isEmpty)
+    }
+
+    @Test("Auto-resume skips when another audio app is already playing")
+    func autoResumeSkipsOtherAudio() throws {
+        let disconnected = PlaybackSession(recording: Fixtures.recording(18), elapsedSeconds: 40,
+                                           checkpointDate: Date(), lastPauseReason: .carDisconnected)
+        let h = try Harness(savedSession: disconnected, isOtherAudioPlaying: { true })
+        #expect(h.coordinator.evaluateAutomaticResume() == .skippedOtherAudioPlaying)
+        #expect(h.coordinator.carPlayDidConnect() == .skippedOtherAudioPlaying)
+        #expect(h.engine.commands.isEmpty)
     }
 
     @Test("Scenario 11: car disconnect pauses, saves, cancels retry, and the next connect resumes")

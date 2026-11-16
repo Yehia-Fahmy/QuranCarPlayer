@@ -1,4 +1,5 @@
 import Foundation
+import AVFAudio
 import QuranCarPlayerCore
 
 /// Composition root. Wires the shared coordinator to the real AVPlayer engine,
@@ -86,7 +87,10 @@ final class AppEnvironment {
                                           sessionStore: sessionStore,
                                           settingsStore: settingsStore,
                                           defaultReciter: defaultReciter,
-                                          downloadedAudioResolver: downloadStore)
+                                          downloadedAudioResolver: downloadStore,
+                                          isOtherAudioPlaying: {
+                                              AVAudioSession.sharedInstance().isOtherAudioPlaying
+                                          })
         let artworkProvider = ChapterArtworkProvider()
         self.artworkProvider = artworkProvider
         nowPlaying = NowPlayingBridge(
