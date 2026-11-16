@@ -42,12 +42,14 @@ targets:
       - path: App/Sources
       - path: App/Resources
         # Audio fixtures are copied as plain bundle resources (not an asset catalog).
+      - path: App/PrivacyInfo.xcprivacy
+        buildPhase: resources
     info:
       path: App/Info.plist
       properties:
-        CFBundleDisplayName: QuranCarPlayer
-        CFBundleShortVersionString: "0.1.0"
-        CFBundleVersion: "2"
+        CFBundleDisplayName: "Quran CarPlayer"
+        CFBundleShortVersionString: "1.0.0"
+        CFBundleVersion: "3"
         CFBundleDevelopmentRegion: en
         CFBundleLocalizations: [en, ar]
         UILaunchScreen: {}

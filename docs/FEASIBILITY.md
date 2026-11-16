@@ -66,18 +66,21 @@ The prototype matrix from DESIGN.md §6 must be run in a real car and recorded h
 | Phone locked | not tested |
 | Wired vs. wireless CarPlay | not tested |
 | Previously playing when car turned off | not tested |
-| Previously paused by user | policy implemented as "do not resume"; owner decision pending |
-| Another audio app playing at connection | not tested; policy open |
+| Previously paused by user | not tested in car; **locked policy: do not resume** (unit-tested) |
+| Another audio app playing at connection | not tested in car; **locked policy: skip resume** via `AVAudioSession.isOtherAudioPlaying` (unit-tested) |
 | No saved session | implemented: never starts audio (unit-tested) |
 
-Two policy questions are deliberately left for the owner after the prototype:
-- **Manually paused session.** Current default: do not auto-resume. Alternative: resume anyway
-  because the car disconnecting is the natural "end of journey" signal. One-line change in
-  `evaluateAutomaticResume()`.
-- **Another app is playing.** Current default: no special handling (the system will interrupt
-  the other app when our session activates). Alternative: skip auto-resume when another
-  session is active (`AVAudioSession.secondaryAudioShouldBeSilencedHint` or
-  `isOtherAudioPlaying`), which keeps the car radio or a podcast playing.
+### Locked owner policies (16 November 2026)
+
+Recorded from launch assumptions; these are no longer open product questions:
+
+1. **Deliberate pause.** After a user pause (`PauseReason.user`), do **not** auto-resume on
+   CarPlay reconnect. Disconnection / route-loss / interruption pauses remain eligible.
+2. **Competing audio.** If another audio app is already playing when CarPlay connects, do
+   **not** steal audio; return `.skippedOtherAudioPlaying` and leave the other source alone.
+3. **List position.** Exact CarPlay scroll restore is impossible with public APIs. Use a
+   labeled **Current Surah** shortcut above the Quran-ordered Surahs list (Listen still has
+   Now Playing / Continue). Do not invent scroll offsets or reorder the mushaf list.
 
 ### Recommended next step
 Install Xcode, run on the owner's phone, and drive the matrix above. Log lines prefixed
@@ -100,23 +103,24 @@ Conclusion: **exact scroll restoration or programmatic positioning of the CarPla
 is not possible with public API** as documented today. This is a platform limitation, not a
 design choice, and the requirement has not been changed.
 
-### What is implemented [Untested]
+### What is implemented [Untested on device]
 - Template and `CPListItem` instances are created once per connection and kept
   (`CarPlayTemplateController`). State changes update items in place (`isPlaying`, text) and
-  only call `updateSections` when the header (selected reciter) or language changes. Whether
-  `updateSections` resets the scroll position is unknown and must be observed in the
+  call `updateSections` when the header (selected reciter), language, or current surah changes.
+  Whether `updateSections` resets the scroll position is unknown and must be observed in the
   prototype.
 - The current surah is marked with the native playing indicator so it is visually findable.
+- A labeled **Current Surah** shortcut section sits above the Quran-ordered Surahs list when a
+  current recording exists (locked fallback; not exact scroll restore).
 - `CPListTemplate.maximumItemCount` is read at connection time and logged. If it is below 114
   the list is limited to that count **and** an alert tells the user; the limit is never
-  applied silently.
+  applied silently. The Current Surah shortcut reserves one list slot when present.
 
-### Proposed fallback for owner review [Open]
-If the prototype confirms that returning to the Surahs tab resets scrolling, DESIGN.md's
-proposed fallback is a clearly labelled "Current surah" shortcut above the full list on the
-Listen tab (the "Now Playing" row already serves this on the Listen tab). The Quran order of
-the Surahs list is preserved. This shortcut does **not** satisfy exact scroll restoration and
-must not be reported as if it does.
+### Locked list-position fallback (16 November 2026)
+Exact scroll restoration remains impossible. The Surahs tab now shows a labeled
+**Current Surah** shortcut above the full Quran-ordered list when a current recording exists.
+The Listen tab still exposes Now Playing / Continue Listening. The shortcut does **not**
+satisfy exact scroll restoration and must not be reported as if it does.
 
 ### Phone [Untested]
 The SwiftUI list uses `ScrollViewReader.scrollTo(anchor)` with a stable surah number

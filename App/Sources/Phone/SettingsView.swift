@@ -85,6 +85,11 @@ struct SettingsView: View {
                 }
             }
 
+            Section(L10n.string("settings.legal", language)) {
+                Link(L10n.string("settings.privacyPolicy", language), destination: AppLegalURLs.privacyPolicy)
+                Link(L10n.string("settings.support", language), destination: AppLegalURLs.support)
+            }
+
             Section(L10n.string("settings.about", language)) {
                 LabeledContent(L10n.string("settings.version", language), value: versionString)
             }

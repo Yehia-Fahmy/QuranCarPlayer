@@ -68,3 +68,10 @@ Mishary Rashid Alafasy does **not** use a portrait. The available candidate did 
 - Notice: the adapted portrait remains available under CC BY-SA 4.0; no endorsement is implied.
 
 No portrait source should be added to the app bundle without a recorded source, license, attribution requirement, and likeness review.
+
+## Audio source review evidence
+
+Recitation audio is from MP3Quran. For App Review packaging (Phase 0 = A provisional: streaming +
+offline downloads enabled), dated public copyright/contact page captures live under the project
+App Store Connect package path `docs/app-store-connect/rights-evidence/` (see also
+`docs/OFFLINE_DOWNLOADS.md` and `docs/DESIGN.md` §7).

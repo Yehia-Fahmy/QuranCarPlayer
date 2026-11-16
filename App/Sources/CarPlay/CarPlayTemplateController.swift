@@ -58,7 +58,7 @@ final class CarPlayTemplateController: NSObject {
         listen.tabImage = UIImage(systemName: "play.circle")
         listenTemplate = listen
 
-        let surahs = CPListTemplate(title: L10n.string("surahs.title", language), sections: [surahSection()])
+        let surahs = CPListTemplate(title: L10n.string("surahs.title", language), sections: surahSections())
         surahs.tabImage = UIImage(systemName: "list.number")
         surahsTemplate = surahs
 
@@ -142,12 +142,36 @@ final class CarPlayTemplateController: NSObject {
         "\(surah.number). \(surah.displayName(for: language))"
     }
 
-    private func surahSection() -> CPListSection {
+    /// Surahs tab sections: optional Current Surah shortcut, then the Quran-ordered list.
+    /// Exact scroll restore is impossible with public `CPListTemplate` APIs; the shortcut is the locked fallback.
+    private func surahSections() -> [CPListSection] {
+        var sections: [CPListSection] = []
+        let maxItems = max(0, CPListTemplate.maximumItemCount)
+        var remaining = maxItems
+
+        if let surah = coordinator.currentSurah, remaining > 0 {
+            let item = CPListItem(text: L10n.string("surahs.current", language),
+                                  detailText: surahText(surah),
+                                  image: chapterImage(surah: surah, reciter: coordinator.currentReciter ?? coordinator.selectedReciter))
+            item.accessoryType = .disclosureIndicator
+            item.handler = { [weak self] _, completion in
+                guard let self else { completion(); return }
+                let expected = self.coordinator.selectedReciter.map {
+                    RecordingID(collection: $0.collection.id, surahNumber: surah.number)
+                }
+                self.beginSelection(expecting: expected, presentNowPlaying: true, completion: completion)
+                self.coordinator.selectSurah(surah.number)
+            }
+            sections.append(CPListSection(items: [item]))
+            remaining -= 1
+        }
+
         let header = coordinator.selectedReciter.map {
             "\(L10n.string("reciter.label", language)): \($0.displayName(for: language))"
         }
-        let visible = Array(surahItems.prefix(max(0, CPListTemplate.maximumItemCount)))
-        return CPListSection(items: visible, header: header, sectionIndexTitle: nil)
+        let visible = Array(surahItems.prefix(remaining))
+        sections.append(CPListSection(items: visible, header: header, sectionIndexTitle: nil))
+        return sections
     }
 
     private func reciterSection() -> CPListSection {
@@ -260,7 +284,9 @@ final class CarPlayTemplateController: NSObject {
                 guard let surah = coordinator.surahCatalog.surah(index + 1) else { continue }
                 item.setImage(chapterImage(surah: surah, reciter: coordinator.selectedReciter))
             }
-            surahsTemplate?.updateSections([surahSection()])
+            surahsTemplate?.updateSections(surahSections())
+        } else if previous?.currentSurahNumber != snapshot.currentSurahNumber {
+            surahsTemplate?.updateSections(surahSections())
         }
 
         // Listen tab reflects resume / now playing / failure state.
@@ -291,7 +317,7 @@ final class CarPlayTemplateController: NSObject {
         surahsTemplate?.tabTitle = L10n.string("surahs.title", language)
         recitersTemplate?.tabTitle = L10n.string("reciters.title", language)
         if let tabBar { tabBar.updateTemplates(tabBar.templates) }
-        surahsTemplate?.updateSections([surahSection()])
+        surahsTemplate?.updateSections(surahSections())
         recitersTemplate?.updateSections([reciterSection()])
         if let snapshot = lastSnapshot { listenTemplate?.updateSections([listenSection(snapshot)]) }
     }
