@@ -53,7 +53,7 @@ On iPhone, open **Settings → Downloads** (or the Downloads management entry in
 
 ### Does the app collect my personal data?
 
-Preferences, listening progress, and downloads stay on your device. The developer does not run accounts or analytics backends. Streaming and download requests go to the audio CDN so the files can be delivered. See the [Privacy Policy](./privacy-policy.md) (replace with your hosted privacy URL when publishing).
+Preferences, listening progress, and downloads stay on your device. The developer does not run accounts or analytics backends. Streaming and download requests go to the audio CDN so the files can be delivered. See the [Privacy Policy](https://yehiafahmy.github.io/QuranCarPlayer/privacy/).
 
 ### Can I delete local data?
 
@@ -94,7 +94,7 @@ Quran CarPlayer is **free**. There are no subscriptions or in-app purchases in v
 
 ### Privacy Policy
 
-Read the full policy: [Privacy Policy](./privacy-policy.md) (publish as HTTPS and update this link).
+Read the full policy: [Privacy Policy](https://yehiafahmy.github.io/QuranCarPlayer/privacy/).
 
 ## Safety while driving
 
