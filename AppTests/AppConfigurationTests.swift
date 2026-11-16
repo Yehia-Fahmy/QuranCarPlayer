@@ -54,8 +54,8 @@ struct AppConfigurationTests {
     func legalURLsConfigured() {
         #expect(AppLegalURLs.privacyPolicy.scheme == "https")
         #expect(AppLegalURLs.support.scheme == "https")
-        #expect(AppLegalURLs.privacyPolicy.host == "yehiafahmy.github.io")
-        #expect(AppLegalURLs.support.host == "yehiafahmy.github.io")
+        #expect(AppLegalURLs.privacyPolicy.host == "yehia-fahmy.github.io")
+        #expect(AppLegalURLs.support.host == "yehia-fahmy.github.io")
         #expect(AppLegalURLs.privacyPolicy.path.contains("privacy"))
         #expect(AppLegalURLs.support.path.contains("support"))
         #expect(L10n.string("settings.privacyPolicy", .english) == "Privacy Policy")

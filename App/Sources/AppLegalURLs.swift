@@ -6,9 +6,9 @@ import Foundation
 /// (source drafts: `docs/privacy-policy.md`, `docs/support-page.md`).
 enum AppLegalURLs {
     /// Privacy Policy — `docs/privacy/index.html` on GitHub Pages.
-    static let privacyPolicy = URL(string: "https://yehiafahmy.github.io/QuranCarPlayer/privacy/")!
+    static let privacyPolicy = URL(string: "https://yehia-fahmy.github.io/QuranCarPlayer/privacy/")!
 
     /// Support — `docs/support/index.html` on GitHub Pages.
     /// Contact email on that page: support@yehiafahmy.com
-    static let support = URL(string: "https://yehiafahmy.github.io/QuranCarPlayer/support/")!
+    static let support = URL(string: "https://yehia-fahmy.github.io/QuranCarPlayer/support/")!
 }
