@@ -47,9 +47,9 @@ targets:
     info:
       path: App/Info.plist
       properties:
-        CFBundleDisplayName: "Quran CarPlayer"
+        CFBundleDisplayName: "Tilawah Miles"
         CFBundleShortVersionString: "1.0.0"
-        CFBundleVersion: "3"
+        CFBundleVersion: "4"
         CFBundleDevelopmentRegion: en
         CFBundleLocalizations: [en, ar]
         UILaunchScreen: {}

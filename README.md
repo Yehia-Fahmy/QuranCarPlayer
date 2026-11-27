@@ -1,4 +1,4 @@
-# QuranCarPlayer
+# Tilawah Miles
 
 An iPhone Quran audio player with Apple CarPlay, nine Hafs recitations, and per-surah offline downloads.
 

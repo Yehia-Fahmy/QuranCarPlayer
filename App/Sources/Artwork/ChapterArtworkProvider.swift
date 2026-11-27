@@ -27,7 +27,7 @@ final class ChapterArtworkProvider {
         Attribution(
             id: "mp3quran.maher",
             title: "Maher Al-Muaiqly portrait",
-            detail: "Photo by Real avdulmouhd · CC BY-SA 4.0 · cropped and color-treated",
+            detail: "Photo by Real avdulmouhd · Adapted artwork licensed under CC BY-SA 4.0 · cropped and color-treated",
             sourceURL: URL(string: "https://commons.wikimedia.org/wiki/File:Professor_Maher_Al-Mu%27aiqly.jpg")!,
             licenseURL: URL(string: "https://creativecommons.org/licenses/by-sa/4.0/")!
         ),
@@ -48,7 +48,7 @@ final class ChapterArtworkProvider {
         Attribution(
             id: "mp3quran.saad",
             title: "Saad Al-Ghamdi portrait",
-            detail: "Photo by الشيخ هيثم الدخين · CC BY-SA 4.0 · reframed, resized, and color-treated",
+            detail: "Photo by الشيخ هيثم الدخين · Adapted artwork licensed under CC BY-SA 4.0 · reframed, resized, and color-treated",
             sourceURL: URL(string: "https://commons.wikimedia.org/wiki/File:Saad_al_Ghamdi.jpg")!,
             licenseURL: URL(string: "https://creativecommons.org/licenses/by-sa/4.0/")!
         ),
@@ -76,7 +76,7 @@ final class ChapterArtworkProvider {
         Attribution(
             id: "mp3quran.yasser",
             title: "Yasser Al-Dosari portrait",
-            detail: "Photo by MAL MALDIVE · CC BY-SA 4.0 · reframed, resized, and color-treated",
+            detail: "Photo by MAL MALDIVE · Adapted artwork licensed under CC BY-SA 4.0 · reframed, resized, and color-treated",
             sourceURL: URL(string: "https://commons.wikimedia.org/wiki/File:Yasser_Al-Dosari.jpg")!,
             licenseURL: URL(string: "https://creativecommons.org/licenses/by-sa/4.0/")!
         ),

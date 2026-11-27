@@ -37,10 +37,10 @@ struct AppConfigurationTests {
 
     @Test("Display name and marketing version match the 1.0 store candidate")
     func displayNameAndVersion() throws {
-        #expect(bundle.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String == "Quran CarPlayer")
+        #expect(bundle.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String == "Tilawah Miles")
         #expect(bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String == "1.0.0")
         let build = try #require(bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String)
-        #expect((Int(build) ?? 0) >= 3)
+        #expect((Int(build) ?? 0) >= 4)
     }
 
     @Test("Privacy manifest declares UserDefaults CA92.1 only")
@@ -69,7 +69,7 @@ struct AppConfigurationTests {
         #expect(L10n.string("settings.privacyPolicy", .arabic) == "سياسة الخصوصية")
         #expect(L10n.string("settings.support", .arabic) == "الدعم")
         #expect(L10n.string("surahs.current", .english) == "Current Surah")
-        #expect(L10n.string("app.title", .english) == "Quran CarPlayer")
+        #expect(L10n.string("app.title", .english) == "Tilawah Miles")
     }
 
     @Test("App icon catalog merges into the bundle so CarPlay can resolve both scales")

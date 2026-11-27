@@ -10,7 +10,7 @@ Mishary Rashid Alafasy does **not** use a portrait. The available candidate did 
 - Author: Real avdulmouhd
 - License: [Creative Commons Attribution-ShareAlike 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
 - Modification: cropped and color-treated; chapter labels and number added.
-- Notice: no endorsement by the subject or photographer is implied.
+- The adapted artwork is licensed under CC BY-SA 4.0. No endorsement by the subject or photographer is implied.
 
 ## Abdul Rahman Al-Sudais
 

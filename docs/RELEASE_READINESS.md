@@ -1,6 +1,6 @@
 # iPhone and CarPlay release record
 
-November 27, 2026 · version 1.0.0, build 3 · based on upstream `b91fe59`
+November 27, 2026 · implementation verification on version 1.0.0, build 3 · based on upstream `b91fe59`
 
 ## Changes and verification
 
@@ -14,6 +14,8 @@ November 27, 2026 · version 1.0.0, build 3 · based on upstream `b91fe59`
 
 ### Test runs
 
+Build 4, with the public display name and portrait credit updates, passed all 70 core tests and all 20 iPhone 17 simulator tests with zero skips, failures or runtime warnings in the simulator result.
+
 - **Core:** 70 tests in 11 suites passed twice in separate processes with `Scripts/test-core.sh`.
 - **iPhone 17 simulator, iOS 27.2:** all 20 app-bundle and UI tests passed with no runtime warnings.
 - **Release archive:** Xcode 27.2 produced and verified a development-signed device archive. Local App Store export reported that no matching iOS App Store provisioning profile was installed. The local signing keychain contained no valid Apple Distribution identity.
@@ -22,8 +24,8 @@ November 27, 2026 · version 1.0.0, build 3 · based on upstream `b91fe59`
 ## Decisions and acceptance before submission
 
 - **Distribution signing.** Use the owner's distribution-signing setup for `com.yehiafahmy.QuranCarPlayerApp`, with CarPlay Audio enabled in the App Store profile. Verify the exported build and provision a TestFlight release candidate.
-- **Public contact.** Supply a monitored address or restore mail delivery for `support@yehiafahmy.com`. Verify delivery and the published privacy and support links before submitting.
-- **Name and territories.** Confirm a public name given the CarPlay trademark concern. Choose launch territories. Mainland China requires an Internet Religious Information Permit for religious content. Confirm trader status for EU distribution. [Apple trademark guidance](https://www.apple.com/legal/intellectual-property/guidelinesfor3rdparties.html) · [Storefront requirements](https://developer.apple.com/help/app-store-connect/reference/app-information/app-and-compliance-information/)
-- **Media rights and privacy answers.** Review the provider's permission for the nine collections, including persistent offline copies in the selected territories. Confirm portrait rights in those territories. Establish the audio CDN's retention of IP addresses and recording requests before attesting to the App Store privacy answers. [Dated provider evidence](app-store-connect/rights-evidence/mp3quran-2026-11-27.md) · [Apple privacy criteria](https://developer.apple.com/app-store/app-privacy-details/)
+- **Public contact.** The owner designated the monitored Waterloo mailbox on the support and privacy pages. Verify the published pages following the merge.
+- **Name and storefront.** Build 4 uses **Tilawah Miles**. Select **United States only** for launch. The selected territory matches the documented U.S. basis for the Minshawi portrait. Apple's public U.S. software search returned no matches for the name on November 27. Final name availability and storefront selection are confirmed by saving the App Store Connect record.
+- **Media rights and privacy answers.** The [rights record](app-store-connect/rights-evidence/mp3quran-2026-11-27.md) distinguishes the provider's public copying permission, alternative sources, and the remaining CDN retention question. Complete the App Privacy answers once retention and use are established.
 - **In-car acceptance.** Use the release candidate in a parked vehicle with the phone locked. Check actual display cropping and contrast, chapter 114 on a restricted list, steering-wheel controls, background playback, and a saved chapter in airplane mode. During a call, disconnect the car, end the call, and confirm silence on the phone. Reconnect with another audio source playing.
 - **App Store Connect.** Verify the processed build, screenshots, listing copy, age rating, content-rights and privacy declarations, pricing, storefronts and review contact. Include the CarPlay walkthrough and provider evidence in Review Notes. The live account record and an actual head unit were outside this verification.
