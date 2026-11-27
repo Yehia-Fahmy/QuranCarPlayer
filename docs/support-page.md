@@ -49,11 +49,11 @@ Streaming fetches audio from the MP3Quran CDN. Offline playback works only for s
 
 ### How do offline downloads work?
 
-On iPhone, open **Settings → Downloads** (or the Downloads management entry in Settings). Download individual surahs, cancel in-progress transfers, retry failures, remove one file, or remove all. Downloads are stored only on your device and are excluded from iCloud backup. In Airplane Mode, previously downloaded surahs can play locally; undownloaded surahs need network streaming.
+Open a surah in the iPhone player and choose **Download for Offline**. In **Settings → Manage Downloads**, you can cancel transfers, retry failures, or remove saved recordings. Downloads are stored only on your device and are excluded from iCloud backup. In Airplane Mode, previously downloaded surahs can play locally; undownloaded surahs need network streaming.
 
 ### Does the app collect my personal data?
 
-Preferences, listening progress, and downloads stay on your device. The developer does not run accounts or analytics backends. Streaming and download requests go to the audio CDN so the files can be delivered. See the [Privacy Policy](https://yehia-fahmy.github.io/QuranCarPlayer/privacy/).
+Your iPhone stores preferences, listening progress and downloads. Apple can back up preferences and progress when device backups are enabled. Downloaded audio is excluded from backup. The developer does not run accounts or analytics backends. Streaming and download requests go to the audio CDN so the files can be delivered. See the [Privacy Policy](https://yehia-fahmy.github.io/QuranCarPlayer/privacy/).
 
 ### Can I delete local data?
 

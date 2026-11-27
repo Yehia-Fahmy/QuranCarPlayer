@@ -8,8 +8,10 @@ server provides a content length, supports cancellation and retry, and changes t
 The Surahs screen has a Downloads toolbar button, and Settings has a **Manage Downloads** row. The
 dedicated screen rebuilds its inventory from app-owned files, so saved items remain visible without
 a network connection or a separate database. Files from a collection no longer present in the
-current catalog remain removable and are labeled with their stored collection identity. Legacy
-PR #2 paths are migrated to collision-free structured paths on launch. The screen shows:
+current catalog remain removable and are labeled with their stored collection identity. On launch,
+the store consolidates the original colon-delimited directories and both older JSON key orders.
+It renames saved `.audio` files to `.mp3` so Apple's player can recognize the recordings.
+The screen shows:
 
 - active transfers and failures with localized progress or error state;
 - the surah and reciter for every item;
@@ -26,8 +28,11 @@ and explicit accessibility labels for progress, size, and management controls.
   file first. If no valid file exists, it uses the catalog URL unchanged, preserving streaming.
 - Completed files live under Application Support in an app-owned `Audio Downloads` directory.
   Provider identifiers are encoded before being used as path components.
-- Network bytes stream to a temporary file. A non-empty completed file is moved through a
-  same-directory staging path before it becomes visible to playback.
+- Two recordings can download at once. Further selections wait in a cancellable queue.
+- Downloads require a full HTTP 200 response. The client checks declared and received sizes
+  against a 256 MiB limit, checks the declared length when available, and decodes an audio
+  sample before installing the file. Bytes stream to a temporary MP3 in the app's transfer
+  folder. The verified transfer is moved into place using same-directory staging.
 - Partial staging files are cleaned at launch. Downloads are excluded from device backups.
 - Cancelling, a failed response, an empty response, or a write failure removes temporary data and
   leaves streaming available. Downloads are foreground operations and do not claim to continue
@@ -45,14 +50,9 @@ copyright/contact language that allows developers to copy material or use links,
 dated evidence for App Review. Residual Guideline 5.2 risk remains until a written MP3Quran reply
 arrives; do not gate downloads off unless that decision is reversed.
 
-**Public copyright evidence path (project store / App Review package):**
-
-`docs/app-store-connect/rights-evidence/`
-
-Dated captures include MP3Quran English privacy and contact pages (for example
-`2026-11-15-mp3quran-privacy-en.html` / `.excerpt.md` and the matching `eng-contact-us` /
-`eng-privacy` archives). Attach that package with App Review notes. Repo context:
-`docs/DESIGN.md` §7.
+The [dated provider evidence](app-store-connect/rights-evidence/mp3quran-2026-11-27.md)
+records both public notices, the nine collection identifiers and the scope to confirm
+for the App Store content-rights declaration.
 
 ## Verification
 

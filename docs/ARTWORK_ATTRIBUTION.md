@@ -71,7 +71,5 @@ No portrait source should be added to the app bundle without a recorded source, 
 
 ## Audio source review evidence
 
-Recitation audio is from MP3Quran. For App Review packaging (Phase 0 = A provisional: streaming +
-offline downloads enabled), dated public copyright/contact page captures live under the project
-App Store Connect package path `docs/app-store-connect/rights-evidence/` (see also
-`docs/OFFLINE_DOWNLOADS.md` and `docs/DESIGN.md` §7).
+Recitation audio is from MP3Quran. The [dated provider evidence](app-store-connect/rights-evidence/mp3quran-2026-11-27.md)
+records the public notices and identifies the collections used for streaming and offline playback.

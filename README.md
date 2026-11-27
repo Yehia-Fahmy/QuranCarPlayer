@@ -1,8 +1,8 @@
 # QuranCarPlayer
 
-A planned iPhone Quran audio player designed primarily for easy surah and reciter selection through Apple CarPlay. Initially for personal use, with a future free App Store release.
+An iPhone Quran audio player with Apple CarPlay, nine Hafs recitations, and per-surah offline downloads.
 
-**Status (November 15, 2026): CarPlay Audio is on the development profile, and the phone app streams nine complete Hafs recitations with optional per-surah offline downloads.** Signing uses `yehia.fahmy@uwaterloo.ca`, paid Individual team `FUT64434V9` (`isFreeProvisioningTeam = 0`), and bundle ID `com.yehiafahmy.QuranCarPlayerApp`. A device build with `-allowProvisioningUpdates` now embeds `com.apple.developer.carplay-audio` (profile `c2077eb7`). An earlier build the same morning still failed with the entitlement-not-in-profile error. The iPhone 17 simulator launched the Surahs list. Xcode 27's Device Hub did not open a CarPlay window for that simulator, so the icon and the Listen/Surahs/Reciters templates were not seen. A simulator framebuffer is not entitlement approval. Lock-screen controls, background audio, and in-car resume stay open. Provider permission for offline distribution still requires confirmation.
+The [release change record](docs/RELEASE_READINESS.md) tracks the offline playback, CarPlay and chapter artwork fixes, verification results, and decisions for App Store submission.
 
 ## Start here
 
@@ -24,7 +24,5 @@ A planned iPhone Quran audio player designed primarily for easy surah and recite
 - `Scripts/` — core test runner, project generation, test-audio generation.
 
 Confirmed user decisions are distinguished from proposed implementation defaults. Do not silently change confirmed behavior to accommodate a platform limitation: document the evidence and propose a concrete alternative.
-
-The first implementation work should validate CarPlay automatic resume and list-position behavior, and establish an approved audio source. Downloads and Siri selection are later features. Favorites and recently played lists are not part of the design.
 
 Planning date: November 6, 2026 (America/Toronto).

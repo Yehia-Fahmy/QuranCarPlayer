@@ -1,7 +1,7 @@
 # Privacy Policy — Quran CarPlayer
 
 **Effective date:** 16 November 2026  
-**Last updated:** 16 November 2026  
+**Last updated:** 27 November 2026\
 **Developer:** Yehia Fahmy  
 **Contact:** [support@yehiafahmy.com](mailto:support@yehiafahmy.com)
 
@@ -99,7 +99,7 @@ The App is a Quran audio player and does not target children with advertising or
 
 ## International users
 
-The App is distributed through the Apple App Store. Audio may be delivered from CDN infrastructure operated by the audio provider. Local data stays on your device unless you choose to contact us by email.
+The App is distributed through the Apple App Store. Audio may be delivered from CDN infrastructure operated by the audio provider. Your iPhone stores listening progress and preferences. If you enable device backups, Apple can include this data in a backup and restore it to a device. You can manage iCloud Backup in iPhone Settings. Downloaded audio is excluded from backup.
 
 ## Changes to this policy
 

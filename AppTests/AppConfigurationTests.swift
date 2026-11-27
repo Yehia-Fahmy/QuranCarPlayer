@@ -29,6 +29,12 @@ struct AppConfigurationTests {
         #expect(modes.contains("audio"))
     }
 
+    @Test("The processed app bundle targets iPhone")
+    func supportedDeviceFamily() throws {
+        let families = try #require(bundle.object(forInfoDictionaryKey: "UIDeviceFamily") as? [Int])
+        #expect(families == [1])
+    }
+
     @Test("Display name and marketing version match the 1.0 store candidate")
     func displayNameAndVersion() throws {
         #expect(bundle.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String == "Quran CarPlayer")
