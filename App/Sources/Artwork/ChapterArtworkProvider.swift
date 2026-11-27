@@ -1,4 +1,5 @@
 import UIKit
+import CoreText
 import MediaPlayer
 import QuranCarPlayerCore
 
@@ -87,6 +88,7 @@ final class ChapterArtworkProvider {
         let verticalFocus: CGFloat
     }
 
+    private static let titleThreshold: CGFloat = 180
     private let cache = NSCache<NSString, UIImage>()
 
     init() {
@@ -122,19 +124,27 @@ final class ChapterArtworkProvider {
                   size: CGSize(width: dimension, height: dimension))
         }
         return MPMediaItemArtwork(boundsSize: CGSize(width: 1_024, height: 1_024)) { requestedSize in
-            let nearest = variants.min {
-                abs($0.size.width - requestedSize.width) < abs($1.size.width - requestedSize.width)
-            } ?? variants[variants.count - 1]
-            guard nearest.size != requestedSize,
-                  requestedSize.width > 0,
-                  requestedSize.height > 0 else {
-                return nearest
+            guard requestedSize.width.isFinite, requestedSize.height.isFinite,
+                  requestedSize.width > 0, requestedSize.height > 0 else {
+                return variants[variants.count - 1]
             }
+            let side = min(requestedSize.width, requestedSize.height)
+            let source: UIImage
+            if side < Self.titleThreshold {
+                source = variants[0]
+            } else {
+                source = variants.first { $0.size.width >= side } ?? variants[variants.count - 1]
+            }
+            guard source.size != requestedSize else { return source }
             let format = UIGraphicsImageRendererFormat()
             format.opaque = true
             format.scale = 1
-            return UIGraphicsImageRenderer(size: requestedSize, format: format).image { _ in
-                nearest.draw(in: CGRect(origin: .zero, size: requestedSize))
+            return UIGraphicsImageRenderer(size: requestedSize, format: format).image { renderer in
+                UIColor.black.setFill()
+                renderer.fill(CGRect(origin: .zero, size: requestedSize))
+                source.draw(in: CGRect(x: (requestedSize.width - side) / 2,
+                                       y: (requestedSize.height - side) / 2,
+                                       width: side, height: side))
             }
         }
     }
@@ -161,7 +171,7 @@ final class ChapterArtworkProvider {
                                  language: language,
                                  in: rect,
                                  accent: descriptor.color,
-                                 includeText: dimension >= 180)
+                                 includeText: rect.width >= Self.titleThreshold)
             } else {
                 let color = fallbackColor(for: surah.number)
                 context.setFillColor(color.cgColor)
@@ -172,7 +182,7 @@ final class ChapterArtworkProvider {
                                  language: language,
                                  in: rect,
                                  accent: color,
-                                 includeText: dimension >= 180)
+                                 includeText: rect.width >= Self.titleThreshold)
             }
         }
     }
@@ -235,9 +245,10 @@ final class ChapterArtworkProvider {
             colors: [
                 color.withAlphaComponent(0.06).cgColor,
                 color.withAlphaComponent(0.18).cgColor,
-                color.withAlphaComponent(0.94).cgColor,
+                color.withAlphaComponent(0.68).cgColor,
+                color.withAlphaComponent(0.97).cgColor,
             ] as CFArray,
-            locations: [0, 0.52, 1]
+            locations: [0, 0.50, 0.76, 1]
         ) else { return }
         context.drawLinearGradient(gradient,
                                    start: CGPoint(x: rect.midX, y: rect.minY),
@@ -275,79 +286,80 @@ final class ChapterArtworkProvider {
                                   in rect: CGRect,
                                   accent: UIColor,
                                   includeText: Bool) {
+        guard let context = UIGraphicsGetCurrentContext() else { return }
+        context.saveGState()
+        defer { context.restoreGState() }
         let scale = rect.width / 1_024
-        let badgeRect = CGRect(x: 64 * scale, y: 64 * scale, width: 154 * scale, height: 154 * scale)
-        let badge = UIBezierPath(roundedRect: badgeRect, cornerRadius: 42 * scale)
-        UIColor(red: 1, green: 0.95, blue: 0.78, alpha: 1).setFill()
-        badge.fill()
+        context.scaleBy(x: scale, y: scale)
 
-        let numberSize: CGFloat = surah.number >= 100 ? 62 : 76
-        drawFitted(String(surah.number),
-                   in: badgeRect,
-                   maximumPointSize: numberSize * scale,
-                   minimumPointSize: 42 * scale,
-                   weight: .bold,
-                   color: accent,
-                   alignment: .center)
+        // Use one design grid at every output resolution. Thumbnails keep just the
+        // number and portrait, with a wider badge for the longer chapter numbers.
+        let inset: CGFloat = 64
+        let badgeHeight: CGFloat = includeText ? 154 : 236
+        let digits = String(surah.number)
+        let badgeWidth: CGFloat
+        if includeText {
+            badgeWidth = digits.count == 3 ? 188 : badgeHeight
+        } else {
+            badgeWidth = max(badgeHeight, 76 + CGFloat(digits.count) * 94)
+        }
+        let badge = CGRect(x: inset, y: inset, width: badgeWidth, height: badgeHeight)
+        UIColor(red: 1, green: 0.95, blue: 0.78, alpha: 1).setFill()
+        UIBezierPath(roundedRect: badge, cornerRadius: badgeHeight * 0.27).fill()
+        drawLine(digits, in: badge.insetBy(dx: includeText ? 21 : 27, dy: 12),
+                 font: .monospacedDigitSystemFont(ofSize: includeText ? 80 : 162, weight: .bold),
+                 color: accent, alignment: .center, context: context)
         guard includeText else { return }
 
-        let lineY = 730 * scale
-        let context = UIGraphicsGetCurrentContext()
-        context?.setStrokeColor(UIColor(red: 0.90, green: 0.72, blue: 0.29, alpha: 1).cgColor)
-        context?.setLineWidth(max(1, 3 * scale))
-        context?.move(to: CGPoint(x: 64 * scale, y: lineY))
-        context?.addLine(to: CGPoint(x: 960 * scale, y: lineY))
-        context?.strokePath()
+        let gold = UIColor(red: 0.90, green: 0.72, blue: 0.29, alpha: 1)
+        context.setStrokeColor(gold.cgColor)
+        context.setLineWidth(3)
+        context.move(to: CGPoint(x: inset, y: 716))
+        context.addLine(to: CGPoint(x: 1_024 - inset, y: 716))
+        context.strokePath()
 
-        drawFitted(surah.arabicName,
-                   in: CGRect(x: 64 * scale, y: 740 * scale, width: 896 * scale, height: 130 * scale),
-                   maximumPointSize: 112 * scale,
-                   minimumPointSize: 70 * scale,
-                   weight: .regular,
-                   color: UIColor(red: 1, green: 0.97, blue: 0.91, alpha: 1),
-                   alignment: language.isRightToLeft ? .right : .left)
-        drawFitted(surah.transliteratedName,
-                   in: CGRect(x: 64 * scale, y: 855 * scale, width: 896 * scale, height: 70 * scale),
-                   maximumPointSize: 48 * scale,
-                   minimumPointSize: 30 * scale,
-                   weight: .bold,
-                   color: .white,
-                   alignment: .left)
+        let alignment: NSTextAlignment = language.isRightToLeft ? .right : .left
+        let width = 1_024 - 2 * inset
+        drawLine(surah.arabicName, in: CGRect(x: inset, y: 737, width: width, height: 105),
+                 font: .systemFont(ofSize: 112, weight: .regular),
+                 color: UIColor(red: 1, green: 0.97, blue: 0.91, alpha: 1),
+                 alignment: alignment, context: context)
+        drawLine(surah.transliteratedName, in: CGRect(x: inset, y: 857, width: width, height: 62),
+                 font: .systemFont(ofSize: 52, weight: .bold), color: .white,
+                 alignment: alignment, context: context)
         if let reciter {
-            drawFitted(reciter.displayName(for: language),
-                       in: CGRect(x: 64 * scale, y: 925 * scale, width: 896 * scale, height: 52 * scale),
-                       maximumPointSize: 30 * scale,
-                       minimumPointSize: 21 * scale,
-                       weight: .bold,
-                       color: UIColor(red: 0.97, green: 0.83, blue: 0.51, alpha: 1),
-                       alignment: language.isRightToLeft ? .right : .left)
+            drawLine(reciter.displayName(for: language),
+                     in: CGRect(x: inset, y: 932, width: width, height: 48),
+                     font: .systemFont(ofSize: 41, weight: .semibold),
+                     color: UIColor(red: 0.99, green: 0.87, blue: 0.62, alpha: 1),
+                     alignment: alignment, context: context)
         }
     }
 
-    private func drawFitted(_ text: String,
-                            in rect: CGRect,
-                            maximumPointSize: CGFloat,
-                            minimumPointSize: CGFloat,
-                            weight: UIFont.Weight,
-                            color: UIColor,
-                            alignment: NSTextAlignment) {
-        let paragraph = NSMutableParagraphStyle()
-        paragraph.alignment = alignment
-        paragraph.lineBreakMode = .byClipping
-        var pointSize = maximumPointSize
-        var selectedFont = UIFont.systemFont(ofSize: pointSize, weight: weight)
-        while pointSize > minimumPointSize {
-            let width = (text as NSString).size(withAttributes: [.font: selectedFont]).width
-            if width <= rect.width { break }
-            pointSize -= 2
-            selectedFont = UIFont.systemFont(ofSize: pointSize, weight: weight)
+    /// Align the visible glyphs, including Arabic dots and descenders. Line-fragment
+    /// padding varies between scripts and would leave the number high in its badge.
+    private func drawLine(_ text: String, in box: CGRect, font: UIFont, color: UIColor,
+                          alignment: NSTextAlignment, context: CGContext) {
+        let string = NSAttributedString(string: text, attributes: [.font: font, .foregroundColor: color])
+        let line = CTLineCreateWithAttributedString(string)
+        let ink = CTLineGetBoundsWithOptions(line, .useGlyphPathBounds)
+        guard ink.width > 0, ink.height > 0 else { return }
+        let fit = min(1, box.width / ink.width, box.height / ink.height)
+        let width = ink.width * fit
+        let left: CGFloat
+        switch alignment {
+        case .center: left = box.midX - width / 2
+        case .right: left = box.maxX - width
+        default: left = box.minX
         }
-        (text as NSString).draw(in: rect,
-                                withAttributes: [
-                                    .font: selectedFont,
-                                    .foregroundColor: color,
-                                    .paragraphStyle: paragraph,
-                                ])
+
+        context.saveGState()
+        defer { context.restoreGState() }
+        context.translateBy(x: left - ink.minX * fit, y: box.midY + ink.midY * fit)
+        context.scaleBy(x: fit, y: -fit)
+        context.textMatrix = .identity
+        context.textPosition = .zero
+        CTLineDraw(line, context)
     }
 
     private func fallbackColor(for surahNumber: Int) -> UIColor {
