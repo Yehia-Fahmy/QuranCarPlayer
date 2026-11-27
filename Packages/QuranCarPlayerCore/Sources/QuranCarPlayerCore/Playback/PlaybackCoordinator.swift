@@ -124,12 +124,17 @@ public final class PlaybackCoordinator {
     /// Restore metadata only. Never starts audio or touches the engine.
     private func restoreCheckpoint() {
         guard let checkpoint = try? sessionStore.load() else { return }
-        let session = checkpoint.session
+        var session = checkpoint.session
         // A checkpoint from another catalog (for example the old test tones)
         // cannot be resumed against the current recordings.
         guard audioCatalog.reciter(forCollection: session.recording.collection) != nil else {
             try? sessionStore.clear()
             return
+        }
+        if let replacement = replacementForMissingLegacyDownload(session.recording) {
+            session.recording = replacement
+            session.elapsedSeconds = 0
+            try? sessionStore.save(SessionCheckpoint(session: session))
         }
         snapshot.currentRecording = session.recording
         snapshot.elapsed = session.elapsedSeconds
@@ -176,6 +181,37 @@ public final class PlaybackCoordinator {
         audioCatalog.reciter(snapshot.selectedReciter)
     }
 
+    /// The exact edition a chapter selection will play, shared by the phone and CarPlay.
+    public func selectedRecording(forSurah number: Int) -> RecordingID? {
+        guard Surah.numberRange.contains(number), let reciter = selectedReciter else { return nil }
+        return preferredRecording(for: reciter, surah: number)
+    }
+
+    private func preferredRecording(for reciter: Reciter, surah: Int) -> RecordingID {
+        let current = RecordingID(collection: reciter.collection.id, surahNumber: surah)
+        guard let legacyCollection = audioCatalog.legacyCollection(for: reciter.id),
+              let resolver = downloadedAudioResolver,
+              resolver.localURL(for: current) == nil else { return current }
+        let legacy = RecordingID(collection: legacyCollection, surahNumber: surah)
+        return resolver.localURL(for: legacy) == nil ? current : legacy
+    }
+
+    private func replacementForMissingLegacyDownload(_ recording: RecordingID) -> RecordingID? {
+        guard let reciter = audioCatalog.reciter(forCollection: recording.collection),
+              audioCatalog.legacyCollection(for: reciter.id) == recording.collection,
+              downloadedAudioResolver?.localURL(for: recording) == nil,
+              let current = audioCatalog.reciter(reciter.id) else { return nil }
+        return RecordingID(collection: current.collection.id, surahNumber: recording.surahNumber)
+    }
+
+    private func adjacentRecording(to recording: RecordingID, surah: Int) -> RecordingID {
+        if let reciter = audioCatalog.reciter(forCollection: recording.collection),
+           let current = audioCatalog.reciter(reciter.id) {
+            return preferredRecording(for: current, surah: surah)
+        }
+        return RecordingID(collection: recording.collection, surahNumber: surah)
+    }
+
     public func reciter(for session: PlaybackSession) -> Reciter? {
         audioCatalog.reciter(forCollection: session.recording.collection)
     }
@@ -186,10 +222,10 @@ public final class PlaybackCoordinator {
     /// Selecting the current surah restarts it from zero.
     public func selectSurah(_ number: Int) {
         defer { notifyObservers() }
-        guard Surah.numberRange.contains(number), let reciter = selectedReciter else { return }
+        guard let recording = selectedRecording(forSurah: number) else { return }
         settings.surahListAnchor = number
         settingsStore.save(settings)
-        load(recording: RecordingID(collection: reciter.collection.id, surahNumber: number), startAt: 0, intent: .play)
+        load(recording: recording, startAt: 0, intent: .play)
     }
 
     /// Changing reciters restarts the current surah with the new reciter at zero.
@@ -202,7 +238,7 @@ public final class PlaybackCoordinator {
         settingsStore.save(settings)
         guard let current = snapshot.currentRecording else { return }
         let intent: PlaybackIntent = snapshot.isActivelyPlaying ? .play : .pause
-        load(recording: RecordingID(collection: reciter.collection.id, surahNumber: current.surahNumber), startAt: 0, intent: intent)
+        load(recording: preferredRecording(for: reciter, surah: current.surahNumber), startAt: 0, intent: intent)
     }
 
     /// Resume the saved session at its saved position.
@@ -252,7 +288,7 @@ public final class PlaybackCoordinator {
         defer { notifyObservers() }
         guard let current = snapshot.currentRecording, current.surahNumber < Surah.numberRange.upperBound else { return }
         let intent: PlaybackIntent = snapshot.isActivelyPlaying ? .play : .pause
-        load(recording: RecordingID(collection: current.collection, surahNumber: current.surahNumber + 1), startAt: 0, intent: intent)
+        load(recording: adjacentRecording(to: current, surah: current.surahNumber + 1), startAt: 0, intent: intent)
     }
 
     /// Previous restarts the current surah after more than three seconds; otherwise it
@@ -264,7 +300,7 @@ public final class PlaybackCoordinator {
             restartCurrent()
         } else {
             let intent: PlaybackIntent = snapshot.isActivelyPlaying ? .play : .pause
-            load(recording: RecordingID(collection: current.collection, surahNumber: current.surahNumber - 1), startAt: 0, intent: intent)
+            load(recording: adjacentRecording(to: current, surah: current.surahNumber - 1), startAt: 0, intent: intent)
         }
     }
 
@@ -399,7 +435,7 @@ public final class PlaybackCoordinator {
     // MARK: Loading
 
     /// Single entry point for every selection. Each call invalidates all prior engine callbacks.
-    private func load(recording: RecordingID,
+    private func load(recording requested: RecordingID,
                       startAt: TimeInterval,
                       intent: PlaybackIntent,
                       allowDownloadedAudio: Bool = true) {
@@ -411,8 +447,11 @@ public final class PlaybackCoordinator {
         currentItemUsesDownloadedAudio = false
         bypassDownloadedAudioForCurrentRecording = !allowDownloadedAudio
 
+        // A legacy file may have been deleted since the checkpoint was restored.
+        // Distinct performances never share a seek position.
+        let recording = replacementForMissingLegacyDownload(requested) ?? requested
         snapshot.currentRecording = recording
-        snapshot.elapsed = max(0, startAt)
+        snapshot.elapsed = recording == requested ? max(0, startAt) : 0
         snapshot.timelineRevision &+= 1
         snapshot.duration = nil
         snapshot.intent = intent
@@ -591,7 +630,7 @@ public final class PlaybackCoordinator {
             snapshot.transport = .completed
             checkpoint(force: true)
         } else {
-            load(recording: RecordingID(collection: current.collection, surahNumber: current.surahNumber + 1),
+            load(recording: adjacentRecording(to: current, surah: current.surahNumber + 1),
                  startAt: 0, intent: .play)
         }
     }
@@ -624,6 +663,10 @@ public final class PlaybackCoordinator {
         bypassDownloadedAudioForCurrentRecording = true
         engine.stop()
         downloadedAudioResolver?.invalidateDownloadedAudio(for: recording)
+        if let replacement = replacementForMissingLegacyDownload(recording) {
+            load(recording: replacement, startAt: 0, intent: snapshot.intent)
+            return
+        }
         do {
             let remote = try audioCatalog.source(for: recording)
             guard snapshot.intent == .play else {
@@ -715,12 +758,16 @@ public final class PlaybackCoordinator {
     /// Prefer a verified app-owned file for this exact recording, preserving the catalog URL as
     /// a streaming fallback when no local file exists.
     private func resolvedSource(for recording: RecordingID) throws -> (source: RecordingSource, isDownloaded: Bool) {
-        let remote = try audioCatalog.source(for: recording)
         guard !bypassDownloadedAudioForCurrentRecording,
-              let localURL = downloadedAudioResolver?.localURL(for: recording) else {
-            return (remote, false)
+              let localURL = downloadedAudioResolver?.localURL(for: recording),
+              let reciter = audioCatalog.reciter(forCollection: recording.collection) else {
+            return (try audioCatalog.source(for: recording), false)
         }
-        return (RecordingSource(id: recording, url: localURL, isTestFixture: remote.isTestFixture), true)
+        // Only previously saved legacy editions may outlive their remote catalog entry.
+        if audioCatalog.legacyCollection(for: reciter.id) != recording.collection {
+            _ = try audioCatalog.source(for: recording)
+        }
+        return (RecordingSource(id: recording, url: localURL, isTestFixture: reciter.collection.isTestFixture), true)
     }
 
     // MARK: Checkpoints

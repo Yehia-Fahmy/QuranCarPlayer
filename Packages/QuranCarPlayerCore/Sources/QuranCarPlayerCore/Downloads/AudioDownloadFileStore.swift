@@ -37,6 +37,7 @@ public enum AudioDownloadFileStoreError: Error, Equatable {
 /// metadata from escaping the download directory. Installs use a same-directory staging file
 /// followed by an atomic rename. Incomplete staging files are removed on initialization.
 public final class AudioDownloadFileStore: DownloadedAudioResolving, @unchecked Sendable {
+    private static let foundationLifetime: TimeInterval = 7 * 24 * 60 * 60
     private let rootDirectory: URL
     private let fileManager: FileManager
     // If relocation fails (for example while storage is full), the original path stays usable.
@@ -60,6 +61,7 @@ public final class AudioDownloadFileStore: DownloadedAudioResolving, @unchecked 
             migrateLegacyCollectionDirectories()
             removeIncompleteFiles()
             removeInvalidAudioFiles()
+            _ = purgeExpiredFoundationDownloads()
             cachedSummary = calculateStorageSummary()
         } catch {
             throw AudioDownloadFileStoreError.unableToCreateDirectory
@@ -127,6 +129,11 @@ public final class AudioDownloadFileStore: DownloadedAudioResolving, @unchecked 
                     try fileManager.removeItem(at: staging)
                 }
                 try fileManager.moveItem(at: temporaryURL, to: staging)
+                if recording.collection.provider == QuranFoundationCatalog.providerKey {
+                    // A CDN may preserve its mastering date on the temporary file.
+                    // Start the private copy's lifetime when this download completes.
+                    try fileManager.setAttributes([.modificationDate: Date()], ofItemAtPath: staging.path)
+                }
                 if fileManager.fileExists(atPath: destination.path) {
                     _ = try fileManager.replaceItemAt(destination, withItemAt: staging)
                 } else {
@@ -216,6 +223,54 @@ public final class AudioDownloadFileStore: DownloadedAudioResolving, @unchecked 
         }
     }
 
+    /// Removes the Foundation's time-limited device copies and returns the next cleanup
+    /// deadline. Earlier providers keep their existing download policy.
+    @discardableResult
+    func purgeExpiredFoundationDownloads() -> Date? {
+        lock.qcpWithLock {
+            let now = Date()
+            let retry = now.addingTimeInterval(60)
+            guard let directories = try? fileManager.contentsOfDirectory(
+                at: rootDirectory, includingPropertiesForKeys: nil, options: [.skipsHiddenFiles]
+            ) else { return retry }
+            var next: Date?
+            var removed = false
+            for directory in directories
+            where decodedCollection(directory.lastPathComponent)?.provider == QuranFoundationCatalog.providerKey {
+                guard let files = try? fileManager.contentsOfDirectory(
+                    at: directory, includingPropertiesForKeys: [.contentModificationDateKey],
+                    options: [.skipsHiddenFiles]
+                ) else {
+                    next = min(next ?? retry, retry)
+                    continue
+                }
+                for file in files where isStoredAudio(file) {
+                    guard let expiry = foundationExpiration(at: file) else {
+                        next = min(next ?? retry, retry)
+                        continue
+                    }
+                    if expiry > now {
+                        next = min(next ?? expiry, expiry)
+                    } else {
+                        do {
+                            try fileManager.removeItem(at: file)
+                            removed = true
+                        } catch {
+                            next = min(next ?? retry, retry)
+                        }
+                    }
+                }
+            }
+            if removed { cachedSummary = calculateStorageSummary() }
+            return next
+        }
+    }
+
+    private func foundationExpiration(at file: URL) -> Date? {
+        let values = try? file.resourceValues(forKeys: [.contentModificationDateKey])
+        return values?.contentModificationDate?.addingTimeInterval(Self.foundationLifetime)
+    }
+
     private func removeIncompleteFiles() {
         guard let enumerator = fileManager.enumerator(at: rootDirectory,
                                                       includingPropertiesForKeys: nil) else { return }
@@ -248,10 +303,21 @@ public final class AudioDownloadFileStore: DownloadedAudioResolving, @unchecked 
 
     private func availableURL(for recording: RecordingID) -> URL? {
         for url in possibleURLs(for: recording) {
-            if isValidFile(at: url) { return url }
+            if isValidFile(at: url) {
+                if recording.collection.provider == QuranFoundationCatalog.providerKey {
+                    guard let expiration = foundationExpiration(at: url) else { return nil }
+                    if expiration <= Date() {
+                        try? fileManager.removeItem(at: url)
+                        cachedSummary = calculateStorageSummary()
+                        continue
+                    }
+                }
+                return url
+            }
             // Retry a migration interrupted by a full disk or transient file protection.
             let legacy = url.deletingPathExtension().appendingPathExtension("audio")
-            if isValidFile(at: legacy), (try? fileManager.moveItem(at: legacy, to: url)) != nil { return url }
+            if recording.collection.provider != QuranFoundationCatalog.providerKey,
+               isValidFile(at: legacy), (try? fileManager.moveItem(at: legacy, to: url)) != nil { return url }
         }
         return nil
     }

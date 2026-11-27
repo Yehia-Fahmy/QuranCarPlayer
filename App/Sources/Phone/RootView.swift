@@ -102,7 +102,7 @@ struct RootView: View {
 /// Compact bar showing the current surah and a play/pause control.
 struct MiniPlayerView: View {
     let coordinator: PlaybackCoordinator
-    let artworkProvider: ChapterArtworkProvider
+    @ObservedObject var artworkProvider: ChapterArtworkProvider
     let language: ResolvedLanguage
     let open: () -> Void
 

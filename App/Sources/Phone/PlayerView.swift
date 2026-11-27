@@ -5,7 +5,7 @@ import QuranCarPlayerCore
 struct PlayerView: View {
     let coordinator: PlaybackCoordinator
     let downloadManager: AudioDownloadManager?
-    let artworkProvider: ChapterArtworkProvider
+    @ObservedObject var artworkProvider: ChapterArtworkProvider
     @Environment(\.dismiss) private var dismiss
 
     @State private var isScrubbing = false
@@ -64,7 +64,7 @@ struct PlayerView: View {
 
                 if let downloadManager,
                    let recording = snapshot.currentRecording,
-                   downloadManager.canDownload(recording) {
+                   downloadManager.state(for: recording) == .downloaded || downloadManager.canDownload(recording) {
                     RecordingDownloadControl(downloadManager: downloadManager,
                                              recording: recording,
                                              language: language)

@@ -1,5 +1,6 @@
 import Foundation
 import AVFAudio
+import Combine
 import QuranCarPlayerCore
 
 /// Composition root. Wires the shared coordinator to the real AVPlayer engine,
@@ -14,6 +15,7 @@ final class AppEnvironment {
     let engine: AVPlayerEngine
     let nowPlaying: NowPlayingBridge
     let audioSession: AudioSessionController
+    private var artworkChanges: AnyCancellable?
 
     /// Names of the bundled test-tone fixtures (see Scripts/generate-test-audio.py).
     nonisolated static let fixtureNames = ["test-tone-a", "test-tone-b", "test-tone-c"]
@@ -27,9 +29,8 @@ final class AppEnvironment {
         }
 
         // UI tests pass -QCPUITestReset so each launch starts from defaults
-        // and plays bundled test tones. A normal launch streams the MP3Quran
-        // snapshot. A previous test's language or saved session must not leak
-        // through the shared simulator container.
+        // and plays bundled test tones. Production streams Quran Foundation and
+        // can also play a previously downloaded edition. Tests use separate storage.
         let isUITest = ProcessInfo.processInfo.arguments.contains("-QCPUITestReset")
         let audioCatalog: AudioCatalog
         let defaultReciter: ReciterID
@@ -44,9 +45,9 @@ final class AppEnvironment {
             defaultReciter = FixtureAudioCatalog.defaultReciterID
         } else {
             do {
-                let catalog = try MP3QuranCatalog.bundled()
-                audioCatalog = catalog
-                defaultReciter = MP3QuranCatalog.defaultReciterID
+                let legacy = try MP3QuranCatalog.bundled()
+                audioCatalog = CatalogWithLegacyDownloads(current: QuranFoundationCatalog(), legacy: legacy)
+                defaultReciter = QuranFoundationCatalog.defaultReciterID
             } catch {
                 fatalError("MP3Quran catalog snapshot is invalid: \(error)")
             }
@@ -91,7 +92,7 @@ final class AppEnvironment {
                                           isOtherAudioPlaying: {
                                               AVAudioSession.sharedInstance().isOtherAudioPlaying
                                           })
-        let artworkProvider = ChapterArtworkProvider()
+        let artworkProvider = ChapterArtworkProvider(regionalPortrait: isUITest ? nil : RegionalMinshawiPortraitStore())
         self.artworkProvider = artworkProvider
         nowPlaying = NowPlayingBridge(
             coordinator: coordinator,
@@ -103,5 +104,8 @@ final class AppEnvironment {
             }
         )
         audioSession = AudioSessionController(coordinator: coordinator, engine: engine)
+        artworkChanges = artworkProvider.objectWillChange.sink { [weak nowPlaying] _ in
+            nowPlaying?.refreshArtwork()
+        }
     }
 }

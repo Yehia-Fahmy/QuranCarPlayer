@@ -93,6 +93,12 @@ public final class NowPlayingBridge {
 
     // MARK: Metadata
 
+    /// Replace the system's retained artwork even if the track and timeline are unchanged.
+    public func refreshArtwork() {
+        publishedKey = nil
+        update(with: coordinator.snapshot)
+    }
+
     private func update(with snapshot: PlaybackSnapshot) {
         let language = snapshot.language.resolved()
         let key = MetadataKey(recording: snapshot.currentRecording, language: language,

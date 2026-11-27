@@ -8,6 +8,8 @@ enum AppLegalURLs {
     /// Privacy Policy — `docs/privacy/index.html` on GitHub Pages.
     static let privacyPolicy = URL(string: "https://yehia-fahmy.github.io/QuranCarPlayer/privacy/")!
 
+    static let termsOfUse = URL(string: "https://yehia-fahmy.github.io/QuranCarPlayer/support/#terms")!
+
     /// Support — `docs/support/index.html` on GitHub Pages.
     /// Contact email on that page: yehia.fahmy@uwaterloo.ca
     static let support = URL(string: "https://yehia-fahmy.github.io/QuranCarPlayer/support/")!

@@ -99,8 +99,8 @@
     },
     "download.action" : {
       "localizations" : {
-        "ar" : { "stringUnit" : { "state" : "translated", "value" : "تنزيل للاستماع دون اتصال" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Download for Offline" } }
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "تنزيل لمدة ٧ أيام" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Download for 7 Days" } }
       }
     },
     "download.downloading" : {
@@ -259,6 +259,12 @@
         "en" : { "stringUnit" : { "state" : "translated", "value" : "When on, the app resumes the last surah from its saved position once when the car connects, if playback stopped because the car disconnected. It does not resume after a deliberate pause or after An-Nas has finished. The final policy depends on in-car testing." } }
       }
     },
+    "settings.termsOfUse" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "شروط الاستخدام" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Terms of Use" } }
+      }
+    },
     "settings.source" : {
       "localizations" : {
         "ar" : { "stringUnit" : { "state" : "translated", "value" : "مصدر الصوت" } },
@@ -271,16 +277,16 @@
         "en" : { "stringUnit" : { "state" : "translated", "value" : "This build plays synthetic test tones generated inside the project. It contains no Quran recitation." } }
       }
     },
-    "settings.source.mp3quran" : {
+    "settings.source.foundation" : {
       "localizations" : {
-        "ar" : { "stringUnit" : { "state" : "translated", "value" : "تُبث التلاوة من MP3Quran عند عدم تنزيلها. يمكن حفظ السور التي تختارها على هذا الجهاز للاستماع دون اتصال. يُرجى مراجعة معلومات المصدر والإسناد أدناه." } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Recitation streams from MP3Quran when it has not been downloaded. Surahs you choose can be saved on this device for offline listening. See the source attribution below." } }
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "تقدّم مؤسسة القرآن التلاوات الجديدة. يمكنك الاستماع إلى السورة دون اتصال لمدة سبعة أيام بعد تنزيلها. وتبقى التلاوات التي حفظتها من MP3Quran في الإصدارات السابقة متاحة." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "New recordings come from Quran Foundation. You can listen offline for seven days after downloading a surah. Recordings saved from MP3Quran in earlier versions remain available." } }
       }
     },
-    "settings.source.mp3quran.streamingOnly" : {
+    "settings.source.foundation.streamingOnly" : {
       "localizations" : {
-        "ar" : { "stringUnit" : { "state" : "translated", "value" : "تُبث التلاوة من MP3Quran. التخزين المحلي غير متاح حاليًا، لذا يحتاج التشغيل إلى اتصال بالإنترنت. يُرجى مراجعة معلومات المصدر والإسناد أدناه." } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Recitation streams from MP3Quran. Local storage is currently unavailable, so playback needs an internet connection. See the source attribution below." } }
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "تُبثّ التلاوات من مؤسسة القرآن. التخزين المحلي غير متاح حاليًا، لذا يتطلب التشغيل اتصالًا بالإنترنت." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Recitations stream from Quran Foundation. Local storage is unavailable, so playback needs an internet connection." } }
       }
     },
     "settings.artwork" : {
@@ -393,8 +399,8 @@
     },
     "downloads.footer" : {
       "localizations" : {
-        "ar" : { "stringUnit" : { "state" : "translated", "value" : "تُحفظ التنزيلات على هذا الجهاز ولا تُضمّن في النسخ الاحتياطية. يستمر البث تلقائيًا عند عدم وجود ملف محفوظ." } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Downloads stay on this device and are excluded from backups. Streaming remains available automatically when no saved file exists." } }
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "تنتهي صلاحية التنزيلات الجديدة بعد سبعة أيام ويمكنك تنزيلها مجددًا. تبقى تنزيلات MP3Quran السابقة حتى تحذفها. تُستثنى جميع التنزيلات من النسخ الاحتياطية." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "New downloads expire after seven days. You can download them again. Older MP3Quran downloads stay until you remove them. All downloads are excluded from backups." } }
       }
     },
     "downloads.cleanupFailed" : {

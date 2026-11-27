@@ -41,6 +41,7 @@ public final class AudioDownloadManager {
     @ObservationIgnored private var states: [RecordingID: AudioDownloadState] = [:]
     @ObservationIgnored private var tasks: [UUID: Task<Void, Never>] = [:]
     @ObservationIgnored private var pending: [(recording: RecordingID, url: URL, id: UUID)] = []
+    @ObservationIgnored private var expiryTask: Task<Void, Never>?
     private static let maximumActiveTransfers = 2
     @ObservationIgnored private var operationIDs: [RecordingID: UUID] = [:]
     @ObservationIgnored private var downloadedRecordings: Set<RecordingID> = []
@@ -62,6 +63,28 @@ public final class AudioDownloadManager {
                 catalogOrder[recording] = order
                 order += 1
             }
+        }
+        scheduleFoundationExpiry()
+    }
+
+    deinit {
+        expiryTask?.cancel()
+    }
+
+    private func scheduleFoundationExpiry() {
+        expiryTask?.cancel()
+        guard let deadline = store.purgeExpiredFoundationDownloads() else {
+            expiryTask = nil
+            return
+        }
+        let delay = max(0, deadline.timeIntervalSinceNow)
+        expiryTask = Task { [weak self] in
+            do { try await Task.sleep(for: .seconds(delay)) } catch { return }
+            guard let self else { return }
+            self.scheduleFoundationExpiry()
+            self.downloadedRecordings = self.store.storedRecordings()
+            self.stateRevision &+= 1
+            self.summaryRevision &+= 1
         }
     }
 
@@ -142,6 +165,7 @@ public final class AudioDownloadManager {
             try Task.checkCancellation()
             try store.installDownloadedFile(at: temporaryURL, for: recording)
             downloadedRecordings.insert(recording)
+            if recording.collection.provider == QuranFoundationCatalog.providerKey { scheduleFoundationExpiry() }
             updateState(.downloaded, for: recording)
             summaryRevision &+= 1
         } catch {

@@ -1,5 +1,6 @@
 import UIKit
 import CarPlay
+import Combine
 import QuranCarPlayerCore
 
 /// Builds and maintains the CarPlay template hierarchy for one interface-controller
@@ -27,6 +28,7 @@ final class CarPlayTemplateController: NSObject, CPSessionConfigurationDelegate 
     private var reciterItems: [ReciterID: CPListItem] = [:]
 
     private var observation: ObservationToken?
+    private var artworkChanges: AnyCancellable?
     private var lastSnapshot: PlaybackSnapshot?
     private var language: ResolvedLanguage
 
@@ -91,11 +93,18 @@ final class CarPlayTemplateController: NSObject, CPSessionConfigurationDelegate 
         observation = coordinator.addObserver { [weak self] snapshot in
             self?.apply(snapshot)
         }
+        artworkChanges = artworkProvider.objectWillChange.sink { [weak self] _ in
+            guard let self else { return }
+            self.refreshSurahArtwork()
+            self.updateChapterPage()
+            self.listenTemplate?.updateSections([self.listenSection(self.coordinator.snapshot)])
+        }
     }
 
     func stop() {
         observation?.cancel()
         observation = nil
+        artworkChanges = nil
         sessionConfiguration = nil
         finishPendingSelection()
         tabBar = nil
@@ -115,9 +124,7 @@ final class CarPlayTemplateController: NSObject, CPSessionConfigurationDelegate 
             item.playingIndicatorLocation = .trailing
             item.handler = { [weak self] _, completion in
                 guard let self else { completion(); return }
-                let expected = self.coordinator.selectedReciter.map {
-                    RecordingID(collection: $0.collection.id, surahNumber: surah.number)
-                }
+                let expected = self.coordinator.selectedRecording(forSurah: surah.number)
                 self.beginSelection(expecting: expected, presentNowPlaying: true, completion: completion)
                 // The coordinator notifies observers synchronously; the selection resolves in `apply`.
                 self.coordinator.selectSurah(surah.number)
@@ -344,11 +351,7 @@ final class CarPlayTemplateController: NSObject, CPSessionConfigurationDelegate 
                 item.setDetailText(isSelected ? L10n.string("reciter.selected", language)
                                               : coordinator.audioCatalog.reciter(id)?.collection.riwayah)
             }
-            for (index, item) in surahItems.enumerated() {
-                guard let surah = coordinator.surahCatalog.surah(index + 1) else { continue }
-                item.setImage(chapterImage(surah: surah, reciter: coordinator.selectedReciter))
-            }
-            surahsTemplate?.updateSections(surahSections())
+            refreshSurahArtwork()
         } else if previous?.currentSurahNumber != snapshot.currentSurahNumber {
             surahsTemplate?.updateSections(surahSections())
         }
@@ -363,6 +366,14 @@ final class CarPlayTemplateController: NSObject, CPSessionConfigurationDelegate 
 
         resolveSelectionIfSettled(snapshot)
         reportFailureIfNeeded(snapshot)
+    }
+
+    private func refreshSurahArtwork() {
+        for (index, item) in surahItems.enumerated() {
+            guard let surah = coordinator.surahCatalog.surah(index + 1) else { continue }
+            item.setImage(chapterImage(surah: surah, reciter: coordinator.selectedReciter))
+        }
+        surahsTemplate?.updateSections(surahSections())
     }
 
     private func relocalize() {

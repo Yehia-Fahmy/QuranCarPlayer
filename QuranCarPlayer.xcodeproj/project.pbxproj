@@ -19,6 +19,8 @@
 		85AD30F4CDC7920C3FBE5E59 /* AppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = C838F095302A9BF10886F972 /* AppEnvironment.swift */; };
 		8D5FB294447B04D367A4B0D9 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 42F0585220DFF92B2E3437B7 /* Localizable.xcstrings */; };
 		91E8F5BD055E01B1A796CD84 /* CarPlayChapterBrowserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 883409485B222A6ABA9DAEEB /* CarPlayChapterBrowserTests.swift */; };
+		97F700807F41954E730DB20D /* RegionalMinshawiPortraitStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0447AF99D7C9020186A8DD83 /* RegionalMinshawiPortraitStore.swift */; };
+		A9C0AC5DD22457D574FB447B /* RegionalMinshawiPortraitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D838CCF4E16229835C45B97 /* RegionalMinshawiPortraitTests.swift */; };
 		AF08CDCEA3595C22E4EF9453 /* SurahListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBE8CE87E87C938DDB313C09 /* SurahListView.swift */; };
 		BE867E1C28F08C3FE725D71E /* DownloadsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36BCF301BD68987F81FCC435 /* DownloadsView.swift */; };
 		C0363A87CE00AA3753769DA5 /* ChapterArtworkProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6F8B724A3521FC7C792A9FF /* ChapterArtworkProvider.swift */; };
@@ -53,8 +55,10 @@
 
 /* Begin PBXFileReference section */
 		0361308EBD1E294C6F2A7AB3 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		0447AF99D7C9020186A8DD83 /* RegionalMinshawiPortraitStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegionalMinshawiPortraitStore.swift; sourceTree = "<group>"; };
 		171D7667ED419A97C1622BC2 /* CarPlaySceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlaySceneDelegate.swift; sourceTree = "<group>"; };
 		2045B3812E8826F3983EAA31 /* QuranCarPlayerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuranCarPlayerApp.swift; sourceTree = "<group>"; };
+		2D838CCF4E16229835C45B97 /* RegionalMinshawiPortraitTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegionalMinshawiPortraitTests.swift; sourceTree = "<group>"; };
 		33317718FAC06656AF85AFB9 /* PhonePlaybackUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhonePlaybackUITests.swift; sourceTree = "<group>"; };
 		36BCF301BD68987F81FCC435 /* DownloadsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadsView.swift; sourceTree = "<group>"; };
 		3BAA5917EA15E4B613E4A185 /* test-tone-c.m4a */ = {isa = PBXFileReference; path = "test-tone-c.m4a"; sourceTree = "<group>"; };
@@ -210,6 +214,7 @@
 				949996AA6D25941564263182 /* AppConfigurationTests.swift */,
 				883409485B222A6ABA9DAEEB /* CarPlayChapterBrowserTests.swift */,
 				B14AABAEB21615C93170279C /* OfflinePlaybackTests.swift */,
+				2D838CCF4E16229835C45B97 /* RegionalMinshawiPortraitTests.swift */,
 			);
 			path = AppTests;
 			sourceTree = "<group>";
@@ -228,6 +233,7 @@
 			isa = PBXGroup;
 			children = (
 				D6F8B724A3521FC7C792A9FF /* ChapterArtworkProvider.swift */,
+				0447AF99D7C9020186A8DD83 /* RegionalMinshawiPortraitStore.swift */,
 			);
 			path = Artwork;
 			sourceTree = "<group>";
@@ -373,6 +379,7 @@
 				484254FDC287234A47B52577 /* PlayerView.swift in Sources */,
 				57D0301D3F686AD156563C85 /* QuranCarPlayerApp.swift in Sources */,
 				215764A7729E414C28841734 /* ReciterListView.swift in Sources */,
+				97F700807F41954E730DB20D /* RegionalMinshawiPortraitStore.swift in Sources */,
 				EC87FA446AE804E8ABD7D8FB /* RootView.swift in Sources */,
 				D9C779B96293F99D523D8FEB /* SettingsView.swift in Sources */,
 				AF08CDCEA3595C22E4EF9453 /* SurahListView.swift in Sources */,
@@ -394,6 +401,7 @@
 				C2D6D6532AA84F29192E624A /* AppConfigurationTests.swift in Sources */,
 				91E8F5BD055E01B1A796CD84 /* CarPlayChapterBrowserTests.swift in Sources */,
 				E21BA7A0F42BBD8F0106868F /* OfflinePlaybackTests.swift in Sources */,
+				A9C0AC5DD22457D574FB447B /* RegionalMinshawiPortraitTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
