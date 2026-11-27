@@ -1,6 +1,6 @@
 # iPhone and CarPlay release record
 
-November 27, 2026 · version 1.0.0, builds 3–5
+November 27, 2026 · version 1.0.0, builds 3–6
 
 ## Changes and verification
 
@@ -12,7 +12,15 @@ November 27, 2026 · version 1.0.0, builds 3–5
 | Chapter artwork | The renderer centers the visible digits, widens three-digit badges, and aligns the Arabic title, transliteration and reciter credit to one edge for each interface language. | Inspected before and after renders for all nine reciters, including one-, two- and three-digit chapters, portraits and the geometric fallback. A pixel-level test checks horizontal and vertical centering. [Now Playing sheet](artwork/now-playing.jpg) · [CarPlay list sheet](artwork/carplay-list.jpg) · [Portrait credits and licenses](ARTWORK_ATTRIBUTION.md) |
 | Signing and privacy | Release requires the CarPlay Audio entitlement and targets iPhone at the app target. Privacy and support copy now explain backup eligibility for preferences and listening progress. The app links to the corrected GitHub Pages URLs. | The archive's signature verified, `com.apple.developer.carplay-audio` was true, and `UIDeviceFamily` was `[1]`. GitHub Pages deployed the corrected URLs after PR #11 merged. |
 
+### Build 6 audio provider
+
+The iPhone fetches new streams and downloads directly from Quran Foundation's QuranicAudio host. All 1,026 generated URLs matched the checked chapter manifests. A live download of Maher's Al-Fatihah through the production transfer client saved 753,249 bytes and decoded as 62.59 seconds of audio. Each new private download lasts seven days. Build 5 MP3Quran downloads keep their collection identity and original retention. A saved position carries over only for the same performance. [Recording inventory and sources](app-store-connect/rights-evidence/quran-foundation-catalog.md) · [Offline behavior](OFFLINE_DOWNLOADS.md)
+
 ### Test runs
+
+Build 6 passed 73 core tests and all 24 app and UI tests on an iPhone 17 simulator running iOS 27.2, with zero skips, failures or runtime warnings. The real AVPlayer advanced from a build 5 download under the new catalog. The build was installed over the previous version and launched on an iPhone 15 Pro Max. The phone reported **Quran Carplayer 1.0.0 (6)**. The SHA-256 fingerprint of its original download matched before the update, after installation and after the first launch migrated the file from `.audio` to `.mp3`.
+
+The App Store IPA exported successfully and its strict signature check passed with CarPlay Audio enabled and debugging disabled. Visual QA included the global fallback and a separate simulated Canadian storefront render of Minshawi’s chapter 104 at list and Now Playing sizes. An in-car check on a physical head unit still requires the listener.
 
 Build 5 passed all 70 core tests and all 20 iPhone 17 simulator tests on iOS 27.2, with zero skips, failures or runtime warnings in the simulator result. Installation and readback on a cabled iPhone 15 Pro Max confirmed **Quran Carplayer 1.0.0 (5)**. The App Store export succeeded with Cloud Managed Apple Distribution and an iOS Team Store Provisioning Profile for `com.yehiafahmy.QuranCarPlayerApp`. Strict signature verification passed. The exported app had `com.apple.developer.carplay-audio` set to true and `get-task-allow` set to false.
 
@@ -25,11 +33,11 @@ Build 4, with the public display name and portrait credit updates, passed all 70
 
 ## Decisions and acceptance before submission
 
-- **TestFlight.** Distribution signing passed for build 5. Upload and processing in App Store Connect, TestFlight distribution, and App Review submission are pending.
+- **TestFlight.** Distribution signing passed for build 6. Upload and processing in App Store Connect, TestFlight distribution, and App Review submission are pending.
 - **Public contact.** The support and privacy pages published the owner’s monitored Waterloo mailbox after PR #11 merged.
 - **Public name.** Build 5 uses the owner’s requested spelling, **Quran Carplayer**. Verify name availability in App Store Connect. Apple restricts use of variations of its trademarks in third-party product names. The resemblance to CarPlay may draw a review question. [Apple’s trademark guidelines](https://www.apple.com/legal/intellectual-property/guidelinesfor3rdparties.html)
 - **Storefronts.** Target **Canada, the United States, and every other eligible storefront**. Apple currently lists 175 storefronts. In App Store Connect, choose **Specific Countries or Regions** and select all eligible markets except China mainland, giving an upper bound of 174 today. China mainland requires an Internet Religious Information Permit for religious content. Account eligibility, recording rights and local requirements determine actual availability. For EU storefronts the account holder must declare their DSA trader status, with verified contact information if applicable. Storefront selection belongs to the App Store Connect record. [Apple availability settings](https://developer.apple.com/help/app-store-connect/manage-your-apps-availability/manage-availability-for-your-app-on-the-app-store/) · [Mainland China requirements](https://developer.apple.com/help/app-store-connect/reference/app-information/app-and-compliance-information/) · [EU trader declaration](https://developer.apple.com/help/app-store-connect/manage-compliance-information/manage-european-union-digital-services-act-trader-requirements/)
-- **International artwork.** Build 5 uses original geometric chapter artwork for Minshawi. The previous portrait’s source documented its public-domain status in Egypt and the U.S. All nine reciters and their audio remain available in the app. [Artwork credits](ARTWORK_ATTRIBUTION.md)
-- **Media rights and privacy answers.** The [rights record](app-store-connect/rights-evidence/mp3quran-2026-11-27.md) distinguishes the provider's public copying permission, alternative sources, and the remaining CDN retention question. Complete the App Privacy answers once retention and use are established.
+- **International artwork.** Build 6 bundles eight photos. The Mishary photograph carries a noncommercial license and the product is free, without ads or purchases. The 1954 Minshawi portrait is an on-demand image for confirmed Canadian and U.S. storefronts. Other storefronts display original geometric artwork. The worldwide review sheets show the bundled behavior. [Artwork sources and territorial evidence](ARTWORK_ATTRIBUTION.md)
+- **Media rights and privacy answers.** Provide [Quran Foundation’s direct audio terms](https://api-docs.quran.foundation/legal/developer-terms/#31-acceptable-use) and the reciter credits for new playback. The [MP3Quran record](app-store-connect/rights-evidence/mp3quran-2026-11-27.md) applies to existing local copies. Assess the current audio CDN’s request logging for the App Privacy declaration. The Foundation’s [public privacy policy](https://quran.com/privacy) describes information its services may log. It does not establish the retention period of direct audio requests.
 - **In-car acceptance.** Use the release candidate in a parked vehicle with the phone locked. Check actual display cropping and contrast, chapter 114 on a restricted list, steering-wheel controls, background playback, and a saved chapter in airplane mode. During a call, disconnect the car, end the call, and confirm silence on the phone. Reconnect with another audio source playing.
 - **App Store Connect.** Verify the processed build, screenshots, listing copy, age rating, content-rights and privacy declarations, pricing, storefronts and review contact. Include the CarPlay walkthrough and provider evidence in Review Notes. The live account record and an actual head unit were outside this verification.
