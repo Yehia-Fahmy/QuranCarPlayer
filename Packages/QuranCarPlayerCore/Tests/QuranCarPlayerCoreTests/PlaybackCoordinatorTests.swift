@@ -480,6 +480,59 @@ struct InterruptionTests {
         #expect(h.engine.commands.isEmpty)
     }
 
+    @Test("Car or route loss during a call invalidates resume in either notification order")
+    func routeLossDuringCall() throws {
+        for disconnectCar in [false, true] {
+            for interruptedFirst in [false, true] {
+                let h = try Harness()
+                h.startPlaying(18)
+                if interruptedFirst { h.coordinator.interruptionBegan() }
+                if disconnectCar { h.coordinator.carPlayDidDisconnect() } else { h.coordinator.audioRouteLost() }
+                if !interruptedFirst { h.coordinator.interruptionBegan() }
+                h.engine.clearCommands()
+                #expect(h.coordinator.carPlayDidConnect() == .skippedInterrupted)
+                h.coordinator.interruptionEnded(shouldResume: true)
+                #expect(h.engine.commands.isEmpty)
+                #expect(h.snapshot.transport == .paused)
+                #expect(h.snapshot.pauseReason == (disconnectCar ? .carDisconnected : .routeLost))
+            }
+        }
+    }
+
+    @Test("Ready at a stalled position never resets the automatic retry budget")
+    func noProgressExhaustsBudget() throws {
+        let h = try Harness()
+        h.startPlaying(18)
+        h.engine.tick(to: 13)
+        for attempt in 1...3 {
+            h.engine.failCurrent(.network)
+            #expect(h.snapshot.transport == .retrying(attempt: attempt))
+            h.scheduler.fireNext()
+            h.engine.becomeReady()
+            h.engine.tick(to: 13)
+        }
+        h.engine.failCurrent(.network)
+        #expect(h.snapshot.transport == .failed(PlaybackFailure(recording: Fixtures.recording(18), reason: .networkUnavailable)))
+        #expect(h.scheduler.pending.isEmpty)
+    }
+
+    @Test("Actual playback progress restores the retry budget")
+    func progressRestoresBudget() throws {
+        let h = try Harness()
+        h.startPlaying(18)
+        h.engine.tick(to: 10)
+        h.engine.stallCurrent()
+        guard let id = h.engine.currentItem?.id else { return }
+        h.engine.emit(.resumedPlaying(id))
+        h.engine.tick(to: 10)
+        #expect(h.scheduler.pending.count == 1)
+        h.engine.tick(to: 11)
+        #expect(h.scheduler.pending.isEmpty)
+        h.engine.tick(to: 13)
+        h.engine.failCurrent(.network)
+        #expect(h.snapshot.transport == .retrying(attempt: 1))
+    }
+
     @Test("Scenario 14/15: network failure retries 1s, 2s, 4s at the retained position, then offers Retry")
     func retrySchedule() throws {
         let h = try Harness()
@@ -623,12 +676,20 @@ struct InterruptionTests {
         #expect(h.snapshot.transport == .paused)
     }
 
-    @Test("Media services reset reloads an active item at its position")
+    @Test("Media services reset preserves position and requires explicit playback after reconnect")
     func mediaServicesReset() throws {
         let h = try Harness()
         h.startPlaying(18)
         h.engine.tick(to: 33)
         h.coordinator.mediaServicesWereReset()
+        #expect(h.engine.loadedItems.count == 1)
+        #expect(h.snapshot.transport == .paused)
+        #expect(h.sessionStore.checkpoint?.session.elapsedSeconds == 33)
+        h.coordinator.carPlayDidDisconnect()
+        #expect(h.coordinator.carPlayDidConnect() == .skippedMediaServicesReset)
+        h.coordinator.interruptionEnded(shouldResume: true)
+        #expect(h.engine.loadedItems.count == 1)
+        h.coordinator.play()
         #expect(h.engine.loadedItems.count == 2)
         #expect(h.engine.currentItem?.startAt == 33)
     }

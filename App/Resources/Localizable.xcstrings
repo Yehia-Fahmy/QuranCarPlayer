@@ -457,16 +457,16 @@
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Current Surah" } }
       }
     },
-    "carplay.listLimit" : {
+    "carplay.previousPage" : {
       "localizations" : {
-        "ar" : { "stringUnit" : { "state" : "translated", "value" : "هذه السيارة تحدّ من عدد العناصر المعروضة؛ لا يمكن عرض السور الـ114 كلها هنا. استخدم الهاتف عند التوقف." } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "This car limits list length; not all 114 surahs can be shown here. Use the phone while parked." } }
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "السابق" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Previous" } }
       }
     },
-    "carplay.ok" : {
+    "carplay.nextPage" : {
       "localizations" : {
-        "ar" : { "stringUnit" : { "state" : "translated", "value" : "حسنًا" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "OK" } }
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "التالي" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Next" } }
       }
     }
   },

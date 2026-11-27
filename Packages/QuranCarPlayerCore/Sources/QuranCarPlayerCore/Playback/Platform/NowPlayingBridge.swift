@@ -18,6 +18,16 @@ public final class NowPlayingBridge {
     private let artworkProvider: @MainActor (Surah, Reciter?, ResolvedLanguage) -> MPMediaItemArtwork?
     private let infoCenter = MPNowPlayingInfoCenter.default()
     private let commandCenter = MPRemoteCommandCenter.shared()
+    private struct MetadataKey: Equatable {
+        let recording: RecordingID?
+        let language: ResolvedLanguage
+        let duration: TimeInterval?
+        let isPlaying: Bool
+        let timelineRevision: UInt
+    }
+
+    private var publishedKey: MetadataKey?
+    private var artwork: MPMediaItemArtwork?
     private var observation: ObservationToken?
     private var targets: [(MPRemoteCommand, Any)] = []
 
@@ -84,15 +94,23 @@ public final class NowPlayingBridge {
     // MARK: Metadata
 
     private func update(with snapshot: PlaybackSnapshot) {
+        let language = snapshot.language.resolved()
+        let key = MetadataKey(recording: snapshot.currentRecording, language: language,
+                              duration: snapshot.duration, isPlaying: snapshot.transport == .playing,
+                              timelineRevision: snapshot.timelineRevision)
+        // Now Playing extrapolates elapsed time from the rate; ordinary ticks need no IPC.
+        guard key != publishedKey else { return }
+        let refreshArtwork = key.recording != publishedKey?.recording || language != publishedKey?.language
+        publishedKey = key
         commandCenter.nextTrackCommand.isEnabled = snapshot.canSkipForward
         commandCenter.previousTrackCommand.isEnabled = snapshot.canSkipBackward
         commandCenter.changePlaybackPositionCommand.isEnabled = snapshot.duration != nil && snapshot.currentRecording != nil
 
         guard snapshot.currentRecording != nil, let surah = coordinator.currentSurah else {
+            artwork = nil
             infoCenter.nowPlayingInfo = nil
             return
         }
-        let language = snapshot.language.resolved()
         var info: [String: Any] = [
             MPMediaItemPropertyTitle: "\(surah.number). \(surah.displayName(for: language))",
             MPNowPlayingInfoPropertyMediaType: MPNowPlayingInfoMediaType.audio.rawValue,
@@ -105,7 +123,8 @@ public final class NowPlayingBridge {
         if let reciter {
             info[MPMediaItemPropertyArtist] = reciter.displayName(for: language)
         }
-        if let artwork = artworkProvider(surah, reciter, language) {
+        if refreshArtwork { artwork = artworkProvider(surah, reciter, language) }
+        if let artwork {
             info[MPMediaItemPropertyArtwork] = artwork
         }
         if snapshot.isTestAudio {

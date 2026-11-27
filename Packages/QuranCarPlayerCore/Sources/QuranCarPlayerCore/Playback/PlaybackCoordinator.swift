@@ -12,6 +12,8 @@ public enum AutoResumeDecision: Equatable, Sendable {
     case skippedFailed
     /// Locked policy: a deliberately paused session is not auto-resumed on CarPlay reconnect.
     case skippedUserPaused
+    case skippedInterrupted
+    case skippedMediaServicesReset
     /// Locked policy: do not steal audio when another app is already playing.
     case skippedOtherAudioPlaying
 }
@@ -69,12 +71,14 @@ public final class PlaybackCoordinator {
     @ObservationIgnored private var isSessionCompleted = false
 
     @ObservationIgnored private var retryAttempt = 0
+    @ObservationIgnored private var recoveryStartPosition: TimeInterval = 0
     @ObservationIgnored private var firstFailureDate: Date?
     @ObservationIgnored private var retryWork: ScheduledWork?
     @ObservationIgnored private var retryResumePosition: TimeInterval = 0
 
     @ObservationIgnored private var lastCheckpointDate: Date?
     @ObservationIgnored private var didAutoResumeThisConnection = false
+    @ObservationIgnored private var interruptionIsActive = false
 
     @ObservationIgnored private var observers: [UUID: (PlaybackSnapshot) -> Void] = [:]
 
@@ -274,6 +278,11 @@ public final class PlaybackCoordinator {
         let upper = snapshot.duration ?? .greatestFiniteMagnitude
         let clamped = min(max(0, time), upper)
         snapshot.elapsed = clamped
+        snapshot.timelineRevision &+= 1
+        if firstFailureDate != nil {
+            recoveryStartPosition = clamped
+            retryResumePosition = clamped
+        }
         if currentItemID != nil { engine.seek(to: clamped) }
         checkpoint(force: true)
     }
@@ -318,6 +327,7 @@ public final class PlaybackCoordinator {
 
     /// Decide whether connecting to CarPlay should resume the prior session.
     public func evaluateAutomaticResume() -> AutoResumeDecision {
+        guard !interruptionIsActive else { return .skippedInterrupted }
         guard snapshot.automaticCarPlayResume else { return .skippedDisabled }
         guard !didAutoResumeThisConnection else { return .skippedAlreadyResumedThisConnection }
         guard snapshot.currentRecording != nil else { return .skippedNoSession }
@@ -327,6 +337,7 @@ public final class PlaybackCoordinator {
         case .failed: return .skippedFailed
         case .idle: return .skippedNoSession
         case .paused:
+            if snapshot.pauseReason == .mediaServicesReset { return .skippedMediaServicesReset }
             if snapshot.pauseReason == .user { return .skippedUserPaused }
             if isOtherAudioPlaying() { return .skippedOtherAudioPlaying }
             return .resume
@@ -337,7 +348,6 @@ public final class PlaybackCoordinator {
     @discardableResult
     public func carPlayDidConnect() -> AutoResumeDecision {
         defer { notifyObservers() }
-        didAutoResumeThisConnection = false
         let decision = evaluateAutomaticResume()
         if decision == .resume {
             didAutoResumeThisConnection = true
@@ -357,6 +367,7 @@ public final class PlaybackCoordinator {
 
     public func interruptionBegan() {
         defer { notifyObservers() }
+        interruptionIsActive = true
         pause(reason: .interruption)
     }
 
@@ -364,6 +375,8 @@ public final class PlaybackCoordinator {
     /// A deliberate user pause during the interruption prevents resumption.
     public func interruptionEnded(shouldResume: Bool) {
         defer { notifyObservers() }
+        guard interruptionIsActive else { return }
+        interruptionIsActive = false
         guard shouldResume, snapshot.transport == .paused, snapshot.pauseReason == .interruption else { return }
         play()
     }
@@ -374,18 +387,13 @@ public final class PlaybackCoordinator {
         pause(reason: .routeLost)
     }
 
-    /// Media services were reset: the engine item is unusable and must be reloaded.
+    /// A reset invalidates all player objects. Wait for the listener to restart playback.
     public func mediaServicesWereReset() {
         defer { notifyObservers() }
-        let wasActive = snapshot.isActivelyPlaying
+        interruptionIsActive = false
+        pause(reason: .mediaServicesReset)
         currentItemID = nil
         engine.stop()
-        if wasActive, let recording = snapshot.currentRecording {
-            load(recording: recording,
-                 startAt: snapshot.elapsed,
-                 intent: .play,
-                 allowDownloadedAudio: !bypassDownloadedAudioForCurrentRecording)
-        }
     }
 
     // MARK: Loading
@@ -405,6 +413,7 @@ public final class PlaybackCoordinator {
 
         snapshot.currentRecording = recording
         snapshot.elapsed = max(0, startAt)
+        snapshot.timelineRevision &+= 1
         snapshot.duration = nil
         snapshot.intent = intent
         snapshot.pauseReason = intent == .pause ? .user : nil
@@ -441,9 +450,7 @@ public final class PlaybackCoordinator {
         switch snapshot.transport {
         case .playing, .paused, .buffering:
             if currentItemID != nil {
-                snapshot.elapsed = 0
-                engine.seek(to: 0)
-                checkpoint(force: true)
+                seek(to: 0)
                 return
             }
             load(recording: recording,
@@ -465,11 +472,11 @@ public final class PlaybackCoordinator {
         case .idle, .completed, .failed:
             return
         case .paused:
-            // A deliberate user pause overrides a system pause reason; system reasons never
-            // override a deliberate pause.
-            if reason == .user {
-                snapshot.pauseReason = .user
-                snapshot.intent = .pause
+            // Route loss during a call cancels its pending automatic resume. An interruption
+            // arriving after route loss must likewise leave the existing pause intact.
+            if reason == .user || (snapshot.pauseReason != .user && reason == .mediaServicesReset)
+                || (snapshot.pauseReason == .interruption && reason != .interruption) {
+                snapshot.pauseReason = reason
                 checkpoint(force: true)
             }
             return
@@ -500,7 +507,6 @@ public final class PlaybackCoordinator {
         case .readyToPlay(let id, let duration):
             guard isCurrent(id) else { return }
             applyDuration(duration)
-            resetRetryState()
             if snapshot.intent == .play {
                 engine.play()
                 snapshot.transport = .playing
@@ -516,11 +522,15 @@ public final class PlaybackCoordinator {
         case .timeUpdated(let id, let time):
             guard isCurrent(id) else { return }
             snapshot.elapsed = time
-            if case .retrying = snapshot.transport, snapshot.intent == .play {
-                // The stalled item recovered on its own.
+            if case .retrying = snapshot.transport, snapshot.intent == .play, time > retryResumePosition {
+                // The original item has begun moving again, so a reload is unnecessary.
                 cancelRetry()
-                resetRetryState()
                 snapshot.transport = .playing
+            }
+            // A ready event or a playing-rate change can precede an immediate failure. Give
+            // the stream a fresh recovery budget only after two seconds of audio advance.
+            if firstFailureDate != nil, snapshot.transport == .playing, time >= recoveryStartPosition + 2 {
+                resetRetryState()
             }
             if snapshot.transport == .playing { checkpoint(force: false) }
 
@@ -531,10 +541,8 @@ public final class PlaybackCoordinator {
         case .resumedPlaying(let id):
             guard isCurrent(id) else { return }
             if snapshot.intent == .play {
-                if case .retrying = snapshot.transport {
-                    cancelRetry()
-                    resetRetryState()
-                }
+                // Leave a stalled item's watchdog armed until its clock actually advances.
+                if case .retrying = snapshot.transport { return }
                 snapshot.transport = .playing
             } else {
                 engine.pause()
@@ -542,6 +550,7 @@ public final class PlaybackCoordinator {
 
         case .stalled(let id):
             guard isCurrent(id), snapshot.intent == .play else { return }
+            if case .retrying = snapshot.transport { return }
             // Keep the item: AVPlayer often recovers. Reload only if the watchdog fires.
             scheduleRetry(position: snapshot.elapsed, killItem: false)
 
@@ -653,7 +662,11 @@ public final class PlaybackCoordinator {
     /// Schedules the next bounded retry, or fails with `exhaustedReason` when the policy is exhausted.
     private func scheduleRetry(position: TimeInterval, killItem: Bool, exhaustedReason: PlaybackFailureReason = .networkUnavailable) {
         let now = clock.now()
-        if firstFailureDate == nil { firstFailureDate = now; retryAttempt = 0 }
+        if firstFailureDate == nil {
+            firstFailureDate = now
+            recoveryStartPosition = position
+            retryAttempt = 0
+        }
         let elapsedSinceFirst = now.timeIntervalSince(firstFailureDate ?? now)
         guard let delay = retryPolicy.delay(forAttempt: retryAttempt, elapsedSinceFirstFailure: elapsedSinceFirst) else {
             fail(with: exhaustedReason, position: position)

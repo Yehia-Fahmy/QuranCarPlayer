@@ -11,7 +11,12 @@ public final class AudioSessionController {
     private let session = AVAudioSession.sharedInstance()
     private var tokens: [NSObjectProtocol] = []
     private var observation: ObservationToken?
-    private var isActive = false
+    private let sessionQueue = DispatchQueue(label: "QuranCarPlayer.AudioSession")
+    private var pendingSessionChange: DispatchWorkItem?
+    private var requestedActive: Bool? = false
+    private var sessionGeneration: UInt = 0
+    private var lastTransport: TransportState?
+    private var isInterrupted = false
 
     public init(coordinator: PlaybackCoordinator, engine: AVPlayerEngine) {
         self.coordinator = coordinator
@@ -19,9 +24,13 @@ public final class AudioSessionController {
         configureCategory()
         subscribe()
         observation = coordinator.addObserver { [weak self] snapshot in
-            // Activate only when audio is actually about to play (HIG: do not silence
-            // other sources, such as the car radio, before you are ready).
-            if snapshot.transport == .playing { self?.activateIfNeeded() }
+            guard let self, self.lastTransport != snapshot.transport else { return }
+            self.lastTransport = snapshot.transport
+            if snapshot.transport == .playing && !self.isInterrupted {
+                self.requestSession(active: true)
+            } else if !snapshot.isActivelyPlaying {
+                self.requestSession(active: false)
+            }
         }
     }
 
@@ -37,14 +46,41 @@ public final class AudioSessionController {
         }
     }
 
-    private func activateIfNeeded() {
-        guard !isActive else { return }
-        do {
-            try session.setActive(true)
-            isActive = true
-        } catch {
-            isActive = false
+    private func requestSession(active: Bool) {
+        guard requestedActive != active else { return }
+        requestedActive = active
+        sessionGeneration &+= 1
+        pendingSessionChange?.cancel()
+        applySession(active: active, generation: sessionGeneration, attempt: 0)
+    }
+
+    private func applySession(active: Bool, generation: UInt, attempt: Int) {
+        // setActive is synchronous on our minimum OS. Serialize requests off the main
+        // thread so pause/play or a route change always leaves the newest request last.
+        let change = DispatchWorkItem { [weak self, session] in
+            do {
+                try session.setActive(active, options: active ? [] : .notifyOthersOnDeactivation)
+            } catch {
+                DispatchQueue.main.async { [weak self] in
+                    guard let self, self.sessionGeneration == generation else { return }
+                    if attempt < 2 {
+                        self.applySession(active: active, generation: generation, attempt: attempt + 1)
+                    } else {
+                        // A later transport transition may retry. Periodic time updates do not.
+                        self.requestedActive = nil
+                    }
+                }
+            }
         }
+        pendingSessionChange = change
+        sessionQueue.asyncAfter(deadline: .now() + Double(attempt) * 0.5, execute: change)
+    }
+
+    private func invalidateSessionRequests() {
+        lastTransport = nil
+        // A queued activation could already be executing. Finish it before releasing focus.
+        requestedActive = nil
+        requestSession(active: false)
     }
 
     private func subscribe() {
@@ -60,10 +96,11 @@ public final class AudioSessionController {
                 guard let self else { return }
                 switch type {
                 case .began:
+                    self.isInterrupted = true
+                    self.invalidateSessionRequests()
                     self.coordinator.interruptionBegan()
                 case .ended:
-                    self.isActive = false
-                    if shouldResume { self.activateIfNeeded() }
+                    self.isInterrupted = false
                     self.coordinator.interruptionEnded(shouldResume: shouldResume)
                 @unknown default:
                     break
@@ -87,7 +124,8 @@ public final class AudioSessionController {
         tokens.append(center.addObserver(forName: AVAudioSession.mediaServicesWereResetNotification, object: session, queue: .main) { [weak self] _ in
             MainActor.assumeIsolated {
                 guard let self else { return }
-                self.isActive = false
+                self.isInterrupted = false
+                self.invalidateSessionRequests()
                 self.configureCategory()
                 self.engine.recreatePlayer()
                 self.coordinator.mediaServicesWereReset()
