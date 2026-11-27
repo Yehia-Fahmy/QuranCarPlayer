@@ -1,8 +1,10 @@
 # Chapter artwork attribution
 
-The app generates chapter artwork on-device from eight bundled portrait sources. Each portrait is cropped or reframed, resized, and color-treated, then combined with the canonical surah number and bilingual chapter names. Generated artwork remains available offline. Reframed images use a blurred extension of the same source photo to preserve comfortable spacing in square artwork.
+The app generates chapter artwork on-device from seven bundled portrait sources. Each portrait is cropped or reframed, resized, and color-treated, then combined with the canonical surah number and bilingual chapter names. Generated artwork remains available offline. Reframed images use a blurred extension of the same source photo to preserve comfortable spacing in square artwork.
 
-Mishary Rashid Alafasy does **not** use a portrait. The available candidate did not have sufficiently documented reuse rights, so the app uses its original chapter-typography fallback. The same fallback applies whenever a portrait is missing or not explicitly cleared.
+Mishary Rashid Alafasy and Mohammed Siddiq Al-Minshawi use the app’s original geometric chapter artwork, including its chapter badge, bilingual titles and reciter credit. The previous Minshawi photograph has a public-domain basis documented for Egypt and the U.S. The app omits that photograph from its international build. [Previous source record](https://commons.wikimedia.org/wiki/File:Elminshwey.jpg)
+
+The seven photo records below cite three international Creative Commons licenses, three Government Open Data License – India grants and one worldwide public-domain dedication. The license terms for both CC BY-SA 4.0 and GODL-India grant worldwide copyright permission subject to their attribution and other conditions. [Creative Commons license, section 2](https://creativecommons.org/licenses/by-sa/4.0/legalcode.en#s2) · [Government Open Data License – India](https://data.gov.in/Godl)
 
 ## Maher Al-Muaiqly
 
@@ -41,13 +43,6 @@ Mishary Rashid Alafasy does **not** use a portrait. The available candidate did 
 - Source: [Hussary.jpg](https://commons.wikimedia.org/wiki/File:Hussary.jpg)
 - Author: Zubairkhan1
 - License: worldwide public-domain release ([Commons licensing record](https://commons.wikimedia.org/wiki/File:Hussary.jpg#Licensing))
-- Modification: reframed over a blurred extension of the source, resized, and color-treated; chapter labels and number added.
-
-## Mohammed Siddiq Al-Minshawi
-
-- Source: [Elminshwey.jpg](https://commons.wikimedia.org/wiki/File:Elminshwey.jpg)
-- Author: unknown
-- License: public domain under the Egyptian and United States term analysis recorded on the Commons file page
 - Modification: reframed over a blurred extension of the source, resized, and color-treated; chapter labels and number added.
 
 ## Abdulbasit Abdulsamad

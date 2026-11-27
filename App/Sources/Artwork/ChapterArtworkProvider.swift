@@ -3,11 +3,7 @@ import CoreText
 import MediaPlayer
 import QuranCarPlayerCore
 
-/// Generates chapter artwork from eight bundled, release-cleared portraits.
-///
-/// Artwork is rendered on demand instead of bundling 912 chapter/portrait combinations.
-/// The source portraits work fully offline. Mishary, fixture reciters, and unknown
-/// reciters deliberately use the typography fallback.
+/// Renders chapter artwork offline using bundled portraits or original geometric typography.
 @MainActor
 final class ChapterArtworkProvider {
     enum SourceKind: Equatable {
@@ -58,13 +54,6 @@ final class ChapterArtworkProvider {
             detail: "Photo by Zubairkhan1 · worldwide public-domain release · reframed, resized, and color-treated",
             sourceURL: URL(string: "https://commons.wikimedia.org/wiki/File:Hussary.jpg")!,
             licenseURL: URL(string: "https://commons.wikimedia.org/wiki/File:Hussary.jpg#Licensing")!
-        ),
-        Attribution(
-            id: "mp3quran.minshawi",
-            title: "Mohammed Siddiq Al-Minshawi portrait",
-            detail: "Unknown photographer · public domain · reframed, resized, and color-treated",
-            sourceURL: URL(string: "https://commons.wikimedia.org/wiki/File:Elminshwey.jpg")!,
-            licenseURL: URL(string: "https://commons.wikimedia.org/wiki/Template:PD-Egypt")!
         ),
         Attribution(
             id: "mp3quran.abdulbasit",
@@ -209,10 +198,6 @@ final class ChapterArtworkProvider {
             return PortraitDescriptor(assetName: "ReciterHussary",
                                       color: UIColor(red: 0.24, green: 0.20, blue: 0.10, alpha: 1),
                                       verticalFocus: 0.50)
-        case "mp3quran.minshawi":
-            return PortraitDescriptor(assetName: "ReciterMinshawi",
-                                      color: UIColor(red: 0.14, green: 0.18, blue: 0.24, alpha: 1),
-                                      verticalFocus: 0.50)
         case "mp3quran.abdulbasit":
             return PortraitDescriptor(assetName: "ReciterAbdulbasit",
                                       color: UIColor(red: 0.12, green: 0.16, blue: 0.13, alpha: 1),
@@ -222,7 +207,6 @@ final class ChapterArtworkProvider {
                                       color: UIColor(red: 0.34, green: 0.25, blue: 0.12, alpha: 1),
                                       verticalFocus: 0.50)
         default:
-            // Mishary has no bundled portrait until its reuse rights are independently cleared.
             return nil
         }
     }
