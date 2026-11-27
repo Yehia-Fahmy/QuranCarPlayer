@@ -1,4 +1,5 @@
 import Foundation
+import AVFAudio
 #if canImport(FoundationNetworking)
 import FoundationNetworking
 #endif
@@ -13,6 +14,8 @@ public protocol AudioDownloadClient: Sendable {
 public enum AudioDownloadClientError: Error, Equatable {
     case invalidResponse
     case httpStatus(Int)
+    case tooLarge
+    case invalidAudio
     case emptyFile
     case writeFailed
 }
@@ -25,10 +28,18 @@ public final class URLSessionAudioDownloadClient: AudioDownloadClient, @unchecke
     private let configuration: URLSessionConfiguration
     private let fileManager: FileManager
 
-    public init(configuration: URLSessionConfiguration = .default,
-                fileManager: FileManager = .default) {
+    private let transferDirectory: URL
+    private let maximumBytes: Int64
+
+    // The largest chapter-two response across the nine bundled collections was 191,343,486 bytes.
+    public init(configuration: URLSessionConfiguration = .ephemeral,
+                fileManager: FileManager = .default,
+                transferDirectory: URL? = nil,
+                maximumBytes: Int64 = 256 * 1024 * 1024) {
         self.configuration = configuration
         self.fileManager = fileManager
+        self.transferDirectory = transferDirectory ?? fileManager.temporaryDirectory
+        self.maximumBytes = maximumBytes
     }
 
     public func download(from url: URL,
@@ -36,14 +47,34 @@ public final class URLSessionAudioDownloadClient: AudioDownloadClient, @unchecke
         let operation = StreamingDownloadOperation(url: url,
                                                    configuration: configuration,
                                                    fileManager: fileManager,
+                                                   transferDirectory: transferDirectory,
+                                                   maximumBytes: maximumBytes,
                                                    progress: progress)
-        return try await operation.start()
+        let file = try await operation.start()
+        do {
+            try Task.checkCancellation()
+            // A 200 response can still be an error page. Decode audio before publishing offline availability.
+            let audio = try AVAudioFile(forReading: file)
+            guard audio.length > 0,
+                  let sample = AVAudioPCMBuffer(pcmFormat: audio.processingFormat, frameCapacity: 1024) else {
+                throw AudioDownloadClientError.invalidAudio
+            }
+            try audio.read(into: sample)
+            guard sample.frameLength > 0 else { throw AudioDownloadClientError.invalidAudio }
+            return file
+        } catch {
+            try? fileManager.removeItem(at: file)
+            if error is CancellationError { throw error }
+            throw AudioDownloadClientError.invalidAudio
+        }
     }
 }
 
 private final class StreamingDownloadOperation: NSObject,
                                                 URLSessionDataDelegate,
                                                 @unchecked Sendable {
+    private let transferDirectory: URL
+    private let maximumBytes: Int64
     private let sourceURL: URL
     private let configuration: URLSessionConfiguration
     private let fileManager: FileManager
@@ -64,7 +95,11 @@ private final class StreamingDownloadOperation: NSObject,
     init(url: URL,
          configuration: URLSessionConfiguration,
          fileManager: FileManager,
+         transferDirectory: URL,
+         maximumBytes: Int64,
          progress: @escaping @Sendable (Double?) -> Void) {
+        self.transferDirectory = transferDirectory
+        self.maximumBytes = maximumBytes
         sourceURL = url
         self.configuration = configuration
         self.fileManager = fileManager
@@ -93,17 +128,19 @@ private final class StreamingDownloadOperation: NSObject,
 
         var createdTemporaryURL: URL?
         do {
-            let temporaryURL = fileManager.temporaryDirectory
-                .appendingPathComponent("qcp-\(UUID().uuidString).download")
+            try fileManager.createDirectory(at: transferDirectory, withIntermediateDirectories: true)
+            let temporaryURL = transferDirectory
+                .appendingPathComponent("qcp-\(UUID().uuidString).mp3")
             guard fileManager.createFile(atPath: temporaryURL.path, contents: nil) else {
                 throw AudioDownloadClientError.writeFailed
             }
             createdTemporaryURL = temporaryURL
             let handle = try FileHandle(forWritingTo: temporaryURL)
             let session = URLSession(configuration: configuration, delegate: self, delegateQueue: nil)
-            let request = URLRequest(url: sourceURL,
+            var request = URLRequest(url: sourceURL,
                                      cachePolicy: .reloadIgnoringLocalAndRemoteCacheData,
                                      timeoutInterval: 60)
+            request.setValue("identity", forHTTPHeaderField: "Accept-Encoding")
             let task = session.dataTask(with: request)
 
             lock.lock()
@@ -124,7 +161,7 @@ private final class StreamingDownloadOperation: NSObject,
             task.resume()
         } catch {
             if let createdTemporaryURL { try? fileManager.removeItem(at: createdTemporaryURL) }
-            finish(.failure(error))
+            finish(.failure(AudioDownloadClientError.writeFailed))
         }
     }
 
@@ -149,12 +186,23 @@ private final class StreamingDownloadOperation: NSObject,
             completionHandler(.cancel)
             return
         }
-        guard (200...299).contains(http.statusCode) else {
+        guard http.statusCode == 200 else {
             setTerminalError(AudioDownloadClientError.httpStatus(http.statusCode))
             completionHandler(.cancel)
             return
         }
-        if response.expectedContentLength > 0 {
+        guard http.value(forHTTPHeaderField: "Content-Range") == nil,
+              (http.value(forHTTPHeaderField: "Content-Encoding") ?? "identity").lowercased() == "identity" else {
+            setTerminalError(AudioDownloadClientError.invalidResponse)
+            completionHandler(.cancel)
+            return
+        }
+        guard response.expectedContentLength <= maximumBytes else {
+            setTerminalError(AudioDownloadClientError.tooLarge)
+            completionHandler(.cancel)
+            return
+        }
+        if response.expectedContentLength >= 0 {
             lock.qcpWithLock { expectedBytes = response.expectedContentLength }
         }
         completionHandler(.allow)
@@ -165,11 +213,14 @@ private final class StreamingDownloadOperation: NSObject,
                     didReceive data: Data) {
         do {
             try lock.qcpWithLock {
+                guard Int64(data.count) <= maximumBytes - receivedBytes else {
+                    throw AudioDownloadClientError.tooLarge
+                }
                 try output?.write(contentsOf: data)
                 receivedBytes += Int64(data.count)
             }
         } catch {
-            setTerminalError(AudioDownloadClientError.writeFailed)
+            setTerminalError(error as? AudioDownloadClientError ?? .writeFailed)
             dataTask.cancel()
             return
         }
@@ -197,6 +248,9 @@ private final class StreamingDownloadOperation: NSObject,
             guard receivedBytes > 0, let outputURL else {
                 return .failure(AudioDownloadClientError.emptyFile)
             }
+            guard expectedBytes == nil || expectedBytes == receivedBytes else {
+                return .failure(AudioDownloadClientError.invalidResponse)
+            }
             return .success(outputURL)
         }
         finish(result)
@@ -215,16 +269,19 @@ private final class StreamingDownloadOperation: NSObject,
                       result: Result<URL, Error>)? = lock.qcpWithLock {
             guard !finished else { return nil }
             finished = true
-            try? output?.close()
+            var finalResult = result
+            do {
+                try output?.close()
+            } catch {
+                finalResult = .failure(AudioDownloadClientError.writeFailed)
+            }
             output = nil
             let completion = continuation
             continuation = nil
             let activeSession = session
             session = nil
             task = nil
-            let finalResult: Result<URL, Error> = cancellationRequested
-                ? .failure(CancellationError())
-                : result
+            if cancellationRequested { finalResult = .failure(CancellationError()) }
             return (completion, activeSession, outputURL, finalResult)
         }
         guard let context else { return }

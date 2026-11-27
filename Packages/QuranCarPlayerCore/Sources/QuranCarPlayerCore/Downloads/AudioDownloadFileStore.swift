@@ -39,6 +39,9 @@ public enum AudioDownloadFileStoreError: Error, Equatable {
 public final class AudioDownloadFileStore: DownloadedAudioResolving, @unchecked Sendable {
     private let rootDirectory: URL
     private let fileManager: FileManager
+    // If relocation fails (for example while storage is full), the original path stays usable.
+    private var unmigratedDirectories: [RecordingCollectionID: [URL]] = [:]
+    var transferDirectory: URL { rootDirectory.appendingPathComponent(".transfers", isDirectory: true) }
     private let lock = NSLock()
     private var cachedSummary: DownloadStorageSummary = .empty
 
@@ -51,8 +54,11 @@ public final class AudioDownloadFileStore: DownloadedAudioResolving, @unchecked 
             values.isExcludedFromBackup = true
             var directory = rootDirectory
             try? directory.setResourceValues(values)
+            if fileManager.fileExists(atPath: transferDirectory.path) {
+                try fileManager.removeItem(at: transferDirectory)
+            }
             migrateLegacyCollectionDirectories()
-            try removeIncompleteFiles()
+            removeIncompleteFiles()
             removeInvalidAudioFiles()
             cachedSummary = calculateStorageSummary()
         } catch {
@@ -65,12 +71,24 @@ public final class AudioDownloadFileStore: DownloadedAudioResolving, @unchecked 
                                                         in: .userDomainMask).first else {
             throw AudioDownloadFileStoreError.unableToCreateDirectory
         }
-        return try AudioDownloadFileStore(
+        let store = try AudioDownloadFileStore(
             rootDirectory: applicationSupport
                 .appendingPathComponent("QuranCarPlayer", isDirectory: true)
                 .appendingPathComponent("Audio Downloads", isDirectory: true),
             fileManager: fileManager
         )
+        // Earlier versions staged foreground transfers directly in the app's temporary directory.
+        // Only their exact filename pattern is eligible for cleanup.
+        if let files = try? fileManager.contentsOfDirectory(at: fileManager.temporaryDirectory,
+                                                            includingPropertiesForKeys: nil) {
+            for file in files where file.pathExtension == "download" {
+                let stem = file.deletingPathExtension().lastPathComponent
+                if stem.hasPrefix("qcp-"), UUID(uuidString: String(stem.dropFirst(4))) != nil {
+                    try? fileManager.removeItem(at: file)
+                }
+            }
+        }
+        return store
     }
 
     public func localURL(for recording: RecordingID) -> URL? {
@@ -129,15 +147,9 @@ public final class AudioDownloadFileStore: DownloadedAudioResolving, @unchecked 
 
     public func remove(_ recording: RecordingID) throws {
         try lock.qcpWithLock {
-            var destinations = [destinationURL(for: recording)]
-            if let legacyCollectionKey = legacyEncodedCollection(recording.collection) {
-                destinations.append(
-                    rootDirectory
-                        .appendingPathComponent(legacyCollectionKey, isDirectory: true)
-                        .appendingPathComponent(String(format: "%03d.audio", recording.surahNumber))
-                )
-            }
-            destinations = destinations.filter { fileManager.fileExists(atPath: $0.path) }
+            let destinations = possibleURLs(for: recording).flatMap { url in
+                [url, url.deletingPathExtension().appendingPathExtension("audio")]
+            }.filter { fileManager.fileExists(atPath: $0.path) }
             guard !destinations.isEmpty else { return }
             do {
                 for destination in destinations {
@@ -162,7 +174,12 @@ public final class AudioDownloadFileStore: DownloadedAudioResolving, @unchecked 
                     try fileManager.removeItem(at: rootDirectory)
                 }
                 cachedSummary = .empty
+                unmigratedDirectories.removeAll()
                 try fileManager.createDirectory(at: rootDirectory, withIntermediateDirectories: true)
+                var values = URLResourceValues()
+                values.isExcludedFromBackup = true
+                var directory = rootDirectory
+                try directory.setResourceValues(values)
             } catch {
                 throw AudioDownloadFileStoreError.unableToRemoveFile
             }
@@ -189,7 +206,7 @@ public final class AudioDownloadFileStore: DownloadedAudioResolving, @unchecked 
                         includingPropertiesForKeys: [.isRegularFileKey, .fileSizeKey],
                         options: [.skipsHiddenFiles]
                       ) else { continue }
-                for file in files where file.pathExtension == "audio" && isValidFile(at: file) {
+                for file in files where isStoredAudio(file) && isValidFile(at: file) {
                     guard let number = Int(file.deletingPathExtension().lastPathComponent),
                           Surah.numberRange.contains(number) else { continue }
                     recordings.insert(RecordingID(collection: collection, surahNumber: number))
@@ -199,7 +216,7 @@ public final class AudioDownloadFileStore: DownloadedAudioResolving, @unchecked 
         }
     }
 
-    private func removeIncompleteFiles() throws {
+    private func removeIncompleteFiles() {
         guard let enumerator = fileManager.enumerator(at: rootDirectory,
                                                       includingPropertiesForKeys: nil) else { return }
         for case let url as URL in enumerator where url.lastPathComponent.hasSuffix(".download") {
@@ -211,7 +228,7 @@ public final class AudioDownloadFileStore: DownloadedAudioResolving, @unchecked 
         guard let enumerator = fileManager.enumerator(at: rootDirectory,
                                                       includingPropertiesForKeys: nil) else { return }
         for case let url as URL in enumerator
-        where url.pathExtension == "audio" && !isValidFile(at: url) {
+        where isStoredAudio(url) && !isValidFile(at: url) {
             try? fileManager.removeItem(at: url)
         }
     }
@@ -220,38 +237,33 @@ public final class AudioDownloadFileStore: DownloadedAudioResolving, @unchecked 
         let collectionKey = encodedCollection(recording.collection)
         return rootDirectory
             .appendingPathComponent(collectionKey, isDirectory: true)
-            .appendingPathComponent(String(format: "%03d.audio", recording.surahNumber))
+            .appendingPathComponent(String(format: "%03d.mp3", recording.surahNumber))
+    }
+
+    private func possibleURLs(for recording: RecordingID) -> [URL] {
+        let current = destinationURL(for: recording)
+        let otherDirectories = unmigratedDirectories[recording.collection] ?? []
+        return [current] + otherDirectories.map { $0.appendingPathComponent(current.lastPathComponent) }
     }
 
     private func availableURL(for recording: RecordingID) -> URL? {
-        let current = destinationURL(for: recording)
-        if isValidFile(at: current) { return current }
-        guard let legacyCollectionKey = legacyEncodedCollection(recording.collection) else {
-            return nil
+        for url in possibleURLs(for: recording) {
+            if isValidFile(at: url) { return url }
+            // Retry a migration interrupted by a full disk or transient file protection.
+            let legacy = url.deletingPathExtension().appendingPathExtension("audio")
+            if isValidFile(at: legacy), (try? fileManager.moveItem(at: legacy, to: url)) != nil { return url }
         }
-        let legacy = rootDirectory
-            .appendingPathComponent(legacyCollectionKey, isDirectory: true)
-            .appendingPathComponent(String(format: "%03d.audio", recording.surahNumber))
-        return isValidFile(at: legacy) ? legacy : nil
+        return nil
     }
 
     private func encodedCollection(_ collection: RecordingCollectionID) -> String {
         let components = CollectionPathComponents(provider: collection.provider,
                                                   collection: collection.collection)
         // Encoding this fixed pair of strings cannot fail.
-        let data = try! JSONEncoder().encode(components)
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .sortedKeys
+        let data = try! encoder.encode(components)
         return data.base64EncodedString()
-            .replacingOccurrences(of: "/", with: "_")
-            .replacingOccurrences(of: "+", with: "-")
-            .replacingOccurrences(of: "=", with: "")
-    }
-
-    private func legacyEncodedCollection(_ collection: RecordingCollectionID) -> String? {
-        guard !collection.provider.contains(":"), !collection.collection.contains(":") else {
-            return nil
-        }
-        return Data("\(collection.provider):\(collection.collection)".utf8)
-            .base64EncodedString()
             .replacingOccurrences(of: "/", with: "_")
             .replacingOccurrences(of: "+", with: "-")
             .replacingOccurrences(of: "=", with: "")
@@ -277,8 +289,7 @@ public final class AudioDownloadFileStore: DownloadedAudioResolving, @unchecked 
         return RecordingCollectionID(provider: provider, collection: collection)
     }
 
-    /// PR #2 used a single colon-delimited component. Current known IDs contain no colon, so
-    /// those directories can be losslessly migrated to the structured encoding.
+    /// Merge both historical JSON key orders and the original colon-delimited directory format.
     private func migrateLegacyCollectionDirectories() {
         guard let directories = try? fileManager.contentsOfDirectory(
             at: rootDirectory,
@@ -288,14 +299,17 @@ public final class AudioDownloadFileStore: DownloadedAudioResolving, @unchecked 
         for oldDirectory in directories {
             guard let collection = decodedCollection(oldDirectory.lastPathComponent) else { continue }
             let currentName = encodedCollection(collection)
-            guard oldDirectory.lastPathComponent != currentName else { continue }
+            let isCanonicalDirectory = oldDirectory.lastPathComponent == currentName
             let currentDirectory = rootDirectory.appendingPathComponent(currentName, isDirectory: true)
             do {
                 try fileManager.createDirectory(at: currentDirectory, withIntermediateDirectories: true)
                 let files = try fileManager.contentsOfDirectory(at: oldDirectory,
                                                                 includingPropertiesForKeys: nil)
-                for file in files {
-                    let destination = currentDirectory.appendingPathComponent(file.lastPathComponent)
+                for file in files where isStoredAudio(file) {
+                    if isCanonicalDirectory && file.pathExtension == "mp3" { continue }
+                    let destination = currentDirectory
+                        .appendingPathComponent(file.deletingPathExtension().lastPathComponent)
+                        .appendingPathExtension("mp3")
                     if !fileManager.fileExists(atPath: destination.path) {
                         try fileManager.moveItem(at: file, to: destination)
                     } else if isValidFile(at: destination) {
@@ -305,9 +319,11 @@ public final class AudioDownloadFileStore: DownloadedAudioResolving, @unchecked 
                         try fileManager.moveItem(at: file, to: destination)
                     }
                 }
-                try? fileManager.removeItem(at: oldDirectory)
+                if !isCanonicalDirectory, try fileManager.contentsOfDirectory(atPath: oldDirectory.path).isEmpty {
+                    try fileManager.removeItem(at: oldDirectory)
+                }
             } catch {
-                // Leave the legacy directory intact; storedRecordings can still enumerate it.
+                if !isCanonicalDirectory { unmigratedDirectories[collection, default: []].append(oldDirectory) }
             }
         }
     }
@@ -321,7 +337,7 @@ public final class AudioDownloadFileStore: DownloadedAudioResolving, @unchecked 
         var count = 0
         var bytes: Int64 = 0
         for case let url as URL in enumerator {
-            guard url.pathExtension == "audio",
+            guard isStoredAudio(url),
                   let values = try? url.resourceValues(forKeys: [.isRegularFileKey, .fileSizeKey]),
                   values.isRegularFile == true,
                   let fileSize = values.fileSize,
@@ -330,6 +346,10 @@ public final class AudioDownloadFileStore: DownloadedAudioResolving, @unchecked 
             bytes += Int64(fileSize)
         }
         return DownloadStorageSummary(fileCount: count, byteCount: bytes)
+    }
+
+    private func isStoredAudio(_ url: URL) -> Bool {
+        url.pathExtension == "mp3" || url.pathExtension == "audio"
     }
 
     private func isValidFile(at url: URL) -> Bool {

@@ -39,17 +39,19 @@ public final class AudioDownloadManager {
     @ObservationIgnored private let store: AudioDownloadFileStore
     @ObservationIgnored private let client: AudioDownloadClient
     @ObservationIgnored private var states: [RecordingID: AudioDownloadState] = [:]
-    @ObservationIgnored private var tasks: [RecordingID: Task<Void, Never>] = [:]
+    @ObservationIgnored private var tasks: [UUID: Task<Void, Never>] = [:]
+    @ObservationIgnored private var pending: [(recording: RecordingID, url: URL, id: UUID)] = []
+    private static let maximumActiveTransfers = 2
     @ObservationIgnored private var operationIDs: [RecordingID: UUID] = [:]
     @ObservationIgnored private var downloadedRecordings: Set<RecordingID> = []
     @ObservationIgnored private var catalogOrder: [RecordingID: Int] = [:]
 
     public init(catalog: AudioCatalog,
                 store: AudioDownloadFileStore,
-                client: AudioDownloadClient = URLSessionAudioDownloadClient()) {
+                client: AudioDownloadClient? = nil) {
         self.catalog = catalog
         self.store = store
-        self.client = client
+        self.client = client ?? URLSessionAudioDownloadClient(transferDirectory: store.transferDirectory)
         downloadedRecordings = store.storedRecordings()
         var order = 0
         var seenCollections = Set<RecordingCollectionID>()
@@ -98,7 +100,7 @@ public final class AudioDownloadManager {
     }
 
     public func download(_ recording: RecordingID) {
-        guard tasks[recording] == nil else { return }
+        guard operationIDs[recording] == nil else { return }
         guard let source = try? catalog.source(for: recording),
               !source.isTestFixture,
               !source.url.isFileURL else {
@@ -109,46 +111,64 @@ public final class AudioDownloadManager {
         updateState(.downloading(progress: nil), for: recording)
         let operationID = UUID()
         operationIDs[recording] = operationID
-        tasks[recording] = Task { [weak self, client, store] in
-            do {
-                let temporaryURL = try await client.download(from: source.url) { [weak self] progress in
-                    Task { @MainActor [weak self] in
-                        guard let self, self.operationIDs[recording] == operationID else { return }
-                        self.updateState(.downloading(progress: progress), for: recording)
-                    }
-                }
-                defer { try? FileManager.default.removeItem(at: temporaryURL) }
-                try Task.checkCancellation()
-                try store.installDownloadedFile(at: temporaryURL, for: recording)
-                guard let self, self.operationIDs[recording] == operationID else { return }
-                self.tasks[recording] = nil
-                self.operationIDs[recording] = nil
-                self.downloadedRecordings.insert(recording)
-                self.updateState(.downloaded, for: recording)
-                self.summaryRevision &+= 1
-            } catch is CancellationError {
-                guard let self, self.operationIDs[recording] == operationID else { return }
-                self.tasks[recording] = nil
-                self.operationIDs[recording] = nil
-                self.updateState(.notDownloaded, for: recording)
-            } catch let error as AudioDownloadFileStoreError {
-                guard let self, self.operationIDs[recording] == operationID else { return }
-                self.tasks[recording] = nil
-                self.operationIDs[recording] = nil
-                self.updateState(error == .invalidDownloadedFile ? .failed(.network) : .failed(.storage),
-                                 for: recording)
-            } catch {
-                guard let self, self.operationIDs[recording] == operationID else { return }
-                self.tasks[recording] = nil
-                self.operationIDs[recording] = nil
-                self.updateState(.failed(.network), for: recording)
+        pending.append((recording, source.url, operationID))
+        startPendingDownloads()
+    }
+
+    private func startPendingDownloads() {
+        while tasks.count < Self.maximumActiveTransfers, !pending.isEmpty {
+            let request = pending.removeFirst()
+            tasks[request.id] = Task { [weak self] in
+                await self?.runDownload(request.recording, url: request.url, operationID: request.id)
             }
         }
     }
 
+    private func runDownload(_ recording: RecordingID, url: URL, operationID: UUID) async {
+        defer {
+            tasks[operationID] = nil
+            if operationIDs[recording] == operationID { operationIDs[recording] = nil }
+            startPendingDownloads()
+        }
+        do {
+            try Task.checkCancellation()
+            let temporaryURL = try await client.download(from: url) { [weak self] progress in
+                Task { @MainActor [weak self] in
+                    guard let self, self.operationIDs[recording] == operationID else { return }
+                    self.updateState(.downloading(progress: progress), for: recording)
+                }
+            }
+            defer { try? FileManager.default.removeItem(at: temporaryURL) }
+            try Task.checkCancellation()
+            try store.installDownloadedFile(at: temporaryURL, for: recording)
+            downloadedRecordings.insert(recording)
+            updateState(.downloaded, for: recording)
+            summaryRevision &+= 1
+        } catch {
+            // A cancellation may have been followed by a new request for this recording.
+            guard operationIDs[recording] == operationID else { return }
+            let failure: AudioDownloadFailure
+            switch error {
+            case is CancellationError:
+                updateState(.notDownloaded, for: recording)
+                return
+            case AudioDownloadFileStoreError.invalidDownloadedFile:
+                failure = .network
+            case is AudioDownloadFileStoreError, AudioDownloadClientError.writeFailed,
+                 AudioDownloadClientError.tooLarge:
+                failure = .storage
+            default:
+                failure = .network
+            }
+            updateState(.failed(failure), for: recording)
+        }
+    }
+
     public func cancel(_ recording: RecordingID) {
-        operationIDs[recording] = nil
-        tasks.removeValue(forKey: recording)?.cancel()
+        if let operationID = operationIDs.removeValue(forKey: recording) {
+            pending.removeAll { $0.id == operationID }
+            tasks[operationID]?.cancel()
+        }
         updateState(.notDownloaded, for: recording)
     }
 
@@ -176,8 +196,8 @@ public final class AudioDownloadManager {
     public func removeAll() {
         cleanupFailed = false
         operationIDs.removeAll()
+        pending.removeAll()
         for task in tasks.values { task.cancel() }
-        tasks.removeAll()
         states.removeAll()
         stateRevision &+= 1
         do {
