@@ -110,17 +110,15 @@ design choice, and the requirement has not been changed.
   Whether `updateSections` resets the scroll position is unknown and must be observed in the
   prototype.
 - The current surah is marked with the native playing indicator so it is visually findable.
-- A labeled **Current Surah** shortcut section sits above the Quran-ordered Surahs list when a
-  current recording exists (locked fallback; not exact scroll restore).
-- `CPListTemplate.maximumItemCount` is read at connection time and logged. If it is below 114
-  the list is limited to that count **and** an alert tells the user; the limit is never
-  applied silently. The Current Surah shortcut reserves one list slot when present.
+- A **Current Surah** shortcut shares the chapter list's section when the vehicle has room.
+- On vehicles that can show the whole list, the Surahs tab displays chapters in Quran order.
+  Shorter lists offer numbered ranges. Within a range, paging controls keep chapter 114
+  reachable even at very small row limits. Navigation stays on the car display.
 
-### Locked list-position fallback (16 November 2026)
-Exact scroll restoration remains impossible. The Surahs tab now shows a labeled
-**Current Surah** shortcut above the full Quran-ordered list when a current recording exists.
-The Listen tab still exposes Now Playing / Continue Listening. The shortcut does **not**
-satisfy exact scroll restoration and must not be reported as if it does.
+### List-position fallback
+
+CarPlay controls scroll restoration. The **Current Surah** shortcut and the Listen tab's
+Now Playing and Continue Listening actions give the listener direct access to their chapter.
 
 ### Phone [Untested]
 The SwiftUI list uses `ScrollViewReader.scrollTo(anchor)` with a stable surah number

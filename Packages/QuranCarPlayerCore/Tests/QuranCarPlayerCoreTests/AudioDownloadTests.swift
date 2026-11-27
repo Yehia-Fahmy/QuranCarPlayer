@@ -93,6 +93,48 @@ struct AudioDownloadFileStoreTests {
         #expect(try Data(contentsOf: migratedURL) == Data("legacy".utf8))
     }
 
+    @Test("Both historical JSON key orders merge with colon directories and survive relaunch")
+    func stablePathsAfterMigration() throws {
+        let root = temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let collection = FixtureRemoteCatalog.collection.id
+        let oldKeys = [
+            #"{"provider":"remote","collection":"1"}"#,
+            #"{"collection":"1","provider":"remote"}"#,
+            "remote:1"
+        ]
+        for (offset, key) in oldKeys.enumerated() {
+            let name = Data(key.utf8).base64EncodedString().replacingOccurrences(of: "=", with: "")
+            let directory = root.appendingPathComponent(name, isDirectory: true)
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+            try Data([UInt8(offset + 1)]).write(to: directory.appendingPathComponent(String(format: "%03d.audio", offset + 1)))
+        }
+        let store = try AudioDownloadFileStore(rootDirectory: root)
+        let reopened = try AudioDownloadFileStore(rootDirectory: root)
+        for number in 1...3 {
+            let recording = RecordingID(collection: collection, surahNumber: number)
+            let url = try #require(store.localURL(for: recording))
+            #expect(url.pathExtension == "mp3")
+            #expect(try Data(contentsOf: url) == Data([UInt8(number)]))
+            #expect((0..<100).allSatisfy { _ in reopened.localURL(for: recording) == url })
+            try reopened.remove(recording)
+            #expect(store.localURL(for: recording) == nil)
+        }
+        #expect(reopened.storageSummary() == .empty)
+    }
+
+    @Test("Abandoned incoming transfers are removed at startup")
+    func recoverAbandonedTransfer() throws {
+        let root = temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = try AudioDownloadFileStore(rootDirectory: root)
+        try FileManager.default.createDirectory(at: store.transferDirectory, withIntermediateDirectories: true)
+        let partial = store.transferDirectory.appendingPathComponent("qcp-leftover.mp3")
+        try Data([1]).write(to: partial)
+        _ = try AudioDownloadFileStore(rootDirectory: root)
+        #expect(!FileManager.default.fileExists(atPath: partial.path))
+    }
+
     private func temporaryDirectory() -> URL {
         FileManager.default.temporaryDirectory
             .appendingPathComponent("QuranCarPlayerTests-\(UUID().uuidString)", isDirectory: true)
@@ -238,9 +280,29 @@ struct AudioDownloadManagerTests {
         #expect(store.localURL(for: FixtureRemoteCatalog.recording) == nil)
     }
 
+    @Test("Only two transfers run and cancelling a queued recording never starts it")
+    func limitsConcurrentTransfers() async throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let client = SuspendedDownloadClient()
+        let store = try AudioDownloadFileStore(rootDirectory: directory)
+        let manager = AudioDownloadManager(catalog: FixtureRemoteCatalog(), store: store, client: client)
+        let recordings = (1...4).map { RecordingID(collection: FixtureRemoteCatalog.collection.id, surahNumber: $0) }
+        for recording in recordings { manager.download(recording) }
+        await waitUntil { client.startCount == 2 }
+        #expect(client.startCount == 2)
+        manager.cancel(recordings[2])
+        manager.cancel(recordings[0])
+        await waitUntil { client.startCount == 3 }
+        #expect(client.startCount == 3)
+        #expect(manager.state(for: recordings[2]) == .notDownloaded)
+        #expect(manager.downloadItems.map(\.recording) == [recordings[1], recordings[3]])
+        manager.removeAll()
+    }
+
     private func waitUntil(_ predicate: @escaping @MainActor () -> Bool) async {
-        for _ in 0..<100 where !predicate() {
-            await Task.yield()
+        for _ in 0..<200 where !predicate() {
+            try? await Task.sleep(for: .milliseconds(5))
         }
     }
 }
@@ -262,15 +324,14 @@ private struct ImmediateDownloadClient: AudioDownloadClient {
 
 private final class SuspendedDownloadClient: AudioDownloadClient, @unchecked Sendable {
     private let lock = NSLock()
-    private var started = false
+    private var starts = 0
 
-    var isStarted: Bool {
-        lock.qcpWithLock { started }
-    }
+    var startCount: Int { lock.qcpWithLock { starts } }
+    var isStarted: Bool { startCount > 0 }
 
     func download(from url: URL,
                   progress: @escaping @Sendable (Double?) -> Void) async throws -> URL {
-        lock.qcpWithLock { started = true }
+        lock.qcpWithLock { starts += 1 }
         progress(nil)
         try await Task.sleep(nanoseconds: 60_000_000_000)
         throw TestDownloadError.failed
@@ -301,4 +362,73 @@ private struct FixtureRemoteCatalog: AudioCatalog {
                                url: URL(string: "https://example.com/018.mp3")!,
                                isTestFixture: false)
     }
+}
+
+@Suite("Audio HTTP transfers")
+struct AudioDownloadClientTests {
+    @Test("A complete decodable recording is returned to the caller")
+    func validAudio() async throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let client = makeClient(directory: directory)
+        let file = try await client.download(from: URL(string: "https://example.test/valid")!) { _ in }
+        #expect(try Data(contentsOf: file) == AudioResponseProtocol.mp3)
+    }
+
+    @Test("Incomplete, oversized and unplayable responses leave no file",
+          arguments: ["partial", "range", "short", "declared-large", "chunked-large", "html"])
+    func rejectsInvalidResponse(scenario: String) async throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let client = makeClient(directory: directory)
+        let url = URL(string: "https://example.test/")!.appendingPathComponent(scenario)
+        let expected: AudioDownloadClientError
+        switch scenario {
+        case "partial": expected = .httpStatus(206)
+        case "declared-large", "chunked-large": expected = .tooLarge
+        case "html": expected = .invalidAudio
+        default: expected = .invalidResponse
+        }
+        await #expect(throws: expected) { try await client.download(from: url) { _ in } }
+        #expect(try FileManager.default.contentsOfDirectory(atPath: directory.path).isEmpty)
+    }
+
+    private func makeClient(directory: URL) -> URLSessionAudioDownloadClient {
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [AudioResponseProtocol.self]
+        return URLSessionAudioDownloadClient(configuration: configuration, transferDirectory: directory, maximumBytes: 16_384)
+    }
+}
+
+private final class AudioResponseProtocol: URLProtocol, @unchecked Sendable {
+    // 24 silent MPEG-1 Layer III frames at 128 kbps, 44.1 kHz (about 0.627 seconds).
+    static let mp3: Data = {
+        let frame = Data([0xFF, 0xFB, 0x90, 0x64]) + Data(repeating: 0, count: 413)
+        return (0..<24).reduce(into: Data()) { output, _ in output.append(frame) }
+    }()
+
+    override class func canInit(with request: URLRequest) -> Bool { true }
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+
+    override func startLoading() {
+        let url = request.url!
+        let scenario = url.lastPathComponent
+        var data = Self.mp3
+        var headers = ["Content-Type": "audio/mpeg"]
+        switch scenario {
+        case "range": headers["Content-Range"] = "bytes 0-10007/20016"
+        case "short": headers["Content-Length"] = String(data.count + 1)
+        case "declared-large": headers["Content-Length"] = "32768"
+        case "chunked-large": data = Data(repeating: 1, count: 16_385)
+        case "html": data = Data("<html>Temporarily unavailable</html>".utf8)
+        default: headers["Content-Length"] = String(data.count)
+        }
+        let response = HTTPURLResponse(url: url, statusCode: scenario == "partial" ? 206 : 200,
+                                       httpVersion: "HTTP/1.1", headerFields: headers)!
+        client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+        client?.urlProtocol(self, didLoad: data)
+        client?.urlProtocolDidFinishLoading(self)
+    }
+
+    override func stopLoading() {}
 }

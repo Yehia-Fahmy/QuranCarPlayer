@@ -10,6 +10,8 @@ public enum PauseReason: String, Codable, Sendable, Equatable {
     case routeLost
     /// A system interruption (call, Siri, navigation prompt) paused playback.
     case interruption
+    /// The media server restarted; only an explicit playback action may resume.
+    case mediaServicesReset
 }
 
 /// The persisted listening session used for Continue Listening.

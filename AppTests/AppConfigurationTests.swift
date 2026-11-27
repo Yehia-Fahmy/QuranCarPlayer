@@ -29,12 +29,18 @@ struct AppConfigurationTests {
         #expect(modes.contains("audio"))
     }
 
+    @Test("The processed app bundle targets iPhone")
+    func supportedDeviceFamily() throws {
+        let families = try #require(bundle.object(forInfoDictionaryKey: "UIDeviceFamily") as? [Int])
+        #expect(families == [1])
+    }
+
     @Test("Display name and marketing version match the 1.0 store candidate")
     func displayNameAndVersion() throws {
-        #expect(bundle.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String == "Quran CarPlayer")
+        #expect(bundle.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String == "Tilawah Miles")
         #expect(bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String == "1.0.0")
         let build = try #require(bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String)
-        #expect((Int(build) ?? 0) >= 3)
+        #expect((Int(build) ?? 0) >= 4)
     }
 
     @Test("Privacy manifest declares UserDefaults CA92.1 only")
@@ -63,7 +69,7 @@ struct AppConfigurationTests {
         #expect(L10n.string("settings.privacyPolicy", .arabic) == "سياسة الخصوصية")
         #expect(L10n.string("settings.support", .arabic) == "الدعم")
         #expect(L10n.string("surahs.current", .english) == "Current Surah")
-        #expect(L10n.string("app.title", .english) == "Quran CarPlayer")
+        #expect(L10n.string("app.title", .english) == "Tilawah Miles")
     }
 
     @Test("App icon catalog merges into the bundle so CarPlay can resolve both scales")
@@ -219,6 +225,47 @@ struct AppConfigurationTests {
         let customSize = try #require(nowPlaying.image(at: CGSize(width: 300, height: 300)))
         #expect(commonSize.size == CGSize(width: 256, height: 256))
         #expect(customSize.size == CGSize(width: 300, height: 300))
+    }
+
+    @Test("CarPlay thumbnail badges center the visible digits for one, two and three digit chapters")
+    @MainActor
+    func artworkBadgeAlignment() throws {
+        let catalog = try SurahCatalog.bundled()
+        let provider = ChapterArtworkProvider()
+        let side = 120
+        for number in [1, 74, 114] {
+            let surah = try #require(catalog.surah(number))
+            let thumbnail = provider.image(for: surah, reciter: nil, language: .english,
+                                           size: CGSize(width: side, height: side))
+            let image = try #require(thumbnail.cgImage)
+            var pixels = [UInt8](repeating: 0, count: side * side * 4)
+            try pixels.withUnsafeMutableBytes { buffer in
+                let bitmap = try #require(CGContext(data: buffer.baseAddress, width: side, height: side,
+                                                    bitsPerComponent: 8, bytesPerRow: side * 4,
+                                                    space: CGColorSpaceCreateDeviceRGB(),
+                                                    bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue
+                                                        | CGBitmapInfo.byteOrder32Big.rawValue))
+                bitmap.draw(image, in: CGRect(x: 0, y: 0, width: side, height: side))
+            }
+            // The cream badge is the only light fill in this compact fallback artwork.
+            // Scan between the two cream edges on each row to exclude the dark corners.
+            var badge = CGRect.null
+            var ink = CGRect.null
+            for y in 0..<side {
+                let row = y * side * 4
+                let cream = (0..<side).filter { x in
+                    pixels[row + x * 4] > 235 && pixels[row + x * 4 + 1] > 220
+                }
+                guard let left = cream.first, let right = cream.last else { continue }
+                badge = badge.union(CGRect(x: left, y: y, width: right - left + 1, height: 1))
+                for x in left...right where pixels[row + x * 4] < 120 {
+                    ink = ink.union(CGRect(x: x, y: y, width: 1, height: 1))
+                }
+            }
+            try #require(!ink.isNull && !badge.isNull)
+            #expect(abs(ink.midX - badge.midX) <= 1.5)
+            #expect(abs(ink.midY - badge.midY) <= 1.5)
+        }
     }
 
     @Test("Every bundled portrait has a source and license record")

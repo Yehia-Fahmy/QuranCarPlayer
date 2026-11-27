@@ -48,6 +48,8 @@ public struct PlaybackSnapshot: Equatable, Sendable {
     /// Current recording loaded (or attempted), independent of transport state.
     public var currentRecording: RecordingID?
     public var elapsed: TimeInterval = 0
+    /// Changes on explicit seeking and loading, independently of periodic progress updates.
+    public internal(set) var timelineRevision: UInt = 0
     /// Nil until metadata loads. UI must not fabricate progress when nil.
     public var duration: TimeInterval?
     public var isTestAudio = false

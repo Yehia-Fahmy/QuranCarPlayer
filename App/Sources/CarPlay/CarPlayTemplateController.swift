@@ -7,15 +7,20 @@ import QuranCarPlayerCore
 /// template. Template and item instances are preserved for the life of the connection
 /// so lists are not rebuilt (and reset) on every state change.
 @MainActor
-final class CarPlayTemplateController: NSObject {
+final class CarPlayTemplateController: NSObject, CPSessionConfigurationDelegate {
     private let interfaceController: CPInterfaceController
     private let coordinator: PlaybackCoordinator
     private let artworkProvider: ChapterArtworkProvider
 
+    private var sessionConfiguration: CPSessionConfiguration?
     private var tabBar: CPTabBarTemplate?
     private var listenTemplate: CPListTemplate?
     private var surahsTemplate: CPListTemplate?
     private var recitersTemplate: CPListTemplate?
+    private weak var chapterRangeTemplate: CPListTemplate?
+    private var visibleChapterGroup: ClosedRange<Int>?
+    private var chapterPage = 0
+    private var reciterPage = 0
 
     /// One item per surah, created once. Index = surah number - 1.
     private var surahItems: [CPListItem] = []
@@ -51,6 +56,7 @@ final class CarPlayTemplateController: NSObject {
         let maxTabs = CPTabBarTemplate.maximumTabCount
         CarPlayDiagnostics.log("limits: maximumItemCount=\(maxItems) maximumSectionCount=\(maxSections) maximumTabCount=\(maxTabs)")
 
+        sessionConfiguration = CPSessionConfiguration(delegate: self)
         buildSurahItems()
         buildReciterItems()
 
@@ -62,9 +68,10 @@ final class CarPlayTemplateController: NSObject {
         surahs.tabImage = UIImage(systemName: "list.number")
         surahsTemplate = surahs
 
-        let reciters = CPListTemplate(title: L10n.string("reciters.title", language), sections: [reciterSection()])
+        let reciters = CPListTemplate(title: L10n.string("reciters.title", language), sections: [])
         reciters.tabImage = UIImage(systemName: "person.wave.2")
         recitersTemplate = reciters
+        updateReciterPage()
 
         let nowPlaying = CPNowPlayingTemplate.shared
         nowPlaying.isUpNextButtonEnabled = false
@@ -77,13 +84,8 @@ final class CarPlayTemplateController: NSObject {
         }
         let tabBar = CPTabBarTemplate(templates: tabs)
         self.tabBar = tabBar
-        interfaceController.setRootTemplate(tabBar, animated: false) { [weak self] success, error in
+        interfaceController.setRootTemplate(tabBar, animated: false) { _, error in
             if let error { CarPlayDiagnostics.log("setRootTemplate failed: \(error)") }
-            guard success, let self else { return }
-            if Surah.count > maxItems {
-                // Never truncate silently: tell the user in CarPlay (HIG: report errors in the car).
-                self.presentListLimitAlert(maxItems: maxItems)
-            }
         }
 
         observation = coordinator.addObserver { [weak self] snapshot in
@@ -94,6 +96,7 @@ final class CarPlayTemplateController: NSObject {
     func stop() {
         observation?.cancel()
         observation = nil
+        sessionConfiguration = nil
         finishPendingSelection()
         tabBar = nil
         listenTemplate = nil
@@ -142,41 +145,102 @@ final class CarPlayTemplateController: NSObject {
         "\(surah.number). \(surah.displayName(for: language))"
     }
 
-    /// Surahs tab sections: optional Current Surah shortcut, then the Quran-ordered list.
-    /// Exact scroll restore is impossible with public `CPListTemplate` APIs; the shortcut is the locked fallback.
+    /// A single section also works on vehicles that allow only one section per template.
     private func surahSections() -> [CPListSection] {
-        var sections: [CPListSection] = []
-        let maxItems = max(0, CPListTemplate.maximumItemCount)
-        var remaining = maxItems
-
-        if let surah = coordinator.currentSurah, remaining > 0 {
-            let item = CPListItem(text: L10n.string("surahs.current", language),
-                                  detailText: surahText(surah),
-                                  image: chapterImage(surah: surah, reciter: coordinator.currentReciter ?? coordinator.selectedReciter))
-            item.accessoryType = .disclosureIndicator
-            item.handler = { [weak self] _, completion in
-                guard let self else { completion(); return }
-                let expected = self.coordinator.selectedReciter.map {
-                    RecordingID(collection: $0.collection.id, surahNumber: surah.number)
-                }
-                self.beginSelection(expecting: expected, presentNowPlaying: true, completion: completion)
-                self.coordinator.selectSurah(surah.number)
-            }
-            sections.append(CPListSection(items: [item]))
-            remaining -= 1
+        guard CPListTemplate.maximumSectionCount > 0 else { return [] }
+        let browser = CarPlayChapterBrowser(maximumItems: CPListTemplate.maximumItemCount,
+                                            hasCurrent: coordinator.currentSurah != nil)
+        var items: [CPListItem] = []
+        if browser.showsShortcut, let surah = coordinator.currentSurah {
+            let shortcut = CPListItem(text: L10n.string("surahs.current", language),
+                                      detailText: surahText(surah),
+                                      image: chapterImage(surah: surah, reciter: coordinator.currentReciter))
+            shortcut.handler = surahItems[surah.number - 1].handler
+            items.append(shortcut)
         }
-
+        if browser.showsAllChapters {
+            items.append(contentsOf: surahItems)
+        } else {
+            for group in browser.groups {
+                let first = coordinator.surahCatalog.surah(group.lowerBound)
+                let last = coordinator.surahCatalog.surah(group.upperBound)
+                let item = CPListItem(text: rangeTitle(group),
+                                      detailText: [first, last].compactMap { $0?.displayName(for: language) }.joined(separator: " – "))
+                item.accessoryType = .disclosureIndicator
+                item.handler = { [weak self] _, completion in
+                    guard let self else { completion(); return }
+                    self.openChapterGroup(group, completion: completion)
+                }
+                items.append(item)
+            }
+        }
         let header = coordinator.selectedReciter.map {
             "\(L10n.string("reciter.label", language)): \($0.displayName(for: language))"
         }
-        let visible = Array(surahItems.prefix(remaining))
-        sections.append(CPListSection(items: visible, header: header, sectionIndexTitle: nil))
-        return sections
+        return [CPListSection(items: items, header: header, sectionIndexTitle: nil)]
     }
 
-    private func reciterSection() -> CPListSection {
+    private func rangeTitle(_ range: ClosedRange<Int>) -> String {
+        "\(range.lowerBound)–\(range.upperBound)"
+    }
+
+    private func openChapterGroup(_ group: ClosedRange<Int>, completion: @escaping () -> Void) {
+        let template = CPListTemplate(title: rangeTitle(group), sections: [])
+        chapterRangeTemplate = template
+        visibleChapterGroup = group
+        chapterPage = 0
+        updateChapterPage()
+        interfaceController.pushTemplate(template, animated: true) { _, error in
+            if let error { CarPlayDiagnostics.log("pushTemplate(chapters) failed: \(error)") }
+            completion()
+        }
+    }
+
+    private func updateChapterPage() {
+        guard let template = chapterRangeTemplate, let group = visibleChapterGroup else { return }
+        let pages = CarPlayChapterBrowser.pages(in: group, maximumItems: CPListTemplate.maximumItemCount)
+        guard !pages.isEmpty else { return }
+        chapterPage = min(chapterPage, pages.count - 1)
+        let range = pages[chapterPage]
+        let items = range.map { surahItems[$0 - 1] }
+        let header = pages.count > 1 ? rangeTitle(range) : nil
+        template.updateSections([CPListSection(items: items, header: header, sectionIndexTitle: nil)])
+        setPageButtons(on: template, page: chapterPage, count: pages.count) { [weak self] page in
+            self?.chapterPage = page
+            self?.updateChapterPage()
+        }
+    }
+
+    private func updateReciterPage() {
+        guard let template = recitersTemplate else { return }
         let items = coordinator.audioCatalog.reciters.compactMap { reciterItems[$0.id] }
-        return CPListSection(items: items)
+        guard !items.isEmpty, CPListTemplate.maximumItemCount > 0 else { return }
+        let pages = CarPlayChapterBrowser.pages(in: 0...(items.count - 1), maximumItems: CPListTemplate.maximumItemCount)
+        reciterPage = min(reciterPage, pages.count - 1)
+        template.updateSections([CPListSection(items: Array(items[pages[reciterPage]]))])
+        setPageButtons(on: template, page: reciterPage, count: pages.count) { [weak self] page in
+            self?.reciterPage = page
+            self?.updateReciterPage()
+        }
+    }
+
+    private func setPageButtons(on template: CPListTemplate, page: Int, count: Int,
+                                selectPage: @escaping (Int) -> Void) {
+        var controls: [CPBarButton] = []
+        if page > 0 {
+            controls.append(CPBarButton(title: L10n.string("carplay.previousPage", language)) { _ in selectPage(page - 1) })
+        }
+        if page + 1 < count {
+            controls.append(CPBarButton(title: L10n.string("carplay.nextPage", language)) { _ in selectPage(page + 1) })
+        }
+        template.trailingNavigationBarButtons = controls
+    }
+
+    func sessionConfiguration(_ sessionConfiguration: CPSessionConfiguration,
+                              limitedUserInterfacesChanged limitedUserInterfaces: CPLimitableUserInterface) {
+        surahsTemplate?.updateSections(surahSections())
+        updateChapterPage()
+        updateReciterPage()
     }
 
     private func listenSection(_ snapshot: PlaybackSnapshot) -> CPListSection {
@@ -318,7 +382,8 @@ final class CarPlayTemplateController: NSObject {
         recitersTemplate?.tabTitle = L10n.string("reciters.title", language)
         if let tabBar { tabBar.updateTemplates(tabBar.templates) }
         surahsTemplate?.updateSections(surahSections())
-        recitersTemplate?.updateSections([reciterSection()])
+        updateReciterPage()
+        updateChapterPage()
         if let snapshot = lastSnapshot { listenTemplate?.updateSections([listenSection(snapshot)]) }
     }
 
@@ -416,12 +481,33 @@ final class CarPlayTemplateController: NSObject {
         }
     }
 
-    private func presentListLimitAlert(maxItems: Int) {
-        CarPlayDiagnostics.log("maximumItemCount=\(maxItems) is below 114; list is visibly limited")
-        let ok = CPAlertAction(title: L10n.string("carplay.ok", language), style: .default) { [weak self] _ in
-            self?.interfaceController.dismissTemplate(animated: true) { _, _ in }
+}
+
+/// Prefer a flat catalog when it fits. Otherwise present ranges and use at most one
+/// additional template, even if a head unit exposes just one or two rows.
+struct CarPlayChapterBrowser {
+    let showsShortcut: Bool
+    let showsAllChapters: Bool
+    let groups: [ClosedRange<Int>]
+
+    init(maximumItems: Int, hasCurrent: Bool) {
+        let limit = min(max(0, maximumItems), Surah.count + 1)
+        showsShortcut = hasCurrent && limit > 1
+        let availableRows = showsShortcut ? limit - 1 : limit
+        showsAllChapters = Surah.count <= availableRows
+        if showsAllChapters || availableRows == 0 {
+            groups = []
+        } else {
+            let minimumGroupSize = (Surah.count + availableRows - 1) / availableRows
+            groups = Self.pages(in: Surah.numberRange, maximumItems: max(limit, minimumGroupSize))
         }
-        let alert = CPAlertTemplate(titleVariants: [L10n.string("carplay.listLimit", language)], actions: [ok])
-        interfaceController.presentTemplate(alert, animated: true, completion: nil)
+    }
+
+    static func pages(in group: ClosedRange<Int>, maximumItems: Int) -> [ClosedRange<Int>] {
+        guard maximumItems > 0 else { return [] }
+        let size = min(group.count, maximumItems)
+        return stride(from: group.lowerBound, through: group.upperBound, by: size).map { start in
+            start...min(start + size - 1, group.upperBound)
+        }
     }
 }
