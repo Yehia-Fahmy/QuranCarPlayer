@@ -58,7 +58,7 @@ Quran Foundation describes the technical information its services may log in its
 
 ### Minshawi’s portrait
 
-When the app needs this portrait, it checks the App Store storefront through StoreKit. In the Canadian and U.S. storefronts it can fetch one historical JPEG from Wikimedia Commons over HTTPS and cache it privately on your iPhone for offline display. Wikimedia receives the request for that fixed image, including your IP address. The request contains no chapter number, listening position or account identifier. Where the image is unavailable, the app draws geometric artwork locally. See the [Wikimedia privacy policy](https://foundation.wikimedia.org/wiki/Policy:Privacy_policy).
+When the app needs this portrait, it checks the App Store storefront through StoreKit. In the Canadian and U.S. storefronts it can fetch one historical JPEG from Wikimedia Commons over HTTPS and cache it privately on your iPhone for offline display. Wikimedia logs image requests, including the IP address and image URL, and can derive an approximate location from the IP address. Its traffic logs are generally purged after 90 days. See [Wikimedia’s request-log documentation](https://wikitech.wikimedia.org/wiki/Data_Platform/Data_Lake/Traffic/Webrequest). The request contains no chapter number, listening position or account identifier. Where the image is unavailable, the app draws geometric artwork locally. See the [Wikimedia privacy policy](https://foundation.wikimedia.org/wiki/Policy:Privacy_policy).
 
 ### Links you open
 
