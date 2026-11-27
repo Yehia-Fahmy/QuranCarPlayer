@@ -56,6 +56,10 @@ Those requests necessarily include ordinary technical request data that any HTTP
 
 Quran Foundation describes the technical information its services may log in its [privacy policy](https://quran.com/privacy). A recording choice may reveal religious interests. The app does not create a religious profile or use listening activity for advertising, profiling, or AI training. Playing a saved chapter reads the audio from your device.
 
+### Minshawi’s portrait
+
+When the app needs this portrait, it checks the App Store storefront through StoreKit. In the Canadian and U.S. storefronts it can fetch one historical JPEG from Wikimedia Commons over HTTPS and cache it privately on your iPhone for offline display. Wikimedia receives the request for that fixed image, including your IP address. The request contains no chapter number, listening position or account identifier. Where the image is unavailable, the app draws geometric artwork locally. See the [Wikimedia privacy policy](https://foundation.wikimedia.org/wiki/Policy:Privacy_policy).
+
 ### Links you open
 
 If you tap attribution or license links in Settings (for example Wikimedia Commons or license pages), those open in your browser or system link handler. Activity on those websites is subject to the websites’ own privacy practices.

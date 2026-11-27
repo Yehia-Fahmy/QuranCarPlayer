@@ -1,5 +1,6 @@
 import Foundation
 import AVFAudio
+import Combine
 import QuranCarPlayerCore
 
 /// Composition root. Wires the shared coordinator to the real AVPlayer engine,
@@ -14,6 +15,7 @@ final class AppEnvironment {
     let engine: AVPlayerEngine
     let nowPlaying: NowPlayingBridge
     let audioSession: AudioSessionController
+    private var artworkChanges: AnyCancellable?
 
     /// Names of the bundled test-tone fixtures (see Scripts/generate-test-audio.py).
     nonisolated static let fixtureNames = ["test-tone-a", "test-tone-b", "test-tone-c"]
@@ -90,7 +92,7 @@ final class AppEnvironment {
                                           isOtherAudioPlaying: {
                                               AVAudioSession.sharedInstance().isOtherAudioPlaying
                                           })
-        let artworkProvider = ChapterArtworkProvider()
+        let artworkProvider = ChapterArtworkProvider(regionalPortrait: isUITest ? nil : RegionalMinshawiPortraitStore())
         self.artworkProvider = artworkProvider
         nowPlaying = NowPlayingBridge(
             coordinator: coordinator,
@@ -102,5 +104,8 @@ final class AppEnvironment {
             }
         )
         audioSession = AudioSessionController(coordinator: coordinator, engine: engine)
+        artworkChanges = artworkProvider.objectWillChange.sink { [weak nowPlaying] _ in
+            nowPlaying?.refreshArtwork()
+        }
     }
 }

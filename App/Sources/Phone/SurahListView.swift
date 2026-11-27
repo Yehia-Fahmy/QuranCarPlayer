@@ -64,7 +64,7 @@ struct SurahListView: View {
 struct SurahRow: View {
     let surah: Surah
     let reciter: Reciter?
-    let artworkProvider: ChapterArtworkProvider
+    @ObservedObject var artworkProvider: ChapterArtworkProvider
     let language: ResolvedLanguage
     let isCurrent: Bool
     let isPlaying: Bool
@@ -105,7 +105,7 @@ struct SurahRow: View {
 
 struct ContinueListeningRow: View {
     let coordinator: PlaybackCoordinator
-    let artworkProvider: ChapterArtworkProvider
+    @ObservedObject var artworkProvider: ChapterArtworkProvider
     let session: PlaybackSession
     let language: ResolvedLanguage
 

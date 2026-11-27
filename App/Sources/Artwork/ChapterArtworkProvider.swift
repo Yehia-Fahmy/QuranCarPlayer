@@ -1,11 +1,13 @@
 import UIKit
 import CoreText
 import MediaPlayer
+import Combine
 import QuranCarPlayerCore
 
-/// Renders chapter artwork offline using bundled portraits or original geometric typography.
+/// Renders chapter artwork from available portraits or original geometric typography.
 @MainActor
-final class ChapterArtworkProvider {
+final class ChapterArtworkProvider: ObservableObject {
+    @Published private var portraitRevision: UInt = 0
     enum SourceKind: Equatable {
         case licensedPortrait
         case typographyFallback
@@ -26,6 +28,13 @@ final class ChapterArtworkProvider {
             detail: "Photo by Real avdulmouhd · Adapted artwork licensed under CC BY-SA 4.0 · cropped and color-treated",
             sourceURL: URL(string: "https://commons.wikimedia.org/wiki/File:Professor_Maher_Al-Mu%27aiqly.jpg")!,
             licenseURL: URL(string: "https://creativecommons.org/licenses/by-sa/4.0/")!
+        ),
+        Attribution(
+            id: "mp3quran.mishary",
+            title: "Mishary Rashid (2017-05-03)",
+            detail: "© 2017 Islamisches Kulturzentrum Graz · CC BY-NC 2.0 · cropped and color-treated for noncommercial chapter artwork",
+            sourceURL: URL(string: "https://www.flickr.com/photos/islamgraz/33739058574/")!,
+            licenseURL: URL(string: "https://creativecommons.org/licenses/by-nc/2.0/")!
         ),
         Attribution(
             id: "mp3quran.sudais",
@@ -56,10 +65,17 @@ final class ChapterArtworkProvider {
             licenseURL: URL(string: "https://commons.wikimedia.org/wiki/File:Hussary.jpg#Licensing")!
         ),
         Attribution(
+            id: "mp3quran.minshawi",
+            title: "Mohammed Siddiq Al-Minshawi portrait (1954)",
+            detail: "Unknown photographer · Radio Magazine, 12 June 1954 · public domain in Canada and the United States · cropped and color-treated",
+            sourceURL: URL(string: "https://commons.wikimedia.org/wiki/File:Al-Minshawi_1954.jpg")!,
+            licenseURL: URL(string: "https://commons.wikimedia.org/wiki/File:Al-Minshawi_1954.jpg#Licensing")!
+        ),
+        Attribution(
             id: "mp3quran.abdulbasit",
             title: "Abdulbasit Abdulsamad portrait",
-            detail: "Prasar Bharati, Ministry of Information and Broadcasting, Government of India · GODL-India · reframed, resized, and color-treated",
-            sourceURL: URL(string: "https://commons.wikimedia.org/wiki/File:Abdul_Basit_Abdul_Samad_at_Centenary_Celebration_Of_Darul_Uloom_Deoband_1980.jpg")!,
+            detail: "Prasar Bharati, Ministry of Information and Broadcasting, Government of India · GODL-India · 1980 film frame, cropped and lightened",
+            sourceURL: URL(string: "https://commons.wikimedia.org/wiki/File:Centenary_Celebration_Of_Darul_Uloom_Deoband.webm#t=268.92")!,
             licenseURL: URL(string: "https://data.gov.in/sites/default/files/Gazette_Notification_OGDL.pdf")!
         ),
         Attribution(
@@ -72,17 +88,27 @@ final class ChapterArtworkProvider {
     ]
 
     private struct PortraitDescriptor {
-        let assetName: String
+        let assetName: String?
         let color: UIColor
         let verticalFocus: CGFloat
+        var zoom: CGFloat = 1
     }
 
     private static let titleThreshold: CGFloat = 180
     private let cache = NSCache<NSString, UIImage>()
+    private let regionalPortrait: RegionalMinshawiPortraitStore?
+    private let requestRegionalPortrait: () -> Void
 
-    init() {
+    init(regionalPortrait: RegionalMinshawiPortraitStore? = nil,
+         requestRegionalPortrait: (() -> Void)? = nil) {
+        self.regionalPortrait = regionalPortrait
+        self.requestRegionalPortrait = requestRegionalPortrait ?? { regionalPortrait?.request() }
         cache.countLimit = 180
         cache.totalCostLimit = 40 * 1_024 * 1_024
+        regionalPortrait?.onChange = { [weak self] in
+            self?.cache.removeAllObjects()
+            self?.portraitRevision &+= 1
+        }
     }
 
     func sourceKind(for reciterID: ReciterID?) -> SourceKind {
@@ -95,6 +121,7 @@ final class ChapterArtworkProvider {
                size: CGSize) -> UIImage {
         let dimension = max(64, min(1_024, Int(ceil(max(size.width, size.height)))))
         let reciterKey = reciter?.id.rawValue ?? "none"
+        if reciterKey == "mp3quran.minshawi" { requestRegionalPortrait() }
         let key = "\(surah.number)|\(reciterKey)|\(language.localeIdentifier)|\(dimension)" as NSString
         if let cached = cache.object(forKey: key) { return cached }
 
@@ -151,9 +178,8 @@ final class ChapterArtworkProvider {
             let rect = CGRect(origin: .zero, size: size)
             let descriptor = portraitDescriptor(for: reciter?.id)
 
-            if let descriptor,
-               let portrait = UIImage(named: descriptor.assetName) {
-                drawAspectFill(portrait, in: rect, verticalFocus: descriptor.verticalFocus)
+            if let descriptor, let portrait = portraitImage(for: descriptor) {
+                drawAspectFill(portrait, in: rect, framing: descriptor)
                 drawGradient(in: context, rect: rect, color: descriptor.color)
                 drawChapterLabel(surah: surah,
                                  reciter: reciter,
@@ -176,20 +202,33 @@ final class ChapterArtworkProvider {
         }
     }
 
+    private func portraitImage(for descriptor: PortraitDescriptor) -> UIImage? {
+        if let name = descriptor.assetName { return UIImage(named: name) }
+        return regionalPortrait?.image
+    }
+
     private func portraitDescriptor(for reciterID: ReciterID?) -> PortraitDescriptor? {
         switch reciterID?.rawValue {
         case "mp3quran.maher":
             return PortraitDescriptor(assetName: "ReciterMaher",
                                       color: UIColor(red: 0.09, green: 0.30, blue: 0.26, alpha: 1),
                                       verticalFocus: 0.43)
+        case "mp3quran.mishary":
+            // The original group photograph places the reciter at its center.
+            return PortraitDescriptor(assetName: "ReciterMishary",
+                                      color: UIColor(red: 0.20, green: 0.18, blue: 0.12, alpha: 1),
+                                      verticalFocus: 0.44,
+                                      zoom: 2.48)
         case "mp3quran.sudais":
             return PortraitDescriptor(assetName: "ReciterSudais",
                                       color: UIColor(red: 0.09, green: 0.21, blue: 0.32, alpha: 1),
-                                      verticalFocus: 0.36)
+                                      verticalFocus: 0.32,
+                                      zoom: 1.24)
         case "mp3quran.shuraim":
             return PortraitDescriptor(assetName: "ReciterShuraim",
                                       color: UIColor(red: 0.36, green: 0.22, blue: 0.17, alpha: 1),
-                                      verticalFocus: 0.37)
+                                      verticalFocus: 0.34,
+                                      zoom: 1.40)
         case "mp3quran.saad":
             return PortraitDescriptor(assetName: "ReciterSaad",
                                       color: UIColor(red: 0.27, green: 0.12, blue: 0.13, alpha: 1),
@@ -197,7 +236,13 @@ final class ChapterArtworkProvider {
         case "mp3quran.hussary":
             return PortraitDescriptor(assetName: "ReciterHussary",
                                       color: UIColor(red: 0.24, green: 0.20, blue: 0.10, alpha: 1),
-                                      verticalFocus: 0.50)
+                                      verticalFocus: 0.37,
+                                      zoom: 1.39)
+        case "mp3quran.minshawi":
+            guard regionalPortrait?.image != nil else { return nil }
+            return PortraitDescriptor(assetName: nil,
+                                      color: UIColor(red: 0.14, green: 0.18, blue: 0.24, alpha: 1),
+                                      verticalFocus: 0.32)
         case "mp3quran.abdulbasit":
             return PortraitDescriptor(assetName: "ReciterAbdulbasit",
                                       color: UIColor(red: 0.12, green: 0.16, blue: 0.13, alpha: 1),
@@ -205,18 +250,19 @@ final class ChapterArtworkProvider {
         case "mp3quran.yasser":
             return PortraitDescriptor(assetName: "ReciterYasser",
                                       color: UIColor(red: 0.34, green: 0.25, blue: 0.12, alpha: 1),
-                                      verticalFocus: 0.50)
+                                      verticalFocus: 0.47,
+                                      zoom: 1.86)
         default:
             return nil
         }
     }
 
-    private func drawAspectFill(_ image: UIImage, in rect: CGRect, verticalFocus: CGFloat) {
-        let scale = max(rect.width / image.size.width, rect.height / image.size.height)
+    private func drawAspectFill(_ image: UIImage, in rect: CGRect, framing: PortraitDescriptor) {
+        let scale = framing.zoom * max(rect.width / image.size.width, rect.height / image.size.height)
         let drawnSize = CGSize(width: image.size.width * scale, height: image.size.height * scale)
         let horizontalOverflow = max(0, drawnSize.width - rect.width)
         let verticalOverflow = max(0, drawnSize.height - rect.height)
-        let focusedTop = max(0, min(verticalOverflow, drawnSize.height * verticalFocus - rect.height * 0.42))
+        let focusedTop = max(0, min(verticalOverflow, drawnSize.height * framing.verticalFocus - rect.height * 0.42))
         image.draw(in: CGRect(x: rect.minX - horizontalOverflow / 2,
                               y: rect.minY - focusedTop,
                               width: drawnSize.width,

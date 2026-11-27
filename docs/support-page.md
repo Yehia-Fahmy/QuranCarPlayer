@@ -86,7 +86,7 @@ The App supports English and Arabic strings. Choose **System**, **English**, or 
 
 ### Attribution and audio source
 
-New recordings are performed by the reciter named in the player and supplied by [Quran Foundation](https://quran.foundation/). Settings lists the reciters and the photo credits and licenses.
+New recordings are performed by the reciter named in the player and supplied by [Quran Foundation](https://quran.foundation/). Settings lists the reciters and the photo credits and licenses. Eight portraits come with the app. In the Canadian and U.S. App Store storefronts, Minshawi’s 1954 portrait can be loaded from Wikimedia Commons. Geometric artwork appears before it loads or when it is unavailable.
 
 ### Terms of use
 
