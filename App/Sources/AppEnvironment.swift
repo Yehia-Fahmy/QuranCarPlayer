@@ -27,9 +27,8 @@ final class AppEnvironment {
         }
 
         // UI tests pass -QCPUITestReset so each launch starts from defaults
-        // and plays bundled test tones. A normal launch streams the MP3Quran
-        // snapshot. A previous test's language or saved session must not leak
-        // through the shared simulator container.
+        // and plays bundled test tones. Production streams Quran Foundation and
+        // can also play a previously downloaded edition. Tests use separate storage.
         let isUITest = ProcessInfo.processInfo.arguments.contains("-QCPUITestReset")
         let audioCatalog: AudioCatalog
         let defaultReciter: ReciterID
@@ -44,9 +43,9 @@ final class AppEnvironment {
             defaultReciter = FixtureAudioCatalog.defaultReciterID
         } else {
             do {
-                let catalog = try MP3QuranCatalog.bundled()
-                audioCatalog = catalog
-                defaultReciter = MP3QuranCatalog.defaultReciterID
+                let legacy = try MP3QuranCatalog.bundled()
+                audioCatalog = CatalogWithLegacyDownloads(current: QuranFoundationCatalog(), legacy: legacy)
+                defaultReciter = QuranFoundationCatalog.defaultReciterID
             } catch {
                 fatalError("MP3Quran catalog snapshot is invalid: \(error)")
             }

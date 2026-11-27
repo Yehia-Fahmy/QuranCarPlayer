@@ -115,9 +115,7 @@ final class CarPlayTemplateController: NSObject, CPSessionConfigurationDelegate 
             item.playingIndicatorLocation = .trailing
             item.handler = { [weak self] _, completion in
                 guard let self else { completion(); return }
-                let expected = self.coordinator.selectedReciter.map {
-                    RecordingID(collection: $0.collection.id, surahNumber: surah.number)
-                }
+                let expected = self.coordinator.selectedRecording(forSurah: surah.number)
                 self.beginSelection(expecting: expected, presentNowPlaying: true, completion: completion)
                 // The coordinator notifies observers synchronously; the selection resolves in `apply`.
                 self.coordinator.selectSurah(surah.number)

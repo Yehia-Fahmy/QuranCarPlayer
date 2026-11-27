@@ -1,25 +1,28 @@
 import Foundation
 import QuranCarPlayerCore
 import Testing
+@testable import QuranCarPlayer
 
 @MainActor
 struct OfflinePlaybackTests {
-    @Test("AVPlayer advances using only a saved chapter after the store reopens")
+    @Test("AVPlayer plays a build 5 MP3Quran download from the Foundation chapter list")
     func playSavedChapter() async throws {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: root) }
-        let store = try AudioDownloadFileStore(rootDirectory: root)
-        // Only the installed copy can play. The catalog's fallback file does not exist.
-        let catalog = FixtureAudioCatalog(fixtureURLs: [root.appendingPathComponent("missing.mp3")])
-        let reciter = try #require(catalog.reciter(FixtureAudioCatalog.defaultReciterID))
-        let recording = RecordingID(collection: reciter.collection.id, surahNumber: 114)
+        let catalog = AppEnvironment.shared.coordinator.audioCatalog
+        let reciter = try #require(catalog.reciter(MP3QuranCatalog.defaultReciterID))
+        let recording = RecordingID(collection: RecordingCollectionID(provider: "mp3quran", collection: "102"),
+                                    surahNumber: 114)
+        #expect(reciter.collection.id != recording.collection)
+        #expect(throws: AudioCatalogError.self) { try catalog.source(for: recording) }
         // 160 silent MPEG-1 Layer III frames give AVPlayer four seconds of valid media.
         let frame = Data([0xFF, 0xFB, 0x90, 0x64]) + Data(repeating: 0, count: 413)
         var audio = Data()
         for _ in 0..<160 { audio.append(frame) }
-        let incoming = root.appendingPathComponent("incoming.mp3")
-        try audio.write(to: incoming)
-        try store.installDownloadedFile(at: incoming, for: recording)
+        // This is the exact on-disk collection directory used in build 5 for Maher's moshaf 102.
+        let oldDirectory = root.appendingPathComponent("eyJjb2xsZWN0aW9uIjoiMTAyIiwicHJvdmlkZXIiOiJtcDNxdXJhbiJ9")
+        try FileManager.default.createDirectory(at: oldDirectory, withIntermediateDirectories: true)
+        try audio.write(to: oldDirectory.appendingPathComponent("114.mp3"))
 
         let engine = AVPlayerEngine()
         defer { engine.stop() }

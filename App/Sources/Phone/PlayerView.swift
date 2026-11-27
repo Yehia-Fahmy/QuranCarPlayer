@@ -64,7 +64,7 @@ struct PlayerView: View {
 
                 if let downloadManager,
                    let recording = snapshot.currentRecording,
-                   downloadManager.canDownload(recording) {
+                   downloadManager.state(for: recording) == .downloaded || downloadManager.canDownload(recording) {
                     RecordingDownloadControl(downloadManager: downloadManager,
                                              recording: recording,
                                              language: language)

@@ -31,7 +31,7 @@ public final class URLSessionAudioDownloadClient: AudioDownloadClient, @unchecke
     private let transferDirectory: URL
     private let maximumBytes: Int64
 
-    // The largest chapter-two response across the nine bundled collections was 191,343,486 bytes.
+    // The largest Al-Baqarah response across the nine Foundation editions was 225,745,024 bytes.
     public init(configuration: URLSessionConfiguration = .ephemeral,
                 fileManager: FileManager = .default,
                 transferDirectory: URL? = nil,
