@@ -37,10 +37,12 @@ struct AppConfigurationTests {
 
     @Test("Display name and marketing version match the 1.0 store candidate")
     func displayNameAndVersion() throws {
-        #expect(bundle.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String == "Tilawah Miles")
+        #expect(bundle.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String == "Quran Carplayer")
+        #expect(L10n.string("app.title", .english) == "Quran Carplayer")
+        #expect(L10n.string("app.title", .arabic) == "Quran Carplayer")
         #expect(bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String == "1.0.0")
         let build = try #require(bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String)
-        #expect((Int(build) ?? 0) >= 4)
+        #expect((Int(build) ?? 0) >= 5)
     }
 
     @Test("Privacy manifest declares UserDefaults CA92.1 only")
@@ -69,7 +71,6 @@ struct AppConfigurationTests {
         #expect(L10n.string("settings.privacyPolicy", .arabic) == "سياسة الخصوصية")
         #expect(L10n.string("settings.support", .arabic) == "الدعم")
         #expect(L10n.string("surahs.current", .english) == "Current Surah")
-        #expect(L10n.string("app.title", .english) == "Tilawah Miles")
     }
 
     @Test("App icon catalog merges into the bundle so CarPlay can resolve both scales")
@@ -138,7 +139,7 @@ struct AppConfigurationTests {
         #expect(environment.coordinator.selectedReciter?.englishName == "Maher Al-Muaiqly")
     }
 
-    @Test("Cleared reciters use portraits while Mishary and fixtures use typography")
+    @Test("Cleared reciters use portraits while Minshawi, Mishary and fixtures use typography")
     @MainActor
     func artworkSourcePolicy() throws {
         let provider = ChapterArtworkProvider()
@@ -147,7 +148,7 @@ struct AppConfigurationTests {
         #expect(provider.sourceKind(for: ReciterID("mp3quran.shuraim")) == .licensedPortrait)
         #expect(provider.sourceKind(for: ReciterID("mp3quran.saad")) == .licensedPortrait)
         #expect(provider.sourceKind(for: ReciterID("mp3quran.hussary")) == .licensedPortrait)
-        #expect(provider.sourceKind(for: ReciterID("mp3quran.minshawi")) == .licensedPortrait)
+        #expect(provider.sourceKind(for: ReciterID("mp3quran.minshawi")) == .typographyFallback)
         #expect(provider.sourceKind(for: ReciterID("mp3quran.abdulbasit")) == .licensedPortrait)
         #expect(provider.sourceKind(for: ReciterID("mp3quran.yasser")) == .licensedPortrait)
         #expect(provider.sourceKind(for: ReciterID("mp3quran.mishary")) == .typographyFallback)
@@ -157,7 +158,7 @@ struct AppConfigurationTests {
         #expect(UIImage(named: "ReciterShuraim") != nil)
         #expect(UIImage(named: "ReciterSaad") != nil)
         #expect(UIImage(named: "ReciterHussary") != nil)
-        #expect(UIImage(named: "ReciterMinshawi") != nil)
+        #expect(UIImage(named: "ReciterMinshawi") == nil)
         #expect(UIImage(named: "ReciterAbdulbasit") != nil)
         #expect(UIImage(named: "ReciterYasser") != nil)
         #expect(UIImage(named: "ReciterMishary") == nil)
@@ -273,7 +274,7 @@ struct AppConfigurationTests {
     func artworkAttributionComplete() throws {
         #expect(ChapterArtworkProvider.attributions.map(\.id) == [
             "mp3quran.maher", "mp3quran.sudais", "mp3quran.shuraim",
-            "mp3quran.saad", "mp3quran.hussary", "mp3quran.minshawi",
+            "mp3quran.saad", "mp3quran.hussary",
             "mp3quran.abdulbasit", "mp3quran.yasser",
         ])
         #expect(ChapterArtworkProvider.attributions.allSatisfy {

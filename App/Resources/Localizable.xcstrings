@@ -3,8 +3,8 @@
   "strings" : {
     "app.title" : {
       "localizations" : {
-        "ar" : { "stringUnit" : { "state" : "translated", "value" : "Tilawah Miles" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Tilawah Miles" } }
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "Quran Carplayer" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Quran Carplayer" } }
       }
     },
     "surahs.title" : {

@@ -1,4 +1,4 @@
-# Privacy Policy — Tilawah Miles
+# Privacy Policy — Quran Carplayer
 
 **Effective date:** 16 November 2026  
 **Last updated:** 27 November 2026\
@@ -7,7 +7,7 @@
 
 > **Hosting note (not for published page):** Publish this document at a stable HTTPS URL (for example under your site or GitHub Pages). Enter that URL as the Privacy Policy URL in App Store Connect and link it from in-app Settings when available.
 
-This Privacy Policy describes how **Tilawah Miles** (“the App”) handles information. It applies to the iPhone and Apple CarPlay experience of the App.
+This Privacy Policy describes how **Quran Carplayer** (“the App”) handles information. It applies to the iPhone and Apple CarPlay experience of the App.
 
 ## Summary
 
@@ -19,7 +19,7 @@ This Privacy Policy describes how **Tilawah Miles** (“the App”) handles info
 
 ## Who we are
 
-Tilawah Miles is developed by Yehia Fahmy. For privacy questions, email [yehia.fahmy@uwaterloo.ca](mailto:yehia.fahmy@uwaterloo.ca).
+Quran Carplayer is developed by Yehia Fahmy. For privacy questions, email [yehia.fahmy@uwaterloo.ca](mailto:yehia.fahmy@uwaterloo.ca).
 
 ## Information stored on your device
 
@@ -111,6 +111,6 @@ Questions about privacy or this policy:
 
 **Email:** [yehia.fahmy@uwaterloo.ca](mailto:yehia.fahmy@uwaterloo.ca)\
 **Developer:** Yehia Fahmy  
-**App:** Tilawah Miles
+**App:** Quran Carplayer
 
 © 2026 Yehia Fahmy

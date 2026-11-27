@@ -1,12 +1,12 @@
-# Support — Tilawah Miles
+# Support — Quran Carplayer
 
-**App:** Tilawah Miles\
+**App:** Quran Carplayer\
 **Developer:** Yehia Fahmy  
 **Support email:** [yehia.fahmy@uwaterloo.ca](mailto:yehia.fahmy@uwaterloo.ca)
 
 > **Hosting note (not for published page):** Publish this document at a stable HTTPS Support URL for App Store Connect. Prefer a short public URL that opens cleanly on iPhone Safari.
 
-Thank you for using Tilawah Miles — a free Quran audio player for iPhone with Apple CarPlay support. This page covers how to get help, common questions, and what the App does and does not include.
+Thank you for using Quran Carplayer — a free Quran audio player for iPhone with Apple CarPlay support. This page covers how to get help, common questions, and what the App does and does not include.
 
 ## Contact
 
@@ -36,9 +36,9 @@ We aim to reply as soon as practical. There is no in-app chat or account login.
 
 ## Getting started
 
-1. Open **Tilawah Miles** on iPhone.
+1. Open **Quran Carplayer** on iPhone.
 2. Choose a **reciter**, then a **surah**, and press play.
-3. For CarPlay: connect your iPhone to a CarPlay-capable vehicle (or use Apple’s CarPlay Simulator / Device Hub tools during development). Launch Tilawah Miles from the CarPlay home screen.
+3. For CarPlay: connect your iPhone to a CarPlay-capable vehicle (or use Apple’s CarPlay Simulator / Device Hub tools during development). Launch Quran Carplayer from the CarPlay home screen.
 4. Optional: download surahs from the phone UI for offline use (Downloads management is in Settings).
 
 ## FAQ
@@ -64,7 +64,7 @@ Your iPhone stores preferences, listening progress and downloads. Apple can back
 ### CarPlay: playback won’t start or resumes unexpectedly
 
 - Confirm CarPlay Audio entitlement builds are installed (development vs distribution profiles differ).
-- If another audio app is already playing, Tilawah Miles is designed **not** to steal audio when reconnecting.
+- If another audio app is already playing, Quran Carplayer is designed **not** to steal audio when reconnecting.
 - After you deliberately pause, the App is configured **not** to auto-resume merely because CarPlay reconnects.
 - Try play again from the CarPlay Listen / Surahs / Reciters templates, or start playback on iPhone first.
 
@@ -90,7 +90,7 @@ Audio is streamed/downloaded from **MP3Quran** (mp3quran.net). Reciter portrait 
 
 ### Pricing
 
-Tilawah Miles is **free**. There are no subscriptions or in-app purchases in v1.
+Quran Carplayer is **free**. There are no subscriptions or in-app purchases in v1.
 
 ### Privacy Policy
 
@@ -105,4 +105,4 @@ Use CarPlay controls that minimize distraction. Interact with complex settings o
 If you contacted support about a bug, including your App version (Settings → About) helps. Feature requests are welcome at the same email; v1 scope stays focused on reliable listening, offline downloads, and CarPlay.
 
 © 2026 Yehia Fahmy  
-Apple CarPlay is a trademark of Apple Inc. Tilawah Miles is not affiliated with or endorsed by Apple.
+Apple CarPlay is a trademark of Apple Inc. Quran Carplayer is not affiliated with or endorsed by Apple.
