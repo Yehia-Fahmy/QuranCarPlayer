@@ -21,7 +21,7 @@ We aim to reply as soon as practical. There is no in-app chat or account login.
 
 ## What the app does
 
-- Stream complete **Hafs Murattal** Quran recitations from MP3Quran over HTTPS.
+- Stream Murattal Quran recitations from nine reciters via Quran Foundation over HTTPS.
 - Optionally **download** surahs you choose for offline listening.
 - Continue listening from a local on-device checkpoint.
 - Use the App on iPhone and with **Apple CarPlay®** (Audio).
@@ -45,11 +45,11 @@ We aim to reply as soon as practical. There is no in-app chat or account login.
 
 ### Why does the app need a network connection?
 
-Streaming fetches audio from the MP3Quran CDN. Offline playback works only for surahs you have already downloaded. The reciter list itself is bundled in the App, but audio files are not all preloaded.
+Streaming fetches audio directly from Quran Foundation’s audio CDN. Offline playback works only for surahs you have already downloaded. The reciter list itself is bundled in the App, but audio files are not all preloaded.
 
 ### How do offline downloads work?
 
-Open a surah in the iPhone player and choose **Download for Offline**. In **Settings → Manage Downloads**, you can cancel transfers, retry failures, or remove saved recordings. Downloads are stored only on your device and are excluded from iCloud backup. In Airplane Mode, previously downloaded surahs can play locally; undownloaded surahs need network streaming.
+Open a surah in the iPhone player and choose **Download for 7 Days**. In **Settings → Manage Downloads**, you can cancel transfers, retry failures, or remove saved recordings. A new Quran Foundation download lasts seven days. After it expires, download it again while online. Audio saved from MP3Quran before the update remains available offline until you remove it. All downloads stay on your device and are excluded from iCloud backup. In Airplane Mode, previously downloaded surahs can play locally; undownloaded surahs need network streaming.
 
 ### Does the app collect my personal data?
 
@@ -86,7 +86,11 @@ The App supports English and Arabic strings. Choose **System**, **English**, or 
 
 ### Attribution and audio source
 
-Audio is streamed/downloaded from **MP3Quran** (mp3quran.net). Reciter portrait artwork (where shown) includes source and license links in Settings. The Quran text itself is not sold by this App; this product is an audio player.
+New recordings are performed by the reciter named in the player and supplied by [Quran Foundation](https://quran.foundation/). Settings lists the reciters and the photo credits and licenses.
+
+### Terms of use
+
+Quran Carplayer is offered under [Apple’s Standard Licensed Application End User License Agreement](https://www.apple.com/legal/internet-services/itunes/dev/stdeula/). Quran Foundation provides the recordings for listening within the app. Downloads are private device copies. The [Foundation’s developer terms](https://api-docs.quran.foundation/legal/developer-terms/) describe the permission for in-app playback and the seven-day storage limit used by this version. For questions about these terms, contact the developer at the support address above.
 
 ### Pricing
 

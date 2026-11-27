@@ -36,8 +36,8 @@ struct SettingsView: View {
                 let sourceKey = usesTestTones
                     ? "settings.source.fixture"
                     : (downloadManager == nil
-                       ? "settings.source.mp3quran.streamingOnly"
-                       : "settings.source.mp3quran")
+                       ? "settings.source.foundation.streamingOnly"
+                       : "settings.source.foundation")
                 Text(verbatim: L10n.string(sourceKey, language))
                     .font(.footnote)
                 ForEach(coordinator.audioCatalog.reciters) { reciter in
@@ -87,6 +87,7 @@ struct SettingsView: View {
 
             Section(L10n.string("settings.legal", language)) {
                 Link(L10n.string("settings.privacyPolicy", language), destination: AppLegalURLs.privacyPolicy)
+                Link(L10n.string("settings.termsOfUse", language), destination: AppLegalURLs.termsOfUse)
                 Link(L10n.string("settings.support", language), destination: AppLegalURLs.support)
             }
 

@@ -49,7 +49,7 @@ targets:
       properties:
         CFBundleDisplayName: "Quran Carplayer"
         CFBundleShortVersionString: "1.0.0"
-        CFBundleVersion: "5"
+        CFBundleVersion: "6"
         CFBundleDevelopmentRegion: en
         CFBundleLocalizations: [en, ar]
         UILaunchScreen: {}

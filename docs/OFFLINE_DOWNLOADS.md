@@ -1,7 +1,7 @@
 # Offline audio downloads
 
 QuranCarPlayer supports user-initiated, per-surah downloads on the iPhone. Open a surah in
-Now Playing and choose **Download for Offline**. The control shows determinate progress when the
+Now Playing and choose **Download for 7 Days**. The control shows determinate progress when the
 server provides a content length, supports cancellation and retry, and changes to
 **Available Offline** when installation succeeds. Its menu removes that recording.
 
@@ -42,17 +42,11 @@ and explicit accessibility labels for progress, size, and management controls.
 - Removing a file affects future loads. An already-open player item may continue until it is
   replaced; subsequent playback streams if the local file is gone.
 
-## Source permission (Phase 0 = A provisional)
+## Providers and retention
 
-Offline downloads remain **enabled** for the 1.0 store candidate under a provisional Phase 0 = A
-decision: ship streaming + user-initiated offline copies while relying on MP3Quran’s published
-copyright/contact language that allows developers to copy material or use links, plus archived
-dated evidence for App Review. Residual Guideline 5.2 risk remains until a written MP3Quran reply
-arrives; do not gate downloads off unless that decision is reversed.
+Build 6 streams and downloads new chapter recordings directly from Quran Foundation. Each download is initiated on the device, stays in the app’s private storage, and is eligible for playback for seven days. The app removes expired files when it can run. Listeners may download the chapter again. This device-only integration uses the Foundation’s direct-audio allowance. [Foundation terms, section 3.1](https://api-docs.quran.foundation/legal/developer-terms/#31-acceptable-use)
 
-The [dated provider evidence](app-store-connect/rights-evidence/mp3quran-2026-11-27.md)
-records both public notices, the nine collection identifiers and the scope to confirm
-for the App Store content-rights declaration.
+Recordings saved in build 5 or earlier retain their MP3Quran collection identity and remain available offline until removed. Fresh network playback uses the Foundation edition. The reciter and surah may be the same across providers even when the performances and timings differ. [Foundation catalog verification](app-store-connect/rights-evidence/quran-foundation-catalog.md)
 
 ## Verification
 
