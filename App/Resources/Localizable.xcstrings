@@ -319,6 +319,12 @@
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Terms of Use" } }
       }
     },
+    "settings.sources" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "المصادر" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Sources" } }
+      }
+    },
     "settings.source" : {
       "localizations" : {
         "ar" : { "stringUnit" : { "state" : "translated", "value" : "مصدر الصوت" } },

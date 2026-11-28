@@ -2,13 +2,13 @@ import Foundation
 
 /// HTTPS destinations for Settings legal rows and App Store Connect metadata.
 ///
-/// Served by GitHub Pages from `docs/privacy/index.html` and `docs/support/index.html`
+/// Served by GitHub Pages from `docs/privacy/index.html`, `docs/terms/index.html`, and `docs/support/index.html`
 /// (source drafts: `docs/privacy-policy.md`, `docs/support-page.md`).
 enum AppLegalURLs {
     /// Privacy Policy — `docs/privacy/index.html` on GitHub Pages.
     static let privacyPolicy = URL(string: "https://yehia-fahmy.github.io/QuranCarPlayer/privacy/")!
 
-    static let termsOfUse = URL(string: "https://yehia-fahmy.github.io/QuranCarPlayer/support/#terms")!
+    static let termsOfUse = URL(string: "https://yehia-fahmy.github.io/QuranCarPlayer/terms/")!
 
     /// Support — `docs/support/index.html` on GitHub Pages.
     /// Contact email on that page: yehia.fahmy@uwaterloo.ca

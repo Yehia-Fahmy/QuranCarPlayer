@@ -43,6 +43,42 @@ struct SettingsView: View {
                 Text(verbatim: L10n.string("settings.autoResume.footer", language))
             }
 
+            if let downloadManager,
+               !coordinator.audioCatalog.reciters.allSatisfy({ $0.collection.isTestFixture }) {
+                Section {
+                    NavigationLink {
+                        DownloadsView(coordinator: coordinator, downloadManager: downloadManager)
+                    } label: {
+                        LabeledContent(L10n.string("downloads.manage", language),
+                                       value: downloadSummary)
+                    }
+                } header: {
+                    Text(verbatim: L10n.string("downloads.title", language))
+                } footer: {
+                    Text(verbatim: L10n.string("downloads.footer", language))
+                }
+            }
+
+            Section(L10n.string("settings.legal", language)) {
+                Link(L10n.string("settings.privacyPolicy", language), destination: AppLegalURLs.privacyPolicy)
+                Link(L10n.string("settings.termsOfUse", language), destination: AppLegalURLs.termsOfUse)
+                Link(L10n.string("settings.support", language), destination: AppLegalURLs.support)
+                NavigationLink(L10n.string("settings.sources", language)) { sourcesPage }
+            }
+
+            Section(L10n.string("settings.about", language)) {
+                LabeledContent(L10n.string("settings.version", language), value: versionString)
+            }
+        }
+        .listeningListBackground(theme)
+        .tint(theme.accent)
+        .preferredColorScheme(ListeningTheme(rawValue: preference)?.colorScheme)
+        .navigationTitle(L10n.string("settings.title", language))
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private var sourcesPage: some View {
+        Form {
             Section(L10n.string("settings.source", language)) {
                 let usesTestTones = coordinator.audioCatalog.reciters.allSatisfy { $0.collection.isTestFixture }
                 let sourceKey = usesTestTones
@@ -77,40 +113,13 @@ struct SettingsView: View {
                                  destination: attribution.licenseURL)
                         }
                         .font(.caption)
+                        .buttonStyle(.borderless)
                     }
                 }
-            }
-
-            if let downloadManager,
-               !coordinator.audioCatalog.reciters.allSatisfy({ $0.collection.isTestFixture }) {
-                Section {
-                    NavigationLink {
-                        DownloadsView(coordinator: coordinator, downloadManager: downloadManager)
-                    } label: {
-                        LabeledContent(L10n.string("downloads.manage", language),
-                                       value: downloadSummary)
-                    }
-                } header: {
-                    Text(verbatim: L10n.string("downloads.title", language))
-                } footer: {
-                    Text(verbatim: L10n.string("downloads.footer", language))
-                }
-            }
-
-            Section(L10n.string("settings.legal", language)) {
-                Link(L10n.string("settings.privacyPolicy", language), destination: AppLegalURLs.privacyPolicy)
-                Link(L10n.string("settings.termsOfUse", language), destination: AppLegalURLs.termsOfUse)
-                Link(L10n.string("settings.support", language), destination: AppLegalURLs.support)
-            }
-
-            Section(L10n.string("settings.about", language)) {
-                LabeledContent(L10n.string("settings.version", language), value: versionString)
             }
         }
         .listeningListBackground(theme)
-        .tint(theme.accent)
-        .preferredColorScheme(ListeningTheme(rawValue: preference)?.colorScheme)
-        .navigationTitle(L10n.string("settings.title", language))
+        .navigationTitle(L10n.string("settings.sources", language))
         .navigationBarTitleDisplayMode(.inline)
     }
 
