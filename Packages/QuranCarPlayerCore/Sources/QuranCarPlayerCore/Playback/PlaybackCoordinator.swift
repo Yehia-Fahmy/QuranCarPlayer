@@ -184,16 +184,7 @@ public final class PlaybackCoordinator {
     /// The exact edition a chapter selection will play, shared by the phone and CarPlay.
     public func selectedRecording(forSurah number: Int) -> RecordingID? {
         guard Surah.numberRange.contains(number), let reciter = selectedReciter else { return nil }
-        return preferredRecording(for: reciter, surah: number)
-    }
-
-    private func preferredRecording(for reciter: Reciter, surah: Int) -> RecordingID {
-        let current = RecordingID(collection: reciter.collection.id, surahNumber: surah)
-        guard let legacyCollection = audioCatalog.legacyCollection(for: reciter.id),
-              let resolver = downloadedAudioResolver,
-              resolver.localURL(for: current) == nil else { return current }
-        let legacy = RecordingID(collection: legacyCollection, surahNumber: surah)
-        return resolver.localURL(for: legacy) == nil ? current : legacy
+        return RecordingID(collection: reciter.collection.id, surahNumber: number)
     }
 
     private func replacementForMissingLegacyDownload(_ recording: RecordingID) -> RecordingID? {
@@ -207,7 +198,7 @@ public final class PlaybackCoordinator {
     private func adjacentRecording(to recording: RecordingID, surah: Int) -> RecordingID {
         if let reciter = audioCatalog.reciter(forCollection: recording.collection),
            let current = audioCatalog.reciter(reciter.id) {
-            return preferredRecording(for: current, surah: surah)
+            return RecordingID(collection: current.collection.id, surahNumber: surah)
         }
         return RecordingID(collection: recording.collection, surahNumber: surah)
     }
@@ -228,6 +219,18 @@ public final class PlaybackCoordinator {
         load(recording: recording, startAt: 0, intent: .play)
     }
 
+    /// Downloads lists exact performances, including unexpired editions from earlier releases.
+    public func playDownloadedRecording(_ recording: RecordingID) {
+        guard downloadedAudioResolver?.localURL(for: recording) != nil,
+              let reciter = audioCatalog.reciter(forCollection: recording.collection) else { return }
+        defer { notifyObservers() }
+        snapshot.selectedReciter = reciter.id
+        settings.preferredReciter = reciter.id
+        settings.surahListAnchor = recording.surahNumber
+        settingsStore.save(settings)
+        load(recording: recording, startAt: 0, intent: .play)
+    }
+
     /// Changing reciters restarts the current surah with the new reciter at zero.
     /// Playing → restarts playing. Paused/failed/completed → zero, paused. No current → selection only.
     public func selectReciter(_ id: ReciterID) {
@@ -238,7 +241,8 @@ public final class PlaybackCoordinator {
         settingsStore.save(settings)
         guard let current = snapshot.currentRecording else { return }
         let intent: PlaybackIntent = snapshot.isActivelyPlaying ? .play : .pause
-        load(recording: preferredRecording(for: reciter, surah: current.surahNumber), startAt: 0, intent: intent)
+        load(recording: RecordingID(collection: reciter.collection.id, surahNumber: current.surahNumber),
+             startAt: 0, intent: intent)
     }
 
     /// Resume the saved session at its saved position.
@@ -641,6 +645,19 @@ public final class PlaybackCoordinator {
         if currentItemUsesDownloadedAudio {
             fallBackToStreaming(afterLocalFailure: failure)
             return
+        }
+        // A fresh chapter selection uses the current edition. If the network is
+        // unavailable, an earlier downloaded performance can still play offline.
+        if failure.kind == .network, snapshot.intent == .play, snapshot.elapsed == 0,
+           let recording = snapshot.currentRecording,
+           let reciter = audioCatalog.reciter(forCollection: recording.collection),
+           let legacyCollection = audioCatalog.legacyCollection(for: reciter.id),
+           legacyCollection != recording.collection {
+            let legacy = RecordingID(collection: legacyCollection, surahNumber: recording.surahNumber)
+            if downloadedAudioResolver?.localURL(for: legacy) != nil {
+                load(recording: legacy, startAt: 0, intent: .play)
+                return
+            }
         }
         let reason: PlaybackFailureReason
         switch failure.kind {

@@ -434,9 +434,16 @@ final class CarPlayTemplateController: NSObject, CPSessionConfigurationDelegate 
     private func resolveSelectionIfSettled(_ snapshot: PlaybackSnapshot) {
         guard pendingSelectionCompletion != nil else { return }
         if let expected = pendingSelectionRecording, snapshot.currentRecording != expected {
-            shouldPresentNowPlayingWhenReady = false
-            finishPendingSelection()
-            return
+            // If the network is offline or a legacy copy expired, playback can
+            // switch editions while still fulfilling the listener's selection.
+            guard let actual = snapshot.currentRecording, actual.surahNumber == expected.surahNumber,
+                  let reciter = coordinator.audioCatalog.reciter(forCollection: expected.collection),
+                  coordinator.audioCatalog.reciter(forCollection: actual.collection)?.id == reciter.id else {
+                shouldPresentNowPlayingWhenReady = false
+                finishPendingSelection()
+                return
+            }
+            pendingSelectionRecording = actual
         }
         switch snapshot.transport {
         case .loading, .retrying, .buffering:

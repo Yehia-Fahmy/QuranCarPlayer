@@ -11,7 +11,7 @@ struct ProviderUpgradeTests {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: root) }
         let oldStore = try AudioDownloadFileStore(rootDirectory: root)
-        let oldCatalog = try MP3QuranCatalog.bundled()
+        let oldCatalog = QuranFoundationCatalog()
         let reciterID = MP3QuranCatalog.defaultReciterID
         let oldReciter = try #require(oldCatalog.reciter(reciterID))
         let oldRecording = RecordingID(collection: oldReciter.collection.id, surahNumber: 18)
@@ -25,7 +25,7 @@ struct ProviderUpgradeTests {
                                       checkpointDate: Date(), lastPauseReason: .user)
         try sessionStore.save(SessionCheckpoint(session: session))
 
-        let current = QuranFoundationCatalog()
+        let current = try MP3QuranCatalog.bundled()
         let newReciter = try #require(current.reciter(reciterID))
         let currentRecording = RecordingID(collection: newReciter.collection.id, surahNumber: 18)
         #expect(currentRecording != oldRecording)
@@ -34,6 +34,7 @@ struct ProviderUpgradeTests {
         let store = try AudioDownloadFileStore(rootDirectory: root)
         let downloads = AudioDownloadManager(catalog: catalog, store: store)
         #expect(!downloads.canDownload(oldRecording))
+        #expect(downloads.canDownload(currentRecording))
         let expectedRecordings: [RecordingID] = hasLegacyDownload ? [oldRecording] : []
         #expect(downloads.downloadItems.map(\.recording) == expectedRecordings)
 
@@ -52,21 +53,38 @@ struct ProviderUpgradeTests {
         #expect(engine.currentItem?.url.isFileURL == hasLegacyDownload)
         #expect(coordinator.currentReciter?.id == reciterID)
 
-        // All chapter entry points, including CarPlay and natural continuation, use the
-        // old edition only for chapters the listener actually saved.
+        // Normal chapter selection always returns to MP3Quran, even with a saved Foundation copy.
+        let remoteURL = try current.source(for: currentRecording).url
         coordinator.selectSurah(18)
-        #expect(coordinator.snapshot.currentRecording == expected)
+        #expect(coordinator.snapshot.currentRecording == currentRecording)
+        #expect(engine.currentItem?.url == remoteURL)
         engine.finishCurrent()
         #expect(coordinator.snapshot.currentRecording == RecordingID(collection: currentRecording.collection, surahNumber: 19))
         coordinator.previous()
-        #expect(coordinator.snapshot.currentRecording == expected)
+        #expect(coordinator.snapshot.currentRecording == currentRecording)
+
         if hasLegacyDownload {
+            // A car without connectivity can still play the locally saved chapter.
+            engine.failCurrent(.network)
+            #expect(coordinator.snapshot.currentRecording == oldRecording)
+            #expect(engine.currentItem?.url == store.localURL(for: oldRecording))
+            #expect(engine.currentItem?.startAt == 0)
+
+            // Saving the restored MP3Quran recording never overwrites the Foundation copy.
+            let incoming = root.appendingPathComponent("restored.mp3")
+            try Data("restored performance".utf8).write(to: incoming)
+            try store.installDownloadedFile(at: incoming, for: currentRecording)
+            coordinator.selectSurah(18)
+            #expect(coordinator.snapshot.currentRecording == currentRecording)
+            #expect(engine.currentItem?.url == store.localURL(for: currentRecording))
+            coordinator.playDownloadedRecording(oldRecording)
+            #expect(engine.currentItem?.url == store.localURL(for: oldRecording))
             engine.becomeReady()
             engine.tick(to: 13)
             engine.failCurrent(.missingRecording)
             #expect(coordinator.snapshot.currentRecording == currentRecording)
             #expect(engine.currentItem?.startAt == 0)
-            #expect(engine.currentItem?.url.isFileURL == false)
+            #expect(engine.currentItem?.url == store.localURL(for: currentRecording))
         }
     }
 }

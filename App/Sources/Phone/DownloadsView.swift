@@ -180,6 +180,11 @@ private struct DownloadItemRow: View {
                     Text(verbatim: reciterName)
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
+                    if item.recording.collection.provider == QuranFoundationCatalog.providerKey {
+                        Text(verbatim: L10n.string("downloads.foundationRetention", language))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                 }
                 Spacer(minLength: 12)
                 if let byteCount = item.byteCount {
@@ -246,6 +251,19 @@ private struct DownloadItemRow: View {
             }
             .buttonStyle(.bordered)
         case .downloaded:
+            let isCurrent = coordinator.snapshot.currentRecording == item.recording
+            let isPlaying = isCurrent && coordinator.snapshot.isActivelyPlaying
+            Button {
+                if isCurrent {
+                    coordinator.togglePlayPause()
+                } else {
+                    coordinator.playDownloadedRecording(item.recording)
+                }
+            } label: {
+                Label(L10n.string(isPlaying ? "player.pause" : "player.play", language),
+                      systemImage: isPlaying ? "pause.fill" : "play.fill")
+            }
+            .buttonStyle(.bordered)
             Button(role: .destructive, action: requestRemoval) {
                 Label(L10n.string("download.remove", language), systemImage: "trash")
             }
