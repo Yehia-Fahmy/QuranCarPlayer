@@ -24,57 +24,86 @@ struct ThemeGallery: View {
     @Environment(\.listeningTheme) private var theme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
+    @Environment(\.layoutDirection) private var direction
+    @GestureState private var dragOffset: CGFloat = 0
+
     private var keys: [String] { [ListeningTheme.systemPreference] + ListeningTheme.allCases.map(\.rawValue) }
     private var selectedKey: String { ListeningTheme(rawValue: preference)?.rawValue ?? ListeningTheme.systemPreference }
 
-    private var swipeLimit: ViewAlignedScrollTargetBehavior.LimitBehavior {
-        if #available(iOS 18.0, *) { return .alwaysByOne }
-        return .always
+    private var selectedIndex: Int { keys.firstIndex(of: selectedKey) ?? 0 }
+
+    private func select(_ key: String) {
+        withAnimation(reduceMotion ? nil : .snappy) { preference = key }
     }
 
     var body: some View {
         GeometryReader { bounds in
             let ratio = layout.canvas.width / layout.canvas.height
             let cardWidth = min(bounds.size.width * 0.76, max(150, bounds.size.height - 112) * ratio, 520)
-            let inset = (bounds.size.width - cardWidth) / 2
-            ScrollView {
-                VStack(spacing: 18) {
-                    ScrollView(.horizontal) {
-                        LazyHStack(spacing: 14) {
-                            ForEach(keys, id: \.self) { key in
-                                choice(ListeningTheme(rawValue: key))
-                                    .frame(width: cardWidth)
-                                    .id(key)
-                            }
-                        }
-                        .scrollTargetLayout()
-                    }
-                    .contentMargins(.horizontal, inset, for: .scrollContent)
-                    .scrollIndicators(.hidden)
-                    .scrollTargetBehavior(.viewAligned(limitBehavior: swipeLimit))
-                    .scrollPosition(id: Binding<String?>(
-                        get: { selectedKey },
-                        set: { if let key = $0 { preference = key } }
-                    ), anchor: .center)
-                    .accessibilityIdentifier("theme-carousel")
+            VStack(spacing: 18) {
+                carousel(cardWidth: cardWidth)
 
-                    HStack(spacing: 6) {
-                        ForEach(keys, id: \.self) { key in
-                            Capsule()
-                                .fill(key == selectedKey ? theme.accent : Color.primary.opacity(0.23))
-                                .frame(width: key == selectedKey ? 18 : 6, height: 6)
-                        }
+                HStack(spacing: 6) {
+                    ForEach(keys, id: \.self) { key in
+                        Capsule()
+                            .fill(key == selectedKey ? theme.accent : Color.primary.opacity(0.23))
+                            .frame(width: key == selectedKey ? 18 : 6, height: 6)
                     }
-                    .accessibilityHidden(true)
                 }
-                .padding(.vertical, 18)
-                .frame(minHeight: bounds.size.height)
+                .accessibilityHidden(true)
             }
-            .scrollBounceBehavior(.basedOnSize)
+            .padding(.vertical, 18)
+            .frame(minHeight: bounds.size.height)
         }
         .background(theme.background)
         .navigationTitle(L10n.string("theme.appearance", language))
         .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private func carousel(cardWidth: CGFloat) -> some View {
+        let sign: CGFloat = direction == .rightToLeft ? -1 : 1
+        let stride = cardWidth + 14
+        let swipe = DragGesture(minimumDistance: 12)
+            .updating($dragOffset) { value, offset, _ in
+                let travel = value.translation
+                guard abs(travel.width) > abs(travel.height) else { return }
+                let logical = travel.width * sign
+                let atEnd = (selectedIndex == 0 && logical > 0) ||
+                    (selectedIndex == keys.count - 1 && logical < 0)
+                offset = min(stride, max(-stride, travel.width)) * (atEnd ? 0.18 : 1)
+            }
+            .onEnded { value in
+                let travel = value.translation
+                guard abs(travel.width) > abs(travel.height),
+                      max(abs(travel.width), abs(value.predictedEndTranslation.width)) > cardWidth * 0.18
+                else { return }
+                advance(by: travel.width * sign < 0 ? 1 : -1)
+            }
+
+        return ZStack {
+            ForEach(keys, id: \.self) { key in
+                let distance = (keys.firstIndex(of: key) ?? 0) - selectedIndex
+                choice(ListeningTheme(rawValue: key))
+                    .frame(width: cardWidth)
+                    .offset(x: CGFloat(distance) * stride * sign + dragOffset)
+                    .accessibilityHidden(abs(distance) > 1)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .clipped()
+        .contentShape(Rectangle())
+        .highPriorityGesture(swipe)
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("theme-carousel")
+        .accessibilityScrollAction { edge in
+            if edge == .leading { advance(by: 1) }
+            if edge == .trailing { advance(by: -1) }
+        }
+    }
+
+    private func advance(by step: Int) {
+        let target = selectedIndex + step
+        if keys.indices.contains(target) { select(keys[target]) }
     }
 
     private func choice(_ palette: ListeningTheme?) -> some View {
@@ -82,7 +111,7 @@ struct ThemeGallery: View {
         let name = L10n.string("theme.\(key)", language)
         let selected = selectedKey == key
         return Button {
-            withAnimation(reduceMotion ? nil : .snappy) { preference = key }
+            select(key)
         } label: {
             VStack(alignment: .leading, spacing: 8) {
                 GeometryReader { bounds in

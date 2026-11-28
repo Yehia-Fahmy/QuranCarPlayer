@@ -69,7 +69,7 @@ final class PhonePlaybackUITests: XCTestCase {
         themePicker.tap()
         let gallery = app.navigationBars["Theme"]
         XCTAssertTrue(gallery.waitForExistence(timeout: 5))
-        let carousel = app.scrollViews["theme-carousel"]
+        let carousel = app.descendants(matching: .any)["theme-carousel"].firstMatch
         func assertCentered(_ card: XCUIElement, line: UInt = #line) {
             let aligned = NSPredicate { _, _ in
                 card.isSelected && abs(card.frame.midX - carousel.frame.midX) <= 3
@@ -80,7 +80,10 @@ final class PhonePlaybackUITests: XCTestCase {
         let folio = app.buttons["Folio"]
         let system = app.buttons["System Appearance"]
         // Begin from the same persisted choice if a previous test run left a theme selected.
-        for _ in 0..<6 where !system.isSelected { carousel.swipeRight() }
+        for _ in 0..<6 {
+            if system.exists && system.isSelected { break }
+            carousel.swipeRight()
+        }
         XCTAssertTrue(system.isSelected)
         carousel.swipeLeft()
         XCTAssertTrue(folio.wait(for: \.isSelected, toEqual: true, timeout: 5))
