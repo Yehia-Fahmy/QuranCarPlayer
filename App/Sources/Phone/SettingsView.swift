@@ -76,8 +76,6 @@ struct SettingsView: View {
             }
         }
         .listeningListBackground(theme)
-        .tint(theme.accent)
-        .preferredColorScheme(ListeningTheme(rawValue: preference)?.colorScheme)
         .navigationTitle(L10n.string("settings.title", language))
         .navigationBarTitleDisplayMode(.inline)
     }

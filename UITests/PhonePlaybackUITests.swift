@@ -161,6 +161,87 @@ final class PhonePlaybackUITests: XCTestCase {
         XCTAssertEqual(app.buttons["System Appearance"].value as? String, "Applied")
     }
 
+    func testSettingsFollowsConfirmedDarkLightDarkThemes() {
+        openThemes()
+        centerSystem()
+        for (name, steps, dark) in [("Nocturne", 3, true), ("Folio", -2, false), ("Nocturne", 2, true)] {
+            for _ in 0..<abs(steps) { swipePreview(left: steps > 0) }
+            assertCentered(name)
+            confirmTheme.tap()
+            assertAppearance(of: "Theme", dark: dark)
+            app.navigationBars["Theme"].buttons["BackButton"].tap()
+            assertAppearance(of: "Settings", dark: dark)
+            app.buttons["listening-theme"].tap()
+        }
+        centerSystem()
+    }
+
+    func testSettingsAppearanceChangesWhilePresented() {
+        let device = XCUIDevice.shared
+        let originalAppearance = device.appearance
+        defer { device.appearance = originalAppearance }
+        device.appearance = .dark
+        openThemes()
+        centerSystem()
+
+        assertAppearance(of: "Theme", dark: true)
+
+        // Exercise an explicit light override, then release it on the pushed page.
+        swipePreview(left: true)
+        confirmTheme.tap()
+        assertAppearance(of: "Theme", dark: false)
+        centerSystem()
+        assertAppearance(of: "Theme", dark: true)
+
+        for appearance in [XCUIDevice.Appearance.light, .dark] {
+            device.appearance = appearance
+            assertAppearance(of: "Theme", dark: appearance == .dark)
+        }
+        app.navigationBars["Theme"].buttons["BackButton"].tap()
+        for appearance in [XCUIDevice.Appearance.dark, .light, .dark] {
+            device.appearance = appearance
+            assertAppearance(of: "Settings", dark: appearance == .dark)
+        }
+    }
+
+    // Inspect rendered pixels because the accessibility hierarchy is identical
+    // when UIKit draws black text or white rows against a dark palette.
+    private func assertAppearance(of page: String, dark: Bool, line: UInt = #line) {
+        let title = app.navigationBars[page].staticTexts[page].firstMatch
+        let row = app.buttons["listening-theme"]
+        let matches = NSPredicate { _, _ in
+            guard title.exists, let titlePixels = self.brightness(of: title) else { return false }
+            let hasInk = dark ? titlePixels.light > 0.06 : titlePixels.dark > 0.06
+            let hasBackground = dark ? titlePixels.dark > 0.50 : titlePixels.light > 0.50
+            guard hasInk && hasBackground else { return false }
+            if page != "Settings" { return true }
+            guard row.exists, let rowPixels = self.brightness(of: row) else { return false }
+            return (dark ? rowPixels.dark : rowPixels.light) > 0.65
+        }
+        let expectation = XCTNSPredicateExpectation(predicate: matches, object: nil)
+        let result = XCTWaiter.wait(for: [expectation], timeout: 6)
+        let capture = XCTAttachment(screenshot: app.screenshot())
+        capture.name = "\(page) in \(dark ? "dark" : "light") appearance"
+        capture.lifetime = .keepAlways
+        add(capture)
+        XCTAssertEqual(result, .completed, "Wrong title contrast or row appearance on \(page)", line: line)
+    }
+
+    private func brightness(of element: XCUIElement) -> (light: Double, dark: Double)? {
+        guard let image = element.screenshot().image.cgImage else { return nil }
+        let width = 96, height = 32
+        var pixels = [UInt8](repeating: 0, count: width * height)
+        return pixels.withUnsafeMutableBufferPointer { buffer in
+            guard let context = CGContext(data: buffer.baseAddress, width: width, height: height,
+                                          bitsPerComponent: 8, bytesPerRow: width,
+                                          space: CGColorSpaceCreateDeviceGray(), bitmapInfo: 0) else { return nil }
+            context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
+            let count = Double(buffer.count)
+            return (Double(buffer.filter { $0 > 175 }.count) / count,
+                    Double(buffer.filter { $0 < 80 }.count) / count)
+        }
+    }
+
     func testPendingThemeSurvivesRotationAndAdjacentCardTap() {
         defer { XCUIDevice.shared.orientation = .portrait }
         XCUIDevice.shared.orientation = .portrait

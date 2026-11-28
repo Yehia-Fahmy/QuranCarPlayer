@@ -102,7 +102,7 @@ struct RootView: View {
         }
         .environment(\.listeningTheme, theme)
         .tint(theme.accent)
-        .preferredColorScheme(ListeningTheme(rawValue: preference)?.colorScheme)
+        .background { ListeningWindowAppearance(theme: ListeningTheme(rawValue: preference)) }
         .environment(\.layoutDirection, language.isRightToLeft ? .rightToLeft : .leftToRight)
         .environment(\.locale, Locale(identifier: language.localeIdentifier))
     }

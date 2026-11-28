@@ -50,7 +50,7 @@ struct ThemeGallery: View {
                     ScrollView { previews(cardWidth: cardWidth) }
                 }
                 confirmButton
-                    .frame(width: min(max(cardWidth, minConfirmWidth), bounds.size.width - 32))
+                    .frame(width: min(max(cardWidth, minConfirmWidth), max(0, bounds.size.width - 32)))
                     .layoutPriority(1)
             }
             .padding(.vertical, 12)
