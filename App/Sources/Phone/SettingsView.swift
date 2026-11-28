@@ -5,11 +5,23 @@ struct SettingsView: View {
     let coordinator: PlaybackCoordinator
     let downloadManager: AudioDownloadManager?
 
+    @AppStorage(ListeningTheme.preferenceKey) private var preference = ListeningTheme.systemPreference
+    @Environment(\.listeningTheme) private var theme
+
     private var language: ResolvedLanguage { coordinator.snapshot.language.resolved() }
 
     var body: some View {
         let snapshot = coordinator.snapshot
         Form {
+            Section {
+                Picker(L10n.string("theme.appearance", language), selection: $preference) {
+                    Text(verbatim: L10n.string("theme.system", language)).tag(ListeningTheme.systemPreference)
+                    ForEach(ListeningTheme.allCases, id: \.self) { choice in
+                        Text(verbatim: L10n.string("theme.\(choice.rawValue)", language)).tag(choice.rawValue)
+                    }
+                }
+                .accessibilityIdentifier("listening-theme")
+            }
             Section(L10n.string("settings.language", language)) {
                 Picker(L10n.string("settings.language", language),
                        selection: Binding(get: { snapshot.language }, set: { coordinator.setLanguage($0) })) {
@@ -95,6 +107,9 @@ struct SettingsView: View {
                 LabeledContent(L10n.string("settings.version", language), value: versionString)
             }
         }
+        .listeningListBackground(theme)
+        .tint(theme.accent)
+        .preferredColorScheme(ListeningTheme(rawValue: preference)?.colorScheme)
         .navigationTitle(L10n.string("settings.title", language))
         .navigationBarTitleDisplayMode(.inline)
     }

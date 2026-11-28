@@ -43,6 +43,21 @@ final class PhonePlaybackUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["2. Al-Baqarah"].waitForExistence(timeout: 5))
     }
 
+    func testThemeSelectionPersistsAfterRelaunch() {
+        app.buttons["Settings"].tap()
+        let themePicker = app.buttons["listening-theme"]
+        themePicker.tap()
+        app.buttons["Folio"].tap()
+        XCTAssertTrue(themePicker.label.contains("Folio") || themePicker.value as? String == "Folio")
+        app.terminate()
+        app.launch()
+        app.buttons["Settings"].tap()
+        XCTAssertTrue(themePicker.waitForExistence(timeout: 5))
+        XCTAssertTrue(themePicker.label.contains("Folio") || themePicker.value as? String == "Folio")
+        themePicker.tap()
+        app.buttons["System Appearance"].tap()
+    }
+
     func testReciterChangeAndSettingsLanguage() {
         app.buttons["Reciters"].tap()
         let toneB = app.buttons["reciter-fixture.toneB"]

@@ -1,12 +1,16 @@
 import SwiftUI
 import QuranCarPlayerCore
 
-/// Phone root: surah list with a compact player, reciter picker, and settings.
+/// A shared library and player that collapse to a navigation stack in compact windows.
 struct RootView: View {
     let coordinator: PlaybackCoordinator
     let downloadManager: AudioDownloadManager?
     let artworkProvider: ChapterArtworkProvider
-    @State private var showPlayer = false
+    @AppStorage(ListeningTheme.preferenceKey) private var preference = ListeningTheme.systemPreference
+    @Environment(\.colorScheme) private var appearance
+    private var theme: ListeningTheme { .resolve(preference, appearance: appearance) }
+    @Environment(\.horizontalSizeClass) private var widthClass
+    @State private var compactColumn: NavigationSplitViewColumn = .sidebar
     @State private var showSettings = false
     @State private var showReciters = false
     @State private var showDownloads = false
@@ -14,51 +18,49 @@ struct RootView: View {
     private var language: ResolvedLanguage { coordinator.snapshot.language.resolved() }
 
     var body: some View {
-        NavigationStack {
+        NavigationSplitView(preferredCompactColumn: $compactColumn) {
             SurahListView(coordinator: coordinator,
                           artworkProvider: artworkProvider,
                           language: language,
-                          openPlayer: { showPlayer = true })
+                          openPlayer: { compactColumn = .detail })
                 .navigationTitle(L10n.string("surahs.title", language))
                 .toolbar {
-                    ToolbarItem(placement: .topBarLeading) {
-                        Button {
-                            showReciters = true
-                        } label: {
-                            Label(L10n.string("reciters.title", language), systemImage: "person.wave.2")
-                        }
-                        .accessibilityHint(coordinator.selectedReciter?.displayName(for: language) ?? "")
-                    }
-                    ToolbarItemGroup(placement: .topBarTrailing) {
-                        if downloadManager != nil {
-                            Button {
-                                showDownloads = true
+                    if widthClass == .regular {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Menu {
+                                recitersButton
+                                libraryActions
                             } label: {
-                                Label(L10n.string("downloads.title", language),
-                                      systemImage: "arrow.down.circle")
+                                Label(L10n.string("theme.libraryActions", language), systemImage: "ellipsis")
                             }
-                            .accessibilityHint(L10n.string("downloads.manage.hint", language))
                         }
-                        Button {
-                            showSettings = true
-                        } label: {
-                            Label(L10n.string("settings.title", language), systemImage: "gearshape")
-                        }
+                    } else {
+                        ToolbarItem(placement: .topBarLeading) { recitersButton }
+                        ToolbarItemGroup(placement: .topBarTrailing) { libraryActions }
                     }
                 }
                 .safeAreaInset(edge: .bottom) {
-                    if coordinator.snapshot.currentRecording != nil {
+                    if widthClass == .compact, coordinator.snapshot.currentRecording != nil {
                         MiniPlayerView(coordinator: coordinator,
                                        artworkProvider: artworkProvider,
-                                       language: language) { showPlayer = true }
+                                       language: language) { compactColumn = .detail }
                     }
                 }
+        } detail: {
+            if coordinator.currentSurah != nil {
+                PlayerView(coordinator: coordinator, downloadManager: downloadManager,
+                           artworkProvider: artworkProvider)
+            } else {
+                ContentUnavailableView {
+                    Label(L10n.string("listen.nowPlaying", language), systemImage: "headphones")
+                } description: {
+                    Text(verbatim: L10n.string("theme.chooseSurah", language))
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(theme.background)
+            }
         }
-        .sheet(isPresented: $showPlayer) {
-            PlayerView(coordinator: coordinator,
-                       downloadManager: downloadManager,
-                       artworkProvider: artworkProvider)
-        }
+        .navigationSplitViewStyle(.balanced)
         .sheet(isPresented: $showReciters) {
             NavigationStack {
                 ReciterListView(coordinator: coordinator, language: language)
@@ -94,8 +96,31 @@ struct RootView: View {
                     }
             }
         }
+        .environment(\.listeningTheme, theme)
+        .tint(theme.accent)
+        .preferredColorScheme(ListeningTheme(rawValue: preference)?.colorScheme)
         .environment(\.layoutDirection, language.isRightToLeft ? .rightToLeft : .leftToRight)
         .environment(\.locale, Locale(identifier: language.localeIdentifier))
+    }
+
+    private var recitersButton: some View {
+        Button { showReciters = true } label: {
+            Label(L10n.string("reciters.title", language), systemImage: "person.wave.2")
+        }
+        .accessibilityHint(coordinator.selectedReciter?.displayName(for: language) ?? "")
+    }
+
+    @ViewBuilder
+    private var libraryActions: some View {
+        if downloadManager != nil {
+            Button { showDownloads = true } label: {
+                Label(L10n.string("downloads.title", language), systemImage: "arrow.down.circle")
+            }
+            .accessibilityHint(L10n.string("downloads.manage.hint", language))
+        }
+        Button { showSettings = true } label: {
+            Label(L10n.string("settings.title", language), systemImage: "gearshape")
+        }
     }
 }
 
@@ -103,6 +128,7 @@ struct RootView: View {
 struct MiniPlayerView: View {
     let coordinator: PlaybackCoordinator
     @ObservedObject var artworkProvider: ChapterArtworkProvider
+    @Environment(\.listeningTheme) private var theme
     let language: ResolvedLanguage
     let open: () -> Void
 
@@ -150,7 +176,7 @@ struct MiniPlayerView: View {
         }
         .padding(.horizontal)
         .padding(.vertical, 8)
-        .background(.bar)
+        .background(theme.surface)
         .overlay(alignment: .top) { Divider() }
     }
 

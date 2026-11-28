@@ -11,6 +11,17 @@ import QuranCarPlayerCore
 struct AppConfigurationTests {
     private var bundle: Bundle { Bundle(for: CarPlaySceneDelegate.self) }
 
+    @Test("Automatic appearance follows the device and manual theme choices persist in either appearance")
+    func listeningThemes() {
+        #expect(ListeningTheme.allCases.count == 5)
+        #expect(ListeningTheme.resolve(ListeningTheme.systemPreference, appearance: .light) == .folio)
+        #expect(ListeningTheme.resolve(ListeningTheme.systemPreference, appearance: .dark) == .nocturne)
+        for theme in ListeningTheme.allCases {
+            #expect(ListeningTheme.resolve(theme.rawValue, appearance: .light) == theme)
+            #expect(ListeningTheme.resolve(theme.rawValue, appearance: .dark) == theme)
+        }
+    }
+
     @Test("Info.plist declares the CarPlay scene with a resolvable delegate class")
     func carPlaySceneConfigured() throws {
         let manifest = try #require(bundle.object(forInfoDictionaryKey: "UIApplicationSceneManifest") as? [String: Any])
@@ -29,10 +40,10 @@ struct AppConfigurationTests {
         #expect(modes.contains("audio"))
     }
 
-    @Test("The processed app bundle targets iPhone")
+    @Test("The processed app bundle targets iPhone and iPad")
     func supportedDeviceFamily() throws {
         let families = try #require(bundle.object(forInfoDictionaryKey: "UIDeviceFamily") as? [Int])
-        #expect(families == [1])
+        #expect(Set(families) == [1, 2])
     }
 
     @Test("Display name and marketing version match the 1.0 store candidate")

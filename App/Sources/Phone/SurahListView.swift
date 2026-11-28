@@ -4,6 +4,7 @@ import QuranCarPlayerCore
 /// All 114 surahs in Quran order. Restores the saved anchor (or the current surah)
 /// when the list appears; the anchor is a stable surah ID, never a pixel offset.
 struct SurahListView: View {
+    @Environment(\.listeningTheme) private var theme
     let coordinator: PlaybackCoordinator
     let artworkProvider: ChapterArtworkProvider
     let language: ResolvedLanguage
@@ -36,12 +37,12 @@ struct SurahListView: View {
                             openPlayer()
                         } label: {
                             SurahRow(surah: surah,
-                                     reciter: coordinator.selectedReciter,
-                                     artworkProvider: artworkProvider,
                                      language: language,
                                      isCurrent: snapshot.currentSurahNumber == surah.number,
                                      isPlaying: snapshot.currentSurahNumber == surah.number && snapshot.isActivelyPlaying)
                         }
+                        .buttonStyle(.plain)
+                        .listRowBackground(snapshot.currentSurahNumber == surah.number ? theme.accent.opacity(0.13) : theme.surface)
                         .id(surah.number)
                         .accessibilityIdentifier("surah-\(surah.number)")
                     }
@@ -52,6 +53,7 @@ struct SurahListView: View {
                 }
             }
             .listStyle(.insetGrouped)
+            .listeningListBackground(theme)
             .onAppear {
                 guard !didRestoreAnchor, let anchor = coordinator.surahListAnchor else { return }
                 didRestoreAnchor = true
@@ -62,28 +64,21 @@ struct SurahListView: View {
 }
 
 struct SurahRow: View {
+    @Environment(\.listeningTheme) private var theme
     let surah: Surah
-    let reciter: Reciter?
-    @ObservedObject var artworkProvider: ChapterArtworkProvider
     let language: ResolvedLanguage
     let isCurrent: Bool
     let isPlaying: Bool
 
     var body: some View {
         HStack(spacing: 12) {
-            Image(uiImage: artworkProvider.image(
-                for: surah,
-                reciter: reciter,
-                language: language,
-                size: CGSize(width: 96, height: 96)
-            ))
-            .resizable()
-            .scaledToFill()
-            .frame(width: 46, height: 46)
-            .clipShape(RoundedRectangle(cornerRadius: 8))
-            .accessibilityHidden(true)
+            Text(verbatim: String(format: "%02d", surah.number))
+                .font(.system(.subheadline, design: .monospaced, weight: .medium))
+                .foregroundStyle(theme.accent)
+                .frame(minWidth: 32, minHeight: 44)
             VStack(alignment: .leading, spacing: 2) {
                 Text(verbatim: surah.displayName(for: language))
+                    .foregroundStyle(.primary)
                     .font(.body)
                     .fontWeight(isCurrent ? .semibold : .regular)
                 Text(verbatim: surah.secondaryName(for: language))
