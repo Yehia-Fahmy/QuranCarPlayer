@@ -69,24 +69,39 @@ final class PhonePlaybackUITests: XCTestCase {
         themePicker.tap()
         let gallery = app.navigationBars["Theme"]
         XCTAssertTrue(gallery.waitForExistence(timeout: 5))
+        let carousel = app.descendants(matching: .any)["theme-carousel"].firstMatch
+        func assertCentered(_ card: XCUIElement, line: UInt = #line) {
+            let aligned = NSPredicate { _, _ in
+                card.isSelected && abs(card.frame.midX - carousel.frame.midX) <= 3
+            }
+            let settled = XCTNSPredicateExpectation(predicate: aligned, object: nil)
+            XCTAssertEqual(XCTWaiter.wait(for: [settled], timeout: 5), .completed, line: line)
+        }
         let folio = app.buttons["Folio"]
-        folio.tap()
-        XCTAssertTrue(folio.isSelected)
-        let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
-        attachment.name = "Theme gallery"
-        attachment.lifetime = .keepAlways
-        add(attachment)
-        gallery.buttons["BackButton"].tap()
-        XCTAssertTrue(themePicker.label.contains("Folio") || themePicker.value as? String == "Folio")
+        let system = app.buttons["System Appearance"]
+        // Begin from the same persisted choice if a previous test run left a theme selected.
+        for _ in 0..<6 {
+            if system.exists && system.isSelected { break }
+            carousel.swipeRight()
+        }
+        XCTAssertTrue(system.isSelected)
+        carousel.swipeLeft()
+        XCTAssertTrue(folio.wait(for: \.isSelected, toEqual: true, timeout: 5))
+        assertCentered(folio)
+        carousel.swipeLeft()
+        assertCentered(app.buttons["Studio"])
+        carousel.swipeRight()
+        XCTAssertTrue(folio.wait(for: \.isSelected, toEqual: true, timeout: 5))
         app.terminate()
         app.launch()
         openSettings()
+        XCTAssertTrue(themePicker.label.contains("Folio") || themePicker.value as? String == "Folio")
         themePicker.tap()
         XCTAssertTrue(folio.waitForExistence(timeout: 5))
         XCTAssertTrue(folio.isSelected)
-        let system = app.buttons["System Appearance"]
-        system.tap()
-        XCTAssertTrue(system.isSelected)
+        assertCentered(folio)
+        carousel.swipeRight()
+        XCTAssertTrue(system.wait(for: \.isSelected, toEqual: true, timeout: 5))
     }
 
     func testReciterChangeAndSettingsLanguage() {
