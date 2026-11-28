@@ -99,7 +99,7 @@ footer {
 <ul>
 <li>The App does <strong>not</strong> require an account and does <strong>not</strong> ask you to provide your name, email, or phone number to use it.</li>
 <li>Preferences, listening progress, and optional offline audio files are stored <strong>on your device</strong>.</li>
-<li>When you stream or download recitations, the App contacts the <strong>Quran Foundation</strong> audio content delivery network (CDN) over HTTPS so the audio can be delivered.</li>
+<li>When you stream or download recitations, the App contacts the audio provider over HTTPS. Build 7 uses <strong>MP3Quran</strong>. Build 6 uses Quran Foundation.</li>
 <li>The App does <strong>not</strong> include advertising, analytics, crash-reporting, or tracking SDKs, and does <strong>not</strong> use App Tracking Transparency / advertising identifiers for tracking.</li>
 <li>We do <strong>not</strong> sell your personal information.</li>
 </ul>
@@ -118,13 +118,13 @@ footer {
 <p>We do <strong>not</strong> operate an account system, cloud sync service, or developer backend that receives these local preferences, session files, or offline downloads.</p>
 <h2>Network activity</h2>
 <h3>Audio streaming and downloads</h3>
-<p>Reciter catalog metadata used by the App is bundled with the App. Audio itself is fetched over HTTPS from Quran Foundation’s audio host (<code>download.quranicaudio.com</code>) when you:</p>
+<p>Reciter catalog metadata used by the App is bundled with the App. Audio itself is fetched over HTTPS from MP3Quran (<code>cdn.mp3quran.net</code>) in build 7 or from Quran Foundation’s audio host (<code>download.quranicaudio.com</code>) in build 6 when you:</p>
 <ul>
 <li>stream a recitation, or</li>
 <li>download a recitation for offline use.</li>
 </ul>
 <p>Those requests necessarily include ordinary technical request data that any HTTPS client sends (for example, IP address, user-agent style network metadata, and the URL of the requested audio file) so the CDN can deliver the file. The App does not add an analytics identity, advertising ID, or account credential to those requests.</p>
-<p>Quran Foundation describes the technical information its services may log in its <a href="https://quran.com/privacy">privacy policy</a>. A recording choice may reveal religious interests. The app does not create a religious profile or use listening activity for advertising, profiling, or AI training. Playing a saved chapter reads the audio from your device.</p>
+<p>MP3Quran’s <a href="https://www.mp3quran.net/privacy-en.html">privacy policy</a> describes website logs that include the visitor’s IP address, visit time, country and referring page. It does not specify how long the audio host keeps requests or whether it stores the chapter URL with the listener’s IP address. For build 6, Quran Foundation describes website logs in its <a href="https://quran.com/privacy">privacy policy</a>. A recording choice may reveal religious interests. The app does not create a religious profile or use listening activity for advertising, profiling, or AI training. Playing a saved chapter reads the audio from your device.</p>
 <h3>Minshawi’s portrait</h3>
 <p>When the app needs this portrait, it checks the App Store storefront through StoreKit. In the Canadian and U.S. storefronts it can fetch one historical JPEG from Wikimedia Commons over HTTPS and cache it privately on your iPhone for offline display. Wikimedia logs image requests, including the IP address and image URL, and can derive an approximate location from the IP address. Its traffic logs are generally purged after 90 days. See <a href="https://wikitech.wikimedia.org/wiki/Data_Platform/Data_Lake/Traffic/Webrequest">Wikimedia’s request-log documentation</a>. The request contains no chapter number, listening position or account identifier. Where the image is unavailable, the app draws geometric artwork locally. See the <a href="https://foundation.wikimedia.org/wiki/Policy:Privacy_policy">Wikimedia privacy policy</a>.</p>
 <h3>Links you open</h3>
@@ -146,13 +146,13 @@ footer {
 <ul>
 <li>We do <strong>not</strong> sell personal information.</li>
 <li>We do <strong>not</strong> share on-device preferences, session files, or downloads with advertisers.</li>
-<li>Audio requests go to Quran Foundation’s audio CDN solely to deliver the audio you requested.</li>
+<li>The app requests audio from the provider for the recording you choose.</li>
 <li>We may disclose information if required by law, or to protect rights, safety, and integrity, to the limited extent such information is available to us (for most users, that is limited to support email correspondence if you contact us).</li>
 </ul>
 <h2>Data retention and deletion</h2>
 <ul>
 <li><strong>Preferences and session checkpoint:</strong> remain on your device until you change them, clear App data by deleting the App, or otherwise remove the App’s data through iOS Settings.</li>
-<li><strong>Offline downloads:</strong> New Quran Foundation downloads expire seven days after download. Expired files are removed when the app can run. Downloads saved from MP3Quran in earlier versions remain until you delete them. Use <strong>Settings → Downloads</strong> in the App to remove one recording or all downloads.</li>
+<li><strong>Offline downloads:</strong> MP3Quran downloads stay on your device until you remove the recording or delete the app. Recordings saved from Quran Foundation in build 6 expire seven days after their original download. The app removes expired files when it can run. Use <strong>Settings → Manage Downloads</strong> in the App to remove one recording or all downloads.</li>
 <li><strong>Support email:</strong> if you email us, we keep the correspondence as needed to respond and then according to ordinary mailbox retention.</li>
 </ul>
 <p>Deleting the App removes the App’s local container on that device (including preferences, session checkpoint, and downloads stored there).</p>

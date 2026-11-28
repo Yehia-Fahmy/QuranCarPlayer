@@ -83,4 +83,4 @@ No portrait source should be added to the app bundle without a recorded source, 
 
 ## Audio source review evidence
 
-New recitations use Quran Foundation. Existing MP3Quran downloads remain playable on the listener’s phone. [Quran Foundation catalog and offline terms](app-store-connect/rights-evidence/quran-foundation-catalog.md) · [Legacy MP3Quran collection evidence](app-store-connect/rights-evidence/mp3quran-2026-11-27.md)
+Build 7 uses the original MP3Quran recitations. Build 6 Quran Foundation downloads retain their original seven-day lifetime. [MP3Quran collection evidence](app-store-connect/rights-evidence/mp3quran-2026-11-27.md) · [Build 6 catalog and offline terms](app-store-connect/rights-evidence/quran-foundation-catalog.md)

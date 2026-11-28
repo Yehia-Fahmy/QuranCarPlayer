@@ -13,7 +13,7 @@ This Privacy Policy describes how **Quran Carplayer** (“the App”) handles in
 
 - The App does **not** require an account and does **not** ask you to provide your name, email, or phone number to use it.
 - Preferences, listening progress, and optional offline audio files are stored **on your device**.
-- When you stream or download recitations, the App contacts the **Quran Foundation** audio content delivery network (CDN) over HTTPS so the audio can be delivered.
+- When you stream or download recitations, the App contacts the audio provider over HTTPS. Build 7 uses **MP3Quran**. Build 6 uses Quran Foundation.
 - The App does **not** include advertising, analytics, crash-reporting, or tracking SDKs, and does **not** use App Tracking Transparency / advertising identifiers for tracking.
 - We do **not** sell your personal information.
 
@@ -47,14 +47,14 @@ We do **not** operate an account system, cloud sync service, or developer backen
 
 ### Audio streaming and downloads
 
-Reciter catalog metadata used by the App is bundled with the App. Audio itself is fetched over HTTPS from Quran Foundation’s audio host (`download.quranicaudio.com`) when you:
+Reciter catalog metadata used by the App is bundled with the App. Audio itself is fetched over HTTPS from MP3Quran (`cdn.mp3quran.net`) in build 7 or from Quran Foundation’s audio host (`download.quranicaudio.com`) in build 6 when you:
 
 - stream a recitation, or
 - download a recitation for offline use.
 
 Those requests necessarily include ordinary technical request data that any HTTPS client sends (for example, IP address, user-agent style network metadata, and the URL of the requested audio file) so the CDN can deliver the file. The App does not add an analytics identity, advertising ID, or account credential to those requests.
 
-Quran Foundation describes the technical information its services may log in its [privacy policy](https://quran.com/privacy). A recording choice may reveal religious interests. The app does not create a religious profile or use listening activity for advertising, profiling, or AI training. Playing a saved chapter reads the audio from your device.
+MP3Quran’s [privacy policy](https://www.mp3quran.net/privacy-en.html) describes website logs that include the visitor’s IP address, visit time, country and referring page. It does not specify how long the audio host keeps requests or whether it stores the chapter URL with the listener’s IP address. For build 6, Quran Foundation describes website logs in its [privacy policy](https://quran.com/privacy). A recording choice may reveal religious interests. The app does not create a religious profile or use listening activity for advertising, profiling, or AI training. Playing a saved chapter reads the audio from your device.
 
 ### Minshawi’s portrait
 
@@ -86,13 +86,13 @@ On-device information is used only to operate App features you request:
 
 - We do **not** sell personal information.
 - We do **not** share on-device preferences, session files, or downloads with advertisers.
-- Audio requests go to Quran Foundation’s audio CDN solely to deliver the audio you requested.
+- The app requests audio from the provider for the recording you choose.
 - We may disclose information if required by law, or to protect rights, safety, and integrity, to the limited extent such information is available to us (for most users, that is limited to support email correspondence if you contact us).
 
 ## Data retention and deletion
 
 - **Preferences and session checkpoint:** remain on your device until you change them, clear App data by deleting the App, or otherwise remove the App’s data through iOS Settings.
-- **Offline downloads:** New Quran Foundation downloads expire seven days after download. Expired files are removed when the app can run. Downloads saved from MP3Quran in earlier versions remain until you delete them. Use **Settings → Downloads** in the App to remove one recording or all downloads.
+- **Offline downloads:** MP3Quran downloads stay on your device until you remove the recording or delete the app. Recordings saved from Quran Foundation in build 6 expire seven days after their original download. The app removes expired files when it can run. Use **Settings → Manage Downloads** in the App to remove one recording or all downloads.
 - **Support email:** if you email us, we keep the correspondence as needed to respond and then according to ordinary mailbox retention.
 
 Deleting the App removes the App’s local container on that device (including preferences, session checkpoint, and downloads stored there).

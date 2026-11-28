@@ -21,7 +21,7 @@ We aim to reply as soon as practical. There is no in-app chat or account login.
 
 ## What the app does
 
-- Stream Murattal Quran recitations from nine reciters via Quran Foundation over HTTPS.
+- Listen to all 114 surahs from nine reciters, with Hafs an Asim murattal recordings from MP3Quran in build 7.
 - Optionally **download** surahs you choose for offline listening.
 - Continue listening from a local on-device checkpoint.
 - Use the App on iPhone and with **Apple CarPlay®** (Audio).
@@ -45,11 +45,11 @@ We aim to reply as soon as practical. There is no in-app chat or account login.
 
 ### Why does the app need a network connection?
 
-Streaming fetches audio directly from Quran Foundation’s audio CDN. Offline playback works only for surahs you have already downloaded. The reciter list itself is bundled in the App, but audio files are not all preloaded.
+Build 7 streams directly from MP3Quran. Build 6 streams from Quran Foundation. Offline playback works only for surahs you have already downloaded. The reciter list itself is bundled in the App, but audio files are not all preloaded.
 
 ### How do offline downloads work?
 
-Open a surah in the iPhone player and choose **Download for 7 Days**. In **Settings → Manage Downloads**, you can cancel transfers, retry failures, or remove saved recordings. A new Quran Foundation download lasts seven days. After it expires, download it again while online. Audio saved from MP3Quran before the update remains available offline until you remove it. All downloads stay on your device and are excluded from iCloud backup. In Airplane Mode, previously downloaded surahs can play locally; undownloaded surahs need network streaming.
+In build 7, open a surah in the iPhone player and choose **Download for Offline**. MP3Quran recordings stay on your device until you remove them. In **Settings → Manage Downloads**, you can play saved recordings, cancel transfers, retry failures or remove files. If you saved a Quran Foundation recording in build 6, you can play it from Downloads until its original seven days expire. The chapter list opens the MP3Quran edition first. If a new chapter cannot start because the network is unavailable, the player can use a saved Foundation edition of that chapter and reciter. Downloads are excluded from iCloud backup.
 
 ### Does the app collect my personal data?
 
@@ -86,11 +86,11 @@ The App supports English and Arabic strings. Choose **System**, **English**, or 
 
 ### Attribution and audio source
 
-New recordings are performed by the reciter named in the player and supplied by [Quran Foundation](https://quran.foundation/). Settings lists the reciters and the photo credits and licenses. Eight portraits come with the app. In the Canadian and U.S. App Store storefronts, Minshawi’s 1954 portrait can be loaded from Wikimedia Commons. Geometric artwork appears before it loads or when it is unavailable.
+New recordings are performed by the reciter named in the player and supplied by [MP3Quran](https://www.mp3quran.net/) in build 7. Quran Foundation supplied the editions in build 6. Settings lists the reciters and the photo credits and licenses. Eight portraits come with the app. In the Canadian and U.S. App Store storefronts, Minshawi’s 1954 portrait can be loaded from Wikimedia Commons. Geometric artwork appears before it loads or when it is unavailable.
 
 ### Terms of use
 
-Quran Carplayer is offered under [Apple’s Standard Licensed Application End User License Agreement](https://www.apple.com/legal/internet-services/itunes/dev/stdeula/). Quran Foundation provides the recordings for listening within the app. Downloads are private device copies. The [Foundation’s developer terms](https://api-docs.quran.foundation/legal/developer-terms/) describe the permission for in-app playback and the seven-day storage limit used by this version. For questions about these terms, contact the developer at the support address above.
+Quran Carplayer is offered under [Apple’s Standard Licensed Application End User License Agreement](https://www.apple.com/legal/internet-services/itunes/dev/stdeula/). Build 7 streams original recordings from MP3Quran and saves user-requested downloads in the app’s private storage. MP3Quran publishes its copying and linking permission in its [copyright notice](https://www.mp3quran.net/privacy-en.html). The [Quran Foundation developer terms](https://api-docs.quran.foundation/legal/developer-terms/) apply to the recordings supplied in build 6. For questions about these terms, contact the developer at the support address above.
 
 ### Pricing
 
