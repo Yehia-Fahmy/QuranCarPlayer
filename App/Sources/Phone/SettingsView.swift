@@ -5,11 +5,23 @@ struct SettingsView: View {
     let coordinator: PlaybackCoordinator
     let downloadManager: AudioDownloadManager?
 
+    @AppStorage(ListeningTheme.preferenceKey) private var preference = ListeningTheme.systemPreference
+    @Environment(\.listeningTheme) private var theme
+
     private var language: ResolvedLanguage { coordinator.snapshot.language.resolved() }
 
     var body: some View {
         let snapshot = coordinator.snapshot
         Form {
+            Section {
+                Picker(L10n.string("theme.appearance", language), selection: $preference) {
+                    Text(verbatim: L10n.string("theme.system", language)).tag(ListeningTheme.systemPreference)
+                    ForEach(ListeningTheme.allCases, id: \.self) { choice in
+                        Text(verbatim: L10n.string("theme.\(choice.rawValue)", language)).tag(choice.rawValue)
+                    }
+                }
+                .accessibilityIdentifier("listening-theme")
+            }
             Section(L10n.string("settings.language", language)) {
                 Picker(L10n.string("settings.language", language),
                        selection: Binding(get: { snapshot.language }, set: { coordinator.setLanguage($0) })) {
@@ -31,6 +43,42 @@ struct SettingsView: View {
                 Text(verbatim: L10n.string("settings.autoResume.footer", language))
             }
 
+            if let downloadManager,
+               !coordinator.audioCatalog.reciters.allSatisfy({ $0.collection.isTestFixture }) {
+                Section {
+                    NavigationLink {
+                        DownloadsView(coordinator: coordinator, downloadManager: downloadManager)
+                    } label: {
+                        LabeledContent(L10n.string("downloads.manage", language),
+                                       value: downloadSummary)
+                    }
+                } header: {
+                    Text(verbatim: L10n.string("downloads.title", language))
+                } footer: {
+                    Text(verbatim: L10n.string("downloads.footer", language))
+                }
+            }
+
+            Section(L10n.string("settings.legal", language)) {
+                Link(L10n.string("settings.privacyPolicy", language), destination: AppLegalURLs.privacyPolicy)
+                Link(L10n.string("settings.termsOfUse", language), destination: AppLegalURLs.termsOfUse)
+                Link(L10n.string("settings.support", language), destination: AppLegalURLs.support)
+                NavigationLink(L10n.string("settings.sources", language)) { sourcesPage }
+            }
+
+            Section(L10n.string("settings.about", language)) {
+                LabeledContent(L10n.string("settings.version", language), value: versionString)
+            }
+        }
+        .listeningListBackground(theme)
+        .tint(theme.accent)
+        .preferredColorScheme(ListeningTheme(rawValue: preference)?.colorScheme)
+        .navigationTitle(L10n.string("settings.title", language))
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private var sourcesPage: some View {
+        Form {
             Section(L10n.string("settings.source", language)) {
                 let usesTestTones = coordinator.audioCatalog.reciters.allSatisfy { $0.collection.isTestFixture }
                 let sourceKey = usesTestTones
@@ -65,37 +113,13 @@ struct SettingsView: View {
                                  destination: attribution.licenseURL)
                         }
                         .font(.caption)
+                        .buttonStyle(.borderless)
                     }
                 }
-            }
-
-            if let downloadManager,
-               !coordinator.audioCatalog.reciters.allSatisfy({ $0.collection.isTestFixture }) {
-                Section {
-                    NavigationLink {
-                        DownloadsView(coordinator: coordinator, downloadManager: downloadManager)
-                    } label: {
-                        LabeledContent(L10n.string("downloads.manage", language),
-                                       value: downloadSummary)
-                    }
-                } header: {
-                    Text(verbatim: L10n.string("downloads.title", language))
-                } footer: {
-                    Text(verbatim: L10n.string("downloads.footer", language))
-                }
-            }
-
-            Section(L10n.string("settings.legal", language)) {
-                Link(L10n.string("settings.privacyPolicy", language), destination: AppLegalURLs.privacyPolicy)
-                Link(L10n.string("settings.termsOfUse", language), destination: AppLegalURLs.termsOfUse)
-                Link(L10n.string("settings.support", language), destination: AppLegalURLs.support)
-            }
-
-            Section(L10n.string("settings.about", language)) {
-                LabeledContent(L10n.string("settings.version", language), value: versionString)
             }
         }
-        .navigationTitle(L10n.string("settings.title", language))
+        .listeningListBackground(theme)
+        .navigationTitle(L10n.string("settings.sources", language))
         .navigationBarTitleDisplayMode(.inline)
     }
 

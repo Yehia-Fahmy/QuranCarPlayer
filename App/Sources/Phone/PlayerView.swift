@@ -6,7 +6,7 @@ struct PlayerView: View {
     let coordinator: PlaybackCoordinator
     let downloadManager: AudioDownloadManager?
     @ObservedObject var artworkProvider: ChapterArtworkProvider
-    @Environment(\.dismiss) private var dismiss
+    @Environment(\.listeningTheme) private var theme
 
     @State private var isScrubbing = false
     @State private var scrubPosition: Double = 0
@@ -15,84 +15,107 @@ struct PlayerView: View {
 
     var body: some View {
         let snapshot = coordinator.snapshot
-        NavigationStack {
-            VStack(spacing: 24) {
-                if snapshot.isTestAudio {
-                    TestAudioBanner(language: language)
-                }
-
-                Spacer(minLength: 0)
-
-                if let surah = coordinator.currentSurah {
-                    Image(uiImage: artworkProvider.image(
-                        for: surah,
-                        reciter: coordinator.currentReciter,
-                        language: language,
-                        size: CGSize(width: 640, height: 640)
-                    ))
-                    .resizable()
-                    .scaledToFit()
-                    .frame(maxWidth: 280, maxHeight: 280)
-                    .clipShape(RoundedRectangle(cornerRadius: 18))
-                    .shadow(color: .black.opacity(0.16), radius: 12, y: 6)
-                    .accessibilityHidden(true)
-                }
-
-                VStack(spacing: 8) {
-                    if let surah = coordinator.currentSurah {
-                        Text(verbatim: "\(surah.number). \(surah.displayName(for: language))")
-                            .font(.title.weight(.semibold))
-                            .multilineTextAlignment(.center)
-                        Text(verbatim: surah.secondaryName(for: language))
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    } else {
-                        Text(verbatim: L10n.string("state.idle", language))
-                            .font(.title2)
-                            .foregroundStyle(.secondary)
+        GeometryReader { geometry in
+            let horizontal = geometry.size.width > 580 && geometry.size.height < 500
+            let coverSize = min(geometry.size.width * 0.72, geometry.size.height * 0.36, 340)
+            ScrollView {
+                VStack(spacing: 16) {
+                    if snapshot.isTestAudio {
+                        TestAudioBanner(language: language)
                     }
-                    if let reciter = coordinator.currentReciter {
-                        Text(verbatim: reciter.displayName(for: language))
-                            .font(.headline)
-                            .foregroundStyle(.secondary)
-                            .padding(.top, 4)
-                        if reciter.collection.id.provider == QuranFoundationCatalog.providerKey {
-                            Text(verbatim: L10n.string("source.quranFoundation", language))
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                    if horizontal {
+                        HStack(spacing: 32) {
+                            cover(side: max(100, min(geometry.size.height - 60, 280)))
+                            controls(snapshot)
                         }
+                    } else {
+                        cover(side: coverSize)
+                        controls(snapshot)
                     }
                 }
-                .padding(.horizontal)
-
-                statusView(snapshot)
-
-                if let downloadManager,
-                   let recording = snapshot.currentRecording,
-                   downloadManager.state(for: recording) == .downloaded || downloadManager.canDownload(recording) {
-                    RecordingDownloadControl(downloadManager: downloadManager,
-                                             recording: recording,
-                                             language: language)
-                }
-
-                seekView(snapshot)
-
-                transportControls(snapshot)
-
-                Spacer(minLength: 0)
+                .padding(.horizontal, 22)
+                .padding(.vertical, 16)
+                .frame(maxWidth: horizontal ? 880 : 460)
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: geometry.size.height)
             }
-            .padding()
-            .navigationTitle(L10n.string("listen.nowPlaying", language))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(L10n.string("player.done", language)) { dismiss() }
-                }
-            }
+            .scrollBounceBehavior(.basedOnSize)
         }
-        .environment(\.layoutDirection, language.isRightToLeft ? .rightToLeft : .leftToRight)
-        .environment(\.locale, Locale(identifier: language.localeIdentifier))
-        .presentationDragIndicator(.visible)
+        .background {
+            LinearGradient(colors: [theme.surface, theme.background], startPoint: .top, endPoint: .bottom)
+                .ignoresSafeArea()
+        }
+        .navigationTitle(L10n.string("listen.nowPlaying", language))
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    @ViewBuilder
+    private func cover(side: CGFloat) -> some View {
+        if let surah = coordinator.currentSurah {
+            let shape = RoundedRectangle(cornerRadius: 13)
+            Image(uiImage: artworkProvider.image(for: surah, reciter: coordinator.currentReciter,
+                                                 language: language, size: CGSize(width: 720, height: 720)))
+                .resizable()
+                .scaledToFit()
+                .clipShape(shape)
+                .background(theme.surface, in: shape)
+                .overlay {
+                    shape.strokeBorder(theme.accent.opacity(0.19), lineWidth: 1)
+                }
+                .frame(width: side, height: side)
+                .shadow(color: .black.opacity(0.32), radius: 12, y: 6)
+                .accessibilityHidden(true)
+        }
+    }
+
+    private func controls(_ snapshot: PlaybackSnapshot) -> some View {
+        VStack(alignment: .leading, spacing: 14) {
+            if let surah = coordinator.currentSurah {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(verbatim: "\(surah.number). \(surah.displayName(for: language))")
+                        .font(.largeTitle.bold())
+                    Text(verbatim: surah.secondaryName(for: language))
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                .multilineTextAlignment(.leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            if let reciter = coordinator.currentReciter {
+                Label(reciter.displayName(for: language), systemImage: "person.wave.2")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                if reciter.collection.id.provider == QuranFoundationCatalog.providerKey {
+                    Text(verbatim: L10n.string("source.quranFoundation", language))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            Divider()
+            ViewThatFits(in: .horizontal) {
+                HStack {
+                    statusView(snapshot).fixedSize()
+                    Spacer()
+                    downloadControl(snapshot).fixedSize()
+                }
+                VStack(alignment: .leading) {
+                    statusView(snapshot)
+                    downloadControl(snapshot)
+                }
+            }
+            seekView(snapshot)
+            transportControls(snapshot)
+                .frame(maxWidth: .infinity)
+        }
+        .padding(4)
+    }
+
+    @ViewBuilder
+    private func downloadControl(_ snapshot: PlaybackSnapshot) -> some View {
+        if let downloadManager, let recording = snapshot.currentRecording,
+           downloadManager.state(for: recording) == .downloaded || downloadManager.canDownload(recording) {
+            RecordingDownloadControl(downloadManager: downloadManager, recording: recording, language: language)
+        }
     }
 
     @ViewBuilder
@@ -154,11 +177,10 @@ struct PlayerView: View {
             .font(.caption.monospacedDigit())
             .foregroundStyle(.secondary)
         }
-        .padding(.horizontal)
     }
 
     private func transportControls(_ snapshot: PlaybackSnapshot) -> some View {
-        HStack(spacing: 40) {
+        HStack(spacing: 20) {
             Button {
                 coordinator.previous()
             } label: {
@@ -172,7 +194,7 @@ struct PlayerView: View {
                 coordinator.togglePlayPause()
             } label: {
                 Image(systemName: snapshot.isActivelyPlaying ? "pause.circle.fill" : "play.circle.fill")
-                    .font(.system(size: 72))
+                    .font(.system(size: 60))
             }
             .disabled(snapshot.currentRecording == nil)
             .accessibilityIdentifier("player-play-pause")

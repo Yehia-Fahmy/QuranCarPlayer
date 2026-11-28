@@ -4,6 +4,7 @@ import QuranCarPlayerCore
 /// Short reciter list. Selecting one follows the shared coordinator rules
 /// (restart current surah at zero; stay paused if paused).
 struct ReciterListView: View {
+    @Environment(\.listeningTheme) private var theme
     let coordinator: PlaybackCoordinator
     let language: ResolvedLanguage
 
@@ -33,5 +34,6 @@ struct ReciterListView: View {
             .accessibilityIdentifier("reciter-\(reciter.id.rawValue)")
         }
         .listStyle(.insetGrouped)
+        .listeningListBackground(theme)
     }
 }

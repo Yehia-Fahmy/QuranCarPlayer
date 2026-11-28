@@ -1,6 +1,10 @@
 # Quran Carplayer
 
-An iPhone Quran audio player with Apple CarPlay, the original nine MP3Quran reciters, and per-surah offline downloads. MP3Quran downloads remain available until removed. Quran Foundation recordings saved in build 6 can play from Downloads until their original seven-day expiry.
+A Quran audio player for iPhone and iPad with Apple CarPlay, the original nine MP3Quran reciters, and per-surah offline downloads. MP3Quran downloads remain available until removed. Quran Foundation recordings saved in build 6 can play from Downloads until their original seven-day expiry.
+
+Settings → Theme offers Folio, Studio, Nocturne, Grove, and Copper. System Appearance automatically uses Folio in light mode and Nocturne in dark mode. The library and player share the screen in wider windows, including the unfolded iPhone Duo.
+
+[Compare all five palettes on iPhone](docs/theme-screenshots/five-themes.jpg) or browse the [iPad simulator screenshots](docs/theme-screenshots/ipad-air).
 
 The [release change record](docs/RELEASE_READINESS.md) tracks the offline playback, CarPlay and chapter artwork fixes, verification results, and decisions for App Store submission.
 

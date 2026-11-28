@@ -43,6 +43,34 @@ final class PhonePlaybackUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["2. Al-Baqarah"].waitForExistence(timeout: 5))
     }
 
+    func testSourcesOpenFromSettings() {
+        app.buttons["Settings"].tap()
+        let sources = app.buttons["Sources"]
+        if !sources.isHittable { app.swipeUp() }
+        XCTAssertFalse(app.staticTexts["Audio source"].exists)
+        sources.tap()
+        XCTAssertTrue(app.navigationBars["Sources"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Audio source"].exists)
+        XCTAssertTrue(app.staticTexts["Reciter portrait sources"].exists)
+        app.navigationBars["Sources"].buttons["BackButton"].tap()
+        XCTAssertTrue(sources.waitForExistence(timeout: 5))
+    }
+
+    func testThemeSelectionPersistsAfterRelaunch() {
+        app.buttons["Settings"].tap()
+        let themePicker = app.buttons["listening-theme"]
+        themePicker.tap()
+        app.buttons["Folio"].tap()
+        XCTAssertTrue(themePicker.label.contains("Folio") || themePicker.value as? String == "Folio")
+        app.terminate()
+        app.launch()
+        app.buttons["Settings"].tap()
+        XCTAssertTrue(themePicker.waitForExistence(timeout: 5))
+        XCTAssertTrue(themePicker.label.contains("Folio") || themePicker.value as? String == "Folio")
+        themePicker.tap()
+        app.buttons["System Appearance"].tap()
+    }
+
     func testReciterChangeAndSettingsLanguage() {
         app.buttons["Reciters"].tap()
         let toneB = app.buttons["reciter-fixture.toneB"]

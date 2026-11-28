@@ -25,6 +25,60 @@
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Listen" } }
       }
     },
+    "theme.libraryActions" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "خيارات المكتبة" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Library Options" } }
+      }
+    },
+    "theme.appearance" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "المظهر" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Theme" } }
+      }
+    },
+    "theme.system" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "مظهر النظام" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "System Appearance" } }
+      }
+    },
+    "theme.folio" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "ورق" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Folio" } }
+      }
+    },
+    "theme.studio" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "استوديو" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Studio" } }
+      }
+    },
+    "theme.nocturne" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "ليلي" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Nocturne" } }
+      }
+    },
+    "theme.grove" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "روضة" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Grove" } }
+      }
+    },
+    "theme.copper" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "نحاس" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Copper" } }
+      }
+    },
+    "theme.chooseSurah" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "اختر سورة للاستماع إليها." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Choose a surah to listen." } }
+      }
+    },
     "settings.title" : {
       "localizations" : {
         "ar" : { "stringUnit" : { "state" : "translated", "value" : "الإعدادات" } },
@@ -263,6 +317,12 @@
       "localizations" : {
         "ar" : { "stringUnit" : { "state" : "translated", "value" : "شروط الاستخدام" } },
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Terms of Use" } }
+      }
+    },
+    "settings.sources" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "المصادر" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Sources" } }
       }
     },
     "settings.source" : {

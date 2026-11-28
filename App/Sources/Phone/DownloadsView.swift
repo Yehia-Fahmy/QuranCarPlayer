@@ -3,6 +3,7 @@ import QuranCarPlayerCore
 
 /// Durable and active download inventory. All mutations go through AudioDownloadManager.
 struct DownloadsView: View {
+    @Environment(\.listeningTheme) private var theme
     let coordinator: PlaybackCoordinator
     let downloadManager: AudioDownloadManager
 
@@ -69,6 +70,7 @@ struct DownloadsView: View {
             }
         }
         .listStyle(.insetGrouped)
+        .listeningListBackground(theme)
         .navigationTitle(L10n.string("downloads.title", language))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
