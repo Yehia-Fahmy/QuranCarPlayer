@@ -1,6 +1,6 @@
 # Quran Carplayer
 
-An iPhone Quran audio player with Apple CarPlay, nine reciters from Quran Foundation, and per-surah offline downloads that last seven days. Existing MP3Quran downloads continue to work on the same device.
+An iPhone Quran audio player with Apple CarPlay, the original nine MP3Quran reciters, and per-surah offline downloads. MP3Quran downloads remain available until removed. Quran Foundation recordings saved in build 6 can play from Downloads until their original seven-day expiry.
 
 The [release change record](docs/RELEASE_READINESS.md) tracks the offline playback, CarPlay and chapter artwork fixes, verification results, and decisions for App Store submission.
 

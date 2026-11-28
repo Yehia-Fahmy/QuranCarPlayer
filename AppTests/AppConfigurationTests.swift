@@ -123,7 +123,7 @@ struct AppConfigurationTests {
         #expect(L10n.string("downloads.empty.title", .arabic) == "لا توجد تنزيلات")
     }
 
-    @Test("Composition root streams nine Quran Foundation reciters, with Maher selected")
+    @Test("Composition root streams nine MP3Quran reciters, with Maher selected")
     @MainActor
     func environmentComposes() throws {
         let environment = AppEnvironment.shared
@@ -136,7 +136,19 @@ struct AppConfigurationTests {
             "mp3quran.abdulbasit", "mp3quran.yasser",
         ])
         #expect(reciters.allSatisfy { $0.collection.isTestFixture == false })
-        #expect(reciters.allSatisfy { $0.collection.id.provider == QuranFoundationCatalog.providerKey })
+        let catalog = environment.coordinator.audioCatalog
+        for reciter in reciters {
+            #expect(reciter.collection.id.provider == MP3QuranCatalog.providerKey)
+            let retainedEdition = try #require(catalog.legacyCollection(for: reciter.id))
+            #expect(retainedEdition.provider == QuranFoundationCatalog.providerKey)
+            for chapter in Surah.numberRange {
+                let restored = RecordingID(collection: reciter.collection.id, surahNumber: chapter)
+                let url = try catalog.source(for: restored).url
+                #expect(url.host == "cdn.mp3quran.net")
+                let legacy = RecordingID(collection: retainedEdition, surahNumber: chapter)
+                #expect(throws: AudioCatalogError.recordingUnavailable(legacy)) { try catalog.source(for: legacy) }
+            }
+        }
         #expect(environment.coordinator.selectedReciter?.englishName == "Maher Al-Muaiqly")
     }
 

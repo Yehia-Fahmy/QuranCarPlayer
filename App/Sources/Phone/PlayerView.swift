@@ -56,6 +56,11 @@ struct PlayerView: View {
                             .font(.headline)
                             .foregroundStyle(.secondary)
                             .padding(.top, 4)
+                        if reciter.collection.id.provider == QuranFoundationCatalog.providerKey {
+                            Text(verbatim: L10n.string("source.quranFoundation", language))
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
                     }
                 }
                 .padding(.horizontal)

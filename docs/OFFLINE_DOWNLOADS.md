@@ -1,7 +1,7 @@
 # Offline audio downloads
 
 QuranCarPlayer supports user-initiated, per-surah downloads on the iPhone. Open a surah in
-Now Playing and choose **Download for 7 Days**. The control shows determinate progress when the
+Now Playing and choose **Download for Offline**. The control shows determinate progress when the
 server provides a content length, supports cancellation and retry, and changes to
 **Available Offline** when installation succeeds. Its menu removes that recording.
 
@@ -25,7 +25,7 @@ and explicit accessibility labels for progress, size, and management controls.
 ## Playback and storage behavior
 
 - Playback resolves the exact `RecordingID` (provider, collection, and surah) to a verified local
-  file first. If no valid file exists, it uses the catalog URL unchanged, preserving streaming.
+  file first. For an MP3Quran selection without a valid local file, it uses the catalog URL.
 - Completed files live under Application Support in an app-owned `Audio Downloads` directory.
   Provider identifiers are encoded before being used as path components.
 - Two recordings can download at once. Further selections wait in a cancellable queue.
@@ -38,15 +38,15 @@ and explicit accessibility labels for progress, size, and management controls.
   leaves streaming available. Downloads are foreground operations and do not claim to continue
   after the app is suspended or terminated.
 - If the player rejects a downloaded file, the app removes that file and immediately falls back to
-  the catalog stream at the retained position instead of retrying broken local media.
+  the catalog stream for a current MP3Quran recording. A legacy-only recording has no remote source.
 - Removing a file affects future loads. An already-open player item may continue until it is
-  replaced; subsequent playback streams if the local file is gone.
+  replaced. Future MP3Quran playback can stream if the local file is gone.
 
 ## Providers and retention
 
-Build 6 streams and downloads new chapter recordings directly from Quran Foundation. Each download is initiated on the device, stays in the app’s private storage, and is eligible for playback for seven days. The app removes expired files when it can run. Listeners may download the chapter again. This device-only integration uses the Foundation’s direct-audio allowance. [Foundation terms, section 3.1](https://api-docs.quran.foundation/legal/developer-terms/#31-acceptable-use)
+Build 7 restores the original MP3Quran editions for new playback and downloads on iPhone and CarPlay. A chapter selected in the catalog uses its MP3Quran performance even when the same reciter and surah were downloaded from Quran Foundation. If an MP3Quran stream fails with a network error before the chapter has advanced, the player can fall back to the unexpired local Foundation edition from its beginning. MP3Quran files saved in earlier builds are reused, and new downloads of these editions have no scheduled expiry. [MP3Quran collections](app-store-connect/rights-evidence/mp3quran-2026-11-27.md)
 
-Recordings saved in build 5 or earlier retain their MP3Quran collection identity and remain available offline until removed. Fresh network playback uses the Foundation edition. The reciter and surah may be the same across providers even when the performances and timings differ. [Foundation catalog verification](app-store-connect/rights-evidence/quran-foundation-catalog.md)
+Quran Foundation recordings downloaded in build 6 can be played directly from Downloads until the original seven-day expiry. The app removes expired files when it can run. Resume positions belong to a particular performance, so an offset from one provider is never applied to the other. [Build 6 editions](app-store-connect/rights-evidence/quran-foundation-catalog.md) · [Foundation terms](https://api-docs.quran.foundation/legal/developer-terms/#31-acceptable-use)
 
 ## Verification
 

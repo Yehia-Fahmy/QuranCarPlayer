@@ -99,8 +99,8 @@
     },
     "download.action" : {
       "localizations" : {
-        "ar" : { "stringUnit" : { "state" : "translated", "value" : "تنزيل لمدة ٧ أيام" } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Download for 7 Days" } }
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "تنزيل للاستماع دون اتصال" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Download for Offline" } }
       }
     },
     "download.downloading" : {
@@ -277,16 +277,22 @@
         "en" : { "stringUnit" : { "state" : "translated", "value" : "This build plays synthetic test tones generated inside the project. It contains no Quran recitation." } }
       }
     },
-    "settings.source.foundation" : {
+    "settings.source.mp3quran" : {
       "localizations" : {
-        "ar" : { "stringUnit" : { "state" : "translated", "value" : "تقدّم مؤسسة القرآن التلاوات الجديدة. يمكنك الاستماع إلى السورة دون اتصال لمدة سبعة أيام بعد تنزيلها. وتبقى التلاوات التي حفظتها من MP3Quran في الإصدارات السابقة متاحة." } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "New recordings come from Quran Foundation. You can listen offline for seven days after downloading a surah. Recordings saved from MP3Quran in earlier versions remain available." } }
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "مصدر التلاوات التي تستمع إليها عبر الإنترنت أو تنزّلها هو MP3Quran. يمكنك الاستماع إلى التلاوات المحفوظة دون اتصال." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Streams and new downloads come from MP3Quran. You can listen to saved recordings offline." } }
       }
     },
-    "settings.source.foundation.streamingOnly" : {
+    "settings.source.mp3quran.streamingOnly" : {
       "localizations" : {
-        "ar" : { "stringUnit" : { "state" : "translated", "value" : "تُبثّ التلاوات من مؤسسة القرآن. التخزين المحلي غير متاح حاليًا، لذا يتطلب التشغيل اتصالًا بالإنترنت." } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Recitations stream from Quran Foundation. Local storage is unavailable, so playback needs an internet connection." } }
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "تُبثّ التلاوات من MP3Quran. التخزين المحلي غير متاح حاليًا، لذا يتطلب التشغيل اتصالًا بالإنترنت." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Recitations stream from MP3Quran. Local storage is unavailable, so playback needs an internet connection." } }
+      }
+    },
+    "source.quranFoundation" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "مؤسسة القرآن" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Quran Foundation" } }
       }
     },
     "settings.artwork" : {
@@ -399,8 +405,14 @@
     },
     "downloads.footer" : {
       "localizations" : {
-        "ar" : { "stringUnit" : { "state" : "translated", "value" : "تنتهي صلاحية التنزيلات الجديدة بعد سبعة أيام ويمكنك تنزيلها مجددًا. تبقى تنزيلات MP3Quran السابقة حتى تحذفها. تُستثنى جميع التنزيلات من النسخ الاحتياطية." } },
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "New downloads expire after seven days. You can download them again. Older MP3Quran downloads stay until you remove them. All downloads are excluded from backups." } }
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "تبقى التلاوات التي تنزّلها من MP3Quran على جهازك حتى تحذفها. تُستثنى جميع التنزيلات من النسخ الاحتياطية." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "MP3Quran downloads stay on your device until you remove them. All downloads are excluded from backups." } }
+      }
+    },
+    "downloads.foundationRetention" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "مؤسسة القرآن · تنتهي الصلاحية بعد سبعة أيام من تاريخ التنزيل" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Quran Foundation · Expires seven days after download" } }
       }
     },
     "downloads.cleanupFailed" : {
