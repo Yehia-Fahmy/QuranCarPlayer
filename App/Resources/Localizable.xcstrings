@@ -37,6 +37,18 @@
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Theme" } }
       }
     },
+    "theme.confirm" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "تأكيد المظهر" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Confirm theme" } }
+      }
+    },
+    "theme.applied" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "المظهر الحالي" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Applied" } }
+      }
+    },
     "theme.system" : {
       "localizations" : {
         "ar" : { "stringUnit" : { "state" : "translated", "value" : "مظهر النظام" } },
