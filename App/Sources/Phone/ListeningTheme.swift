@@ -53,6 +53,38 @@ extension EnvironmentValues {
     @Entry var listeningTheme: ListeningTheme = .folio
 }
 
+/// The phone window owns the appearance so presented UIKit and SwiftUI controls
+/// inherit the same traits. System Appearance releases the override entirely.
+struct ListeningWindowAppearance: UIViewRepresentable {
+    let theme: ListeningTheme?
+
+    final class WindowProbe: UIView {
+        var style: UIUserInterfaceStyle = .unspecified {
+            didSet { applyStyle() }
+        }
+
+        override func didMoveToWindow() {
+            super.didMoveToWindow()
+            applyStyle()
+        }
+
+        private func applyStyle() {
+            guard let window, window.overrideUserInterfaceStyle != style else { return }
+            window.overrideUserInterfaceStyle = style
+        }
+    }
+
+    func makeUIView(context: Context) -> WindowProbe {
+        let view = WindowProbe()
+        view.isUserInteractionEnabled = false
+        return view
+    }
+
+    func updateUIView(_ view: WindowProbe, context: Context) {
+        view.style = theme.map { $0.colorScheme == .dark ? .dark : .light } ?? .unspecified
+    }
+}
+
 extension View {
     func listeningListBackground(_ theme: ListeningTheme) -> some View {
         scrollContentBackground(.hidden)
