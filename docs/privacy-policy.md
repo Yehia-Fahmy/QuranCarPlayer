@@ -1,7 +1,7 @@
 # Privacy Policy — Quran Carplayer
 
 **Effective date:** 16 November 2026  
-**Last updated:** 27 November 2026\
+**Last updated:** 28 November 2026\
 **Developer:** Yehia Fahmy  
 **Contact:** [yehia.fahmy@uwaterloo.ca](mailto:yehia.fahmy@uwaterloo.ca)
 
@@ -13,7 +13,7 @@ This Privacy Policy describes how **Quran Carplayer** (“the App”) handles in
 
 - The App does **not** require an account and does **not** ask you to provide your name, email, or phone number to use it.
 - Preferences, listening progress, and optional offline audio files are stored **on your device**.
-- When you stream or download recitations, the App contacts the audio provider over HTTPS. Build 7 uses **MP3Quran**. Build 6 uses Quran Foundation.
+- When you stream or download recitations, the App contacts the audio provider over HTTPS. Builds 7 and 8 use **MP3Quran**. Build 6 uses Quran Foundation.
 - The App does **not** include advertising, analytics, crash-reporting, or tracking SDKs, and does **not** use App Tracking Transparency / advertising identifiers for tracking.
 - We do **not** sell your personal information.
 
@@ -47,14 +47,14 @@ We do **not** operate an account system, cloud sync service, or developer backen
 
 ### Audio streaming and downloads
 
-Reciter catalog metadata used by the App is bundled with the App. Audio itself is fetched over HTTPS from MP3Quran (`cdn.mp3quran.net`) in build 7 or from Quran Foundation’s audio host (`download.quranicaudio.com`) in build 6 when you:
+Reciter catalog metadata used by the App is bundled with the App. Audio itself is fetched over HTTPS from MP3Quran (`cdn.mp3quran.net`) in builds 7 and 8 or from Quran Foundation’s audio host (`download.quranicaudio.com`) in build 6 when you:
 
 - stream a recitation, or
 - download a recitation for offline use.
 
 Those requests necessarily include ordinary technical request data that any HTTPS client sends (for example, IP address, user-agent style network metadata, and the URL of the requested audio file) so the CDN can deliver the file. The App does not add an analytics identity, advertising ID, or account credential to those requests.
 
-MP3Quran’s [privacy policy](https://www.mp3quran.net/privacy-en.html) describes website logs that include the visitor’s IP address, visit time, country and referring page. It does not specify how long the audio host keeps requests or whether it stores the chapter URL with the listener’s IP address. For build 6, Quran Foundation describes website logs in its [privacy policy](https://quran.com/privacy). A recording choice may reveal religious interests. The app does not create a religious profile or use listening activity for advertising, profiling, or AI training. Playing a saved chapter reads the audio from your device.
+MP3Quran’s [privacy policy](https://www.mp3quran.net/privacy-en.html) describes website logs that include the visitor’s IP address, visit time, country and referring page. MP3Quran confirmed that its audio CDN logs general access requests for delivery and operational security. It says it does not use those logs to track listeners or share them with third parties. We are awaiting clarification on whether a stored record pairs a listener’s IP address with the chapter URL, whether that address is anonymized before logging, and how long the record is normally kept. For build 6, Quran Foundation describes website logs in its [privacy policy](https://quran.com/privacy). A recording choice may reveal religious interests. The app does not create a religious profile or use listening activity for advertising, profiling, or AI training. Playing a saved chapter reads the audio from your device.
 
 ### Minshawi’s portrait
 

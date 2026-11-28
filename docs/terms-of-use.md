@@ -1,6 +1,6 @@
 # Terms of Use — Quran Carplayer
 
-Updated 27 November 2026.
+Updated 28 November 2026.
 
 ## App license
 
@@ -8,7 +8,7 @@ Quran Carplayer is available free of charge. The app is licensed under [Apple’
 
 ## Recitation audio
 
-Build 7 uses MP3Quran for streaming and new offline downloads. MP3Quran describes its permissions for copying material and using links in its [copyright notice](https://www.mp3quran.net/privacy-en.html). The player identifies the reciter for each performance.
+Builds 7 and 8 use MP3Quran for streaming and new offline downloads. MP3Quran describes its permissions for copying material and using links in its [copyright notice](https://www.mp3quran.net/privacy-en.html). The player identifies the reciter for each performance.
 
 Build 6 used editions supplied by Quran Foundation. Recordings saved from those editions expire seven days after download, including after an upgrade. Quran Foundation describes the conditions for its supplied content in its [developer terms](https://api-docs.quran.foundation/legal/developer-terms/).
 

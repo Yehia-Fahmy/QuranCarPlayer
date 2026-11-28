@@ -8,7 +8,7 @@ Email [yehia.fahmy@uwaterloo.ca](mailto:yehia.fahmy@uwaterloo.ca) for help. Incl
 
 Choose a reciter, then tap a surah to start listening. The app saves your place on the device. Open **Settings → Manage Downloads** to play, retry, or remove a saved recording.
 
-Build 7 streams from MP3Quran. Tap **Download for Offline** in the player to save that recording until you remove it. Build 6 uses Quran Foundation recordings with a seven-day offline period. After upgrading, previously saved Foundation recordings can still be played from Downloads until their original expiry. Downloaded audio is excluded from device backups.
+Builds 7 and 8 stream from MP3Quran. Tap **Download for Offline** in the player to save that recording until you remove it. Build 6 uses Quran Foundation recordings with a seven-day offline period. After upgrading, previously saved Foundation recordings can still be played from Downloads until their original expiry. Downloaded audio is excluded from device backups.
 
 If a stream stops, check your connection and tap **Retry**. For offline playback, open the saved recording from Downloads. To clear all local app data, delete the app from the device.
 

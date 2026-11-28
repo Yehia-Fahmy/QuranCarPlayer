@@ -1,6 +1,6 @@
-# Build 7 privacy and content-rights answers
+# Builds 7 and 8 privacy and content-rights answers
 
-Updated November 28, 2026 for Quran Carplayer 1.0.0 (7). This worksheet records proposed App Store Connect entries and their evidence. The app has no account, advertising SDK, analytics SDK or developer backend. Its two built-in network features deliver audio and one regional portrait. [Production catalog](../../Packages/QuranCarPlayerCore/Sources/QuranCarPlayerCore/Catalog/MP3QuranCatalog.swift) · [Portrait downloader](../../App/Sources/Artwork/RegionalMinshawiPortraitStore.swift) · [Published policy](https://yehia-fahmy.github.io/QuranCarPlayer/privacy/)
+Updated November 28, 2026 for Quran Carplayer 1.0.0, builds 7 and 8. This worksheet records proposed App Store Connect entries and their evidence. The app has no account, advertising SDK, analytics SDK or developer backend. Its two built-in network features deliver audio and one regional portrait. [Production catalog](../../Packages/QuranCarPlayerCore/Sources/QuranCarPlayerCore/Catalog/MP3QuranCatalog.swift) · [Portrait downloader](../../App/Sources/Artwork/RegionalMinshawiPortraitStore.swift) · [Published policy](https://yehia-fahmy.github.io/QuranCarPlayer/privacy/)
 
 ## App Privacy
 
@@ -22,13 +22,13 @@ These proposed categories describe the known Wikimedia path. The audio provider 
 
 **Open CDN question.** MP3Quran says it retains general access logs as needed for operational security. The November 28 follow-up asks whether the CDN stores the IP address alongside the requested MP3 path after delivery, whether it anonymizes the address before logging, and how long it normally keeps that record. [MP3Quran’s policy](https://www.mp3quran.net/privacy-en.html) · [Provider correspondence record](rights-evidence/mp3quran-2026-11-27.md) · [Apple’s real-time delivery exception](https://developer.apple.com/app-store/app-privacy-details/)
 
-The separate inquiry to Quran Foundation concerned build 6. Build 7 makes its new audio requests to MP3Quran. The Foundation’s response applies to the earlier build.
+The separate inquiry to Quran Foundation concerned build 6. Builds 7 and 8 make their new audio requests to MP3Quran. The Foundation’s response applies to the earlier build.
 
 ## Content Rights
 
 **Does the app contain, show or access third-party content?** **Yes.** Apple can request permission covering streaming and user-initiated downloads in all offered regions. The November 28 provider reply documents worldwide authorization for the restored MP3Quran recordings. [App Store Connect content rights](https://developer.apple.com/help/app-store-connect/reference/app-information/app-information/) · [App Review Guidelines §§5.2.2–5.2.3](https://developer.apple.com/app-store/review/guidelines/#intellectual-property)
 
-- **New recordings.** MP3Quran’s published copyright notice permits developers to use site links and copy material. Build 7 streams from the provider and allows a user to save individual recordings in private storage until removal. The nine original editions each cover 114 chapters. MP3Quran expressly authorized all nine editions for streaming and offline listening in Quran Carplayer worldwide. No specific attribution is required. [MP3Quran copyright notice](https://www.mp3quran.net/privacy-en.html) · [Selected collections and written permission](rights-evidence/mp3quran-2026-11-27.md)
+- **New recordings.** MP3Quran’s published copyright notice permits developers to use site links and copy material. Both builds stream from the provider and allow a user to save individual recordings in private storage until removal. The nine original editions each cover 114 chapters. MP3Quran expressly authorized all nine editions for streaming and offline listening in Quran Carplayer worldwide. No specific attribution is required. [MP3Quran copyright notice](https://www.mp3quran.net/privacy-en.html) · [Selected collections and written permission](rights-evidence/mp3quran-2026-11-27.md)
 - **Existing recordings.** Downloads from earlier MP3Quran builds remain playable. The app also keeps eligible Foundation downloads inside the app for the remainder of their original seven days. [Build 6 offline terms and editions](rights-evidence/quran-foundation-catalog.md)
 
 - **Portraits.** Eight photos have recorded reuse terms and in-app credits. Mishary’s image uses a noncommercial grant on the basis of the publisher’s free, ad-free nonprofit use. Three CC BY-SA adaptations carry share-alike notices. Minshawi’s 1954 photo is delivered only for confirmed Canadian and U.S. storefronts, backed by the documented copyright basis in each. All other storefronts use the app’s own geometric artwork for that reciter. Use worldwide-cleared imagery in shared store screenshots. Recheck the noncommercial license if monetization changes. [Per-photo credits, licenses and regional analysis](../ARTWORK_ATTRIBUTION.md)
