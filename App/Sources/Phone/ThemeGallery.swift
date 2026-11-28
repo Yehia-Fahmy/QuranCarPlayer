@@ -27,6 +27,11 @@ struct ThemeGallery: View {
     private var keys: [String] { [ListeningTheme.systemPreference] + ListeningTheme.allCases.map(\.rawValue) }
     private var selectedKey: String { ListeningTheme(rawValue: preference)?.rawValue ?? ListeningTheme.systemPreference }
 
+    private var swipeLimit: ViewAlignedScrollTargetBehavior.LimitBehavior {
+        if #available(iOS 18.0, *) { return .alwaysByOne }
+        return .always
+    }
+
     var body: some View {
         GeometryReader { bounds in
             let ratio = layout.canvas.width / layout.canvas.height
@@ -46,7 +51,7 @@ struct ThemeGallery: View {
                     }
                     .contentMargins(.horizontal, inset, for: .scrollContent)
                     .scrollIndicators(.hidden)
-                    .scrollTargetBehavior(.viewAligned(limitBehavior: .always))
+                    .scrollTargetBehavior(.viewAligned(limitBehavior: swipeLimit))
                     .scrollPosition(id: Binding<String?>(
                         get: { selectedKey },
                         set: { if let key = $0 { preference = key } }
