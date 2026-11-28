@@ -30,6 +30,7 @@
 		E03888DC43B918E052473537 /* QuranCarPlayerCore in Frameworks */ = {isa = PBXBuildFile; productRef = B52E9ABA5BC05D748692ECA4 /* QuranCarPlayerCore */; };
 		E21BA7A0F42BBD8F0106868F /* OfflinePlaybackTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B14AABAEB21615C93170279C /* OfflinePlaybackTests.swift */; };
 		E378FA8EF56C18A1CE1FFA71 /* PhonePlaybackUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33317718FAC06656AF85AFB9 /* PhonePlaybackUITests.swift */; };
+		E60F8A9AFBDC665A57AA88B5 /* ThemeGallery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96D01A94540B1E72C470BD49 /* ThemeGallery.swift */; };
 		E9340F12A5CAA36B6E546658 /* test-tone-a.m4a in Resources */ = {isa = PBXBuildFile; fileRef = 5BD189B0394BC4DD2ABA0E87 /* test-tone-a.m4a */; };
 		E9C4891068B361E689540E49 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 0361308EBD1E294C6F2A7AB3 /* PrivacyInfo.xcprivacy */; };
 		EC87FA446AE804E8ABD7D8FB /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0511542ED415621A69A3AB5 /* RootView.swift */; };
@@ -73,6 +74,7 @@
 		883409485B222A6ABA9DAEEB /* CarPlayChapterBrowserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlayChapterBrowserTests.swift; sourceTree = "<group>"; };
 		89478E1C4987A3A6A9E641A7 /* PlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerView.swift; sourceTree = "<group>"; };
 		949996AA6D25941564263182 /* AppConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfigurationTests.swift; sourceTree = "<group>"; };
+		96D01A94540B1E72C470BD49 /* ThemeGallery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeGallery.swift; sourceTree = "<group>"; };
 		972442BC9B5657778CC59BCC /* Localization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Localization.swift; sourceTree = "<group>"; };
 		B14AABAEB21615C93170279C /* OfflinePlaybackTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflinePlaybackTests.swift; sourceTree = "<group>"; };
 		B3A8E32160FD0EA8112340F9 /* QuranCarPlayerTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = QuranCarPlayerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -118,6 +120,7 @@
 				D0511542ED415621A69A3AB5 /* RootView.swift */,
 				EDCDCFF3C1DB27B514A7DBA5 /* SettingsView.swift */,
 				EBE8CE87E87C938DDB313C09 /* SurahListView.swift */,
+				96D01A94540B1E72C470BD49 /* ThemeGallery.swift */,
 			);
 			path = Phone;
 			sourceTree = "<group>";
@@ -387,6 +390,7 @@
 				EC87FA446AE804E8ABD7D8FB /* RootView.swift in Sources */,
 				D9C779B96293F99D523D8FEB /* SettingsView.swift in Sources */,
 				AF08CDCEA3595C22E4EF9453 /* SurahListView.swift in Sources */,
+				E60F8A9AFBDC665A57AA88B5 /* ThemeGallery.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
