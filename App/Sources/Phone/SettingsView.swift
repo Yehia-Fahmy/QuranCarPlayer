@@ -5,6 +5,9 @@ struct SettingsView: View {
     let coordinator: PlaybackCoordinator
     let downloadManager: AudioDownloadManager?
 
+    let artworkProvider: ChapterArtworkProvider
+    let previewLayout: ThemePreviewLayout
+
     @AppStorage(ListeningTheme.preferenceKey) private var preference = ListeningTheme.systemPreference
     @Environment(\.listeningTheme) private var theme
 
@@ -14,11 +17,13 @@ struct SettingsView: View {
         let snapshot = coordinator.snapshot
         Form {
             Section {
-                Picker(L10n.string("theme.appearance", language), selection: $preference) {
-                    Text(verbatim: L10n.string("theme.system", language)).tag(ListeningTheme.systemPreference)
-                    ForEach(ListeningTheme.allCases, id: \.self) { choice in
-                        Text(verbatim: L10n.string("theme.\(choice.rawValue)", language)).tag(choice.rawValue)
-                    }
+                NavigationLink {
+                    ThemeGallery(preference: $preference, layout: previewLayout, language: language,
+                                 catalog: coordinator.surahCatalog, reciter: coordinator.selectedReciter,
+                                 artworkProvider: artworkProvider)
+                } label: {
+                    LabeledContent(L10n.string("theme.appearance", language),
+                                   value: L10n.string("theme.\(ListeningTheme(rawValue: preference)?.rawValue ?? ListeningTheme.systemPreference)", language))
                 }
                 .accessibilityIdentifier("listening-theme")
             }

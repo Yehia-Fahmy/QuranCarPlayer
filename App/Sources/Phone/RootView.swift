@@ -10,6 +10,7 @@ struct RootView: View {
     @Environment(\.colorScheme) private var appearance
     private var theme: ListeningTheme { .resolve(preference, appearance: appearance) }
     @Environment(\.horizontalSizeClass) private var widthClass
+    @Environment(\.verticalSizeClass) private var heightClass
     @State private var compactColumn: NavigationSplitViewColumn = .sidebar
     @State private var showSettings = false
     @State private var showReciters = false
@@ -88,7 +89,10 @@ struct RootView: View {
         }
         .sheet(isPresented: $showSettings) {
             NavigationStack {
-                SettingsView(coordinator: coordinator, downloadManager: downloadManager)
+                SettingsView(coordinator: coordinator, downloadManager: downloadManager,
+                             artworkProvider: artworkProvider,
+                             previewLayout: heightClass == .compact ? .landscape :
+                                 (widthClass == .regular ? .split : .portrait))
                     .toolbar {
                         ToolbarItem(placement: .confirmationAction) {
                             Button(L10n.string("player.done", language)) { showSettings = false }

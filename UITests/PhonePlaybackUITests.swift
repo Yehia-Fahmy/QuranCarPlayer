@@ -57,18 +57,36 @@ final class PhonePlaybackUITests: XCTestCase {
     }
 
     func testThemeSelectionPersistsAfterRelaunch() {
-        app.buttons["Settings"].tap()
+        func openSettings() {
+            if !app.buttons["Settings"].isHittable {
+                app.buttons["Library Options"].tap()
+            }
+            app.buttons["Settings"].tap()
+        }
+
+        openSettings()
         let themePicker = app.buttons["listening-theme"]
         themePicker.tap()
-        app.buttons["Folio"].tap()
+        let gallery = app.navigationBars["Theme"]
+        XCTAssertTrue(gallery.waitForExistence(timeout: 5))
+        let folio = app.buttons["Folio"]
+        folio.tap()
+        XCTAssertTrue(folio.isSelected)
+        let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        attachment.name = "Theme gallery"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+        gallery.buttons["BackButton"].tap()
         XCTAssertTrue(themePicker.label.contains("Folio") || themePicker.value as? String == "Folio")
         app.terminate()
         app.launch()
-        app.buttons["Settings"].tap()
-        XCTAssertTrue(themePicker.waitForExistence(timeout: 5))
-        XCTAssertTrue(themePicker.label.contains("Folio") || themePicker.value as? String == "Folio")
+        openSettings()
         themePicker.tap()
-        app.buttons["System Appearance"].tap()
+        XCTAssertTrue(folio.waitForExistence(timeout: 5))
+        XCTAssertTrue(folio.isSelected)
+        let system = app.buttons["System Appearance"]
+        system.tap()
+        XCTAssertTrue(system.isSelected)
     }
 
     func testReciterChangeAndSettingsLanguage() {
