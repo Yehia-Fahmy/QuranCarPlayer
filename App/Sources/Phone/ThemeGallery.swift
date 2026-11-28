@@ -24,44 +24,75 @@ struct ThemeGallery: View {
     @Environment(\.listeningTheme) private var theme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    @Environment(\.layoutDirection) private var direction
+    @State private var pendingKey: String?
+    @ScaledMetric(relativeTo: .body) private var controlsHeight: CGFloat = 164
+    @ScaledMetric(relativeTo: .headline) private var minConfirmWidth: CGFloat = 180
     @GestureState private var dragOffset: CGFloat = 0
 
+    private var readingDirection: LayoutDirection { language.isRightToLeft ? .rightToLeft : .leftToRight }
     private var keys: [String] { [ListeningTheme.systemPreference] + ListeningTheme.allCases.map(\.rawValue) }
-    private var selectedKey: String { ListeningTheme(rawValue: preference)?.rawValue ?? ListeningTheme.systemPreference }
+    private var appliedKey: String { ListeningTheme(rawValue: preference)?.rawValue ?? ListeningTheme.systemPreference }
 
+    private var selectedKey: String { pendingKey ?? appliedKey }
     private var selectedIndex: Int { keys.firstIndex(of: selectedKey) ?? 0 }
 
     private func select(_ key: String) {
-        withAnimation(reduceMotion ? nil : .snappy) { preference = key }
+        withAnimation(reduceMotion ? nil : .snappy(duration: 0.22)) { pendingKey = key }
     }
 
     var body: some View {
         GeometryReader { bounds in
             let ratio = layout.canvas.width / layout.canvas.height
-            let cardWidth = min(bounds.size.width * 0.76, max(150, bounds.size.height - 112) * ratio, 520)
-            VStack(spacing: 18) {
-                carousel(cardWidth: cardWidth)
-
-                HStack(spacing: 6) {
-                    ForEach(keys, id: \.self) { key in
-                        Capsule()
-                            .fill(key == selectedKey ? theme.accent : Color.primary.opacity(0.23))
-                            .frame(width: key == selectedKey ? 18 : 6, height: 6)
-                    }
+            let cardWidth = min(bounds.size.width * 0.76, max(90, bounds.size.height - controlsHeight) * ratio, 520)
+            VStack(spacing: 16) {
+                ViewThatFits(in: .vertical) {
+                    previews(cardWidth: cardWidth)
+                    ScrollView { previews(cardWidth: cardWidth) }
                 }
-                .accessibilityHidden(true)
+                confirmButton
+                    .frame(width: min(max(cardWidth, minConfirmWidth), bounds.size.width - 32))
+                    .layoutPriority(1)
             }
-            .padding(.vertical, 18)
-            .frame(minHeight: bounds.size.height)
+            .padding(.vertical, 12)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
+        .environment(\.layoutDirection, readingDirection)
         .background(theme.background)
         .navigationTitle(L10n.string("theme.appearance", language))
         .navigationBarTitleDisplayMode(.inline)
     }
 
+    private func previews(cardWidth: CGFloat) -> some View {
+        VStack(spacing: 16) {
+            carousel(cardWidth: cardWidth)
+
+            HStack(spacing: 6) {
+                ForEach(keys, id: \.self) { key in
+                    Capsule()
+                        .fill(key == selectedKey ? theme.accent : Color.primary.opacity(0.23))
+                        .frame(width: key == selectedKey ? 18 : 6, height: 6)
+                }
+            }
+            .accessibilityHidden(true)
+        }
+    }
+
+    private var confirmButton: some View {
+        Button {
+            preference = selectedKey
+            pendingKey = nil
+        } label: {
+            Text(verbatim: L10n.string("theme.confirm", language))
+                .font(.headline)
+                .frame(maxWidth: .infinity, minHeight: 32)
+        }
+        .buttonStyle(.borderedProminent)
+        .disabled(selectedKey == appliedKey)
+        .accessibilityIdentifier("confirm-theme")
+    }
+
     private func carousel(cardWidth: CGFloat) -> some View {
-        let sign: CGFloat = direction == .rightToLeft ? -1 : 1
+        let sign: CGFloat = language.isRightToLeft ? -1 : 1
         let stride = cardWidth + 14
         let swipe = DragGesture(minimumDistance: 12)
             .updating($dragOffset) { value, offset, _ in
@@ -80,10 +111,11 @@ struct ThemeGallery: View {
                 advance(by: travel.width * sign < 0 ? 1 : -1)
             }
 
-        return ZStack {
+        return ZStack(alignment: .top) {
             ForEach(keys, id: \.self) { key in
                 let distance = (keys.firstIndex(of: key) ?? 0) - selectedIndex
                 choice(ListeningTheme(rawValue: key))
+                    .environment(\.layoutDirection, readingDirection)
                     .frame(width: cardWidth)
                     .offset(x: CGFloat(distance) * stride * sign + dragOffset)
                     .accessibilityHidden(abs(distance) > 1)
@@ -93,6 +125,8 @@ struct ThemeGallery: View {
         .clipped()
         .contentShape(Rectangle())
         .highPriorityGesture(swipe)
+        // Card offsets and finger movement share a physical x axis; card contents follow the language.
+        .environment(\.layoutDirection, .leftToRight)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("theme-carousel")
         .accessibilityScrollAction { edge in
@@ -143,17 +177,20 @@ struct ThemeGallery: View {
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text(verbatim: name).font(.subheadline.weight(.semibold))
                     Spacer(minLength: 0)
-                    Image(systemName: selected ? "checkmark.circle.fill" : "circle")
-                        .foregroundStyle(selected ? theme.accent : .secondary)
+                    if key == appliedKey {
+                        Image(systemName: "checkmark.circle.fill").foregroundStyle(theme.accent)
+                    }
                 }
                 .padding(.horizontal, 2)
             }
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(name)
-        .accessibilityAddTraits(selected ? .isSelected : [])
+        .accessibilityRepresentation {
+            Button(name) { select(key) }
+                .accessibilityValue(key == appliedKey ? L10n.string("theme.applied", language) : "")
+                .accessibilityAddTraits(selected ? .isSelected : [])
+        }
     }
 
     private func preview(_ palette: ListeningTheme) -> some View {

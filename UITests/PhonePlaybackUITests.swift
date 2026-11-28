@@ -56,52 +56,154 @@ final class PhonePlaybackUITests: XCTestCase {
         XCTAssertTrue(sources.waitForExistence(timeout: 5))
     }
 
-    func testThemeSelectionPersistsAfterRelaunch() {
-        func openSettings() {
-            if !app.buttons["Settings"].isHittable {
-                app.buttons["Library Options"].tap()
-            }
-            app.buttons["Settings"].tap()
-        }
+    private func openSettings() {
+        if !app.buttons["Settings"].isHittable { app.buttons["Library Options"].tap() }
+        app.buttons["Settings"].tap()
+    }
 
+    private var carousel: XCUIElement { app.descendants(matching: .any)["theme-carousel"].firstMatch }
+    private var confirmTheme: XCUIElement { app.buttons["confirm-theme"] }
+
+    // Measure gestures inside the preview artwork. At accessibility text sizes
+    // the carousel's full accessibility frame can extend below its scroll view.
+    private func swipePreview(left: Bool) {
+        let leading = carousel.coordinate(withNormalizedOffset: CGVector(dx: 0.25, dy: 0.15))
+        let trailing = carousel.coordinate(withNormalizedOffset: CGVector(dx: 0.75, dy: 0.15))
+        let start = left ? trailing : leading
+        start.press(forDuration: 0.01, thenDragTo: left ? leading : trailing, withVelocity: .fast, thenHoldForDuration: 0)
+    }
+
+    private func openThemes() {
         openSettings()
-        let themePicker = app.buttons["listening-theme"]
-        themePicker.tap()
-        let gallery = app.navigationBars["Theme"]
-        XCTAssertTrue(gallery.waitForExistence(timeout: 5))
-        let carousel = app.descendants(matching: .any)["theme-carousel"].firstMatch
-        func assertCentered(_ card: XCUIElement, line: UInt = #line) {
-            let aligned = NSPredicate { _, _ in
-                card.isSelected && abs(card.frame.midX - carousel.frame.midX) <= 3
-            }
-            let settled = XCTNSPredicateExpectation(predicate: aligned, object: nil)
-            XCTAssertEqual(XCTWaiter.wait(for: [settled], timeout: 5), .completed, line: line)
-        }
-        let folio = app.buttons["Folio"]
+        app.buttons["listening-theme"].tap()
+        XCTAssertTrue(confirmTheme.waitForExistence(timeout: 5))
+    }
+
+    private func centerSystem() {
         let system = app.buttons["System Appearance"]
-        // Begin from the same persisted choice if a previous test run left a theme selected.
-        for _ in 0..<6 {
+        for _ in 0..<5 {
             if system.exists && system.isSelected { break }
-            carousel.swipeRight()
+            swipePreview(left: false)
         }
-        XCTAssertTrue(system.isSelected)
+        assertCentered("System Appearance")
+        if confirmTheme.isEnabled { confirmTheme.tap() }
+        XCTAssertFalse(confirmTheme.isEnabled)
+    }
+
+    private func assertCentered(_ name: String, line: UInt = #line) {
+        let card = app.buttons[name]
+        let aligned = NSPredicate { _, _ in
+            card.exists && card.isSelected && abs(card.frame.midX - self.carousel.frame.midX) <= 3
+        }
+        let result = XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: aligned, object: nil)], timeout: 5)
+        if result != .completed {
+            add(XCTAttachment(string: app.debugDescription))
+            XCTFail("Expected \(name) at center. Card: \(card.debugDescription); carousel: \(carousel.frame)", line: line)
+        }
+    }
+
+    func testThemeNeedsConfirmationAndSurvivesRelaunch() {
+        openThemes()
+        centerSystem()
         carousel.swipeLeft()
-        XCTAssertTrue(folio.wait(for: \.isSelected, toEqual: true, timeout: 5))
-        assertCentered(folio)
+        assertCentered("Folio")
+        XCTAssertTrue(confirmTheme.isEnabled)
+        let back = app.descendants(matching: .any)["BackButton"].firstMatch
+        back.tap()
+        let row = app.buttons["listening-theme"]
+        XCTAssertTrue(row.label.contains("System Appearance") || row.value as? String == "System Appearance")
+        row.tap()
+        assertCentered("System Appearance")
         carousel.swipeLeft()
-        assertCentered(app.buttons["Studio"])
-        carousel.swipeRight()
-        XCTAssertTrue(folio.wait(for: \.isSelected, toEqual: true, timeout: 5))
+        confirmTheme.tap()
+        XCTAssertFalse(confirmTheme.isEnabled)
+        XCTAssertEqual(app.buttons["Folio"].value as? String, "Applied")
+        carousel.swipeLeft()
+        assertCentered("Studio")
         app.terminate()
         app.launch()
-        openSettings()
-        XCTAssertTrue(themePicker.label.contains("Folio") || themePicker.value as? String == "Folio")
-        themePicker.tap()
-        XCTAssertTrue(folio.waitForExistence(timeout: 5))
-        XCTAssertTrue(folio.isSelected)
-        assertCentered(folio)
+        openThemes()
+        assertCentered("Folio")
+        XCTAssertFalse(confirmTheme.isEnabled)
         carousel.swipeRight()
-        XCTAssertTrue(system.wait(for: \.isSelected, toEqual: true, timeout: 5))
+        confirmTheme.tap()
+        assertCentered("System Appearance")
+    }
+
+    func testRapidThemeSwipesKeepTitleAndAppliedAppearanceStable() {
+        openThemes()
+        centerSystem()
+        let title = app.navigationBars["Theme"].staticTexts["Theme"].firstMatch
+        XCTAssertTrue(title.waitForExistence(timeout: 5))
+        let originalFrame = title.frame
+        // Start at the first boundary, traverse every palette, overswipe the last
+        // boundary, then reverse repeatedly across the light/dark palette boundary.
+        swipePreview(left: false)
+        for _ in 0..<6 { swipePreview(left: true) }
+        assertCentered("Copper")
+        for _ in 0..<3 {
+            swipePreview(left: false)
+            swipePreview(left: false)
+            swipePreview(left: true)
+            swipePreview(left: true)
+        }
+        assertCentered("Copper")
+        XCTAssertTrue(confirmTheme.isEnabled)
+        XCTAssertEqual(title.frame, originalFrame)
+        let preview = XCTAttachment(screenshot: app.screenshot())
+        preview.name = "Copper preview before confirmation"
+        preview.lifetime = .keepAlways
+        add(preview)
+        for _ in 0..<6 { swipePreview(left: false) }
+        assertCentered("System Appearance")
+        XCTAssertEqual(title.frame, originalFrame)
+        XCTAssertFalse(confirmTheme.isEnabled)
+        XCTAssertEqual(app.buttons["System Appearance"].value as? String, "Applied")
+    }
+
+    func testPendingThemeSurvivesRotationAndAdjacentCardTap() {
+        defer { XCUIDevice.shared.orientation = .portrait }
+        XCUIDevice.shared.orientation = .portrait
+        openThemes()
+        centerSystem()
+        let visibleNeighbor = app.buttons["Folio"].frame.intersection(carousel.frame)
+        XCTAssertFalse(visibleNeighbor.isEmpty)
+        let origin = carousel.coordinate(withNormalizedOffset: .zero)
+        origin.withOffset(CGVector(dx: visibleNeighbor.midX - carousel.frame.minX,
+                                   dy: visibleNeighbor.minY - carousel.frame.minY + 24)).tap()
+        assertCentered("Folio")
+        XCUIDevice.shared.orientation = .landscapeLeft
+        assertCentered("Folio")
+        XCTAssertTrue(confirmTheme.isEnabled && confirmTheme.isHittable)
+        swipePreview(left: true)
+        swipePreview(left: true)
+        assertCentered("Nocturne")
+        confirmTheme.tap()
+        XCTAssertFalse(confirmTheme.isEnabled)
+        XCUIDevice.shared.orientation = .portrait
+        assertCentered("Nocturne")
+        XCTAssertEqual(app.buttons["Nocturne"].value as? String, "Applied")
+        centerSystem()
+    }
+
+    func testArabicThemeConfirmationAndSwipeDirection() {
+        openSettings()
+        app.buttons["العربية"].tap()
+        app.buttons["listening-theme"].tap()
+        let system = app.buttons["مظهر النظام"]
+        for _ in 0..<5 {
+            if system.exists && system.isSelected { break }
+            carousel.swipeLeft(velocity: .fast)
+        }
+        assertCentered("مظهر النظام")
+        if confirmTheme.isEnabled { confirmTheme.tap() }
+        carousel.swipeRight(velocity: .fast)
+        assertCentered("ورق")
+        XCTAssertEqual(confirmTheme.label, "تأكيد المظهر")
+        XCTAssertTrue(confirmTheme.isEnabled)
+        carousel.swipeLeft(velocity: .fast)
+        assertCentered("مظهر النظام")
+        XCTAssertFalse(confirmTheme.isEnabled)
     }
 
     func testReciterChangeAndSettingsLanguage() {

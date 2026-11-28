@@ -14,7 +14,7 @@ If a stream stops, check your connection and tap **Retry**. For offline playback
 
 ## Themes and screen sizes
 
-In builds with **Settings → Theme**, swipe left or right to center and apply Folio, Studio, Nocturne, Grove, or Copper. The previews adapt to your window and orientation. **System Appearance** follows your device and uses Folio in light mode and Nocturne in dark mode. Your selection is saved on that device.
+In builds with **Settings → Theme**, swipe left or right to preview a theme, then tap Confirm theme to apply it. Leaving the picker discards an unconfirmed preview. The previews adapt to your window and orientation. **System Appearance** follows your device and uses Folio in light mode and Nocturne in dark mode. Your selection is saved on that device.
 
 On supported iPad and iPhone Duo builds, wider windows show the surah list beside the player. Narrow the window or close the Duo to use one pane at a time. In the two-pane layout, open the library options menu (…) to reach Settings.
 
