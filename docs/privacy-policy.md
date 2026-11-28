@@ -7,7 +7,7 @@
 
 > **Hosting note (not for published page):** Publish this document at a stable HTTPS URL (for example under your site or GitHub Pages). Enter that URL as the Privacy Policy URL in App Store Connect and link it from in-app Settings when available.
 
-This Privacy Policy describes how **Quran Carplayer** (“the App”) handles information. It applies to the iPhone and Apple CarPlay experience of the App.
+This Privacy Policy describes how **Quran Carplayer** (“the App”) handles information. It applies to the App on iPhone, iPad in supported builds, and Apple CarPlay through a connected iPhone.
 
 ## Summary
 
@@ -23,11 +23,11 @@ Quran Carplayer is developed by Yehia Fahmy. For privacy questions, email [yehia
 
 ## Information stored on your device
 
-The App stores the following locally on your iPhone (and related Apple system surfaces such as Now Playing), not on developer-operated servers:
+The App stores the following locally on your device, not on developer-operated servers:
 
 ### Preferences
 
-Small settings such as preferred reciter, language preference (system / English / Arabic), CarPlay automatic-resume preference, and a surah-list anchor. These are stored using Apple’s `UserDefaults` on the device.
+Small settings such as preferred reciter, language preference (system / English / Arabic), theme selection in builds that offer themes, CarPlay automatic-resume preference, and a surah-list anchor. These are stored using Apple’s `UserDefaults` on the device.
 
 ### Listening session (“Continue Listening”)
 
@@ -58,11 +58,11 @@ MP3Quran’s [privacy policy](https://www.mp3quran.net/privacy-en.html) describe
 
 ### Minshawi’s portrait
 
-When the app needs this portrait, it checks the App Store storefront through StoreKit. In the Canadian and U.S. storefronts it can fetch one historical JPEG from Wikimedia Commons over HTTPS and cache it privately on your iPhone for offline display. Wikimedia logs image requests, including the IP address and image URL, and can derive an approximate location from the IP address. Its traffic logs are generally purged after 90 days. See [Wikimedia’s request-log documentation](https://wikitech.wikimedia.org/wiki/Data_Platform/Data_Lake/Traffic/Webrequest). The request contains no chapter number, listening position or account identifier. Where the image is unavailable, the app draws geometric artwork locally. See the [Wikimedia privacy policy](https://foundation.wikimedia.org/wiki/Policy:Privacy_policy).
+When the app needs this portrait, it checks the App Store storefront through StoreKit. In the Canadian and U.S. storefronts it can fetch one historical JPEG from Wikimedia Commons over HTTPS and cache it privately on your device for offline display. Wikimedia logs image requests, including the IP address and image URL, and can derive an approximate location from the IP address. Its traffic logs are generally purged after 90 days. See [Wikimedia’s request-log documentation](https://wikitech.wikimedia.org/wiki/Data_Platform/Data_Lake/Traffic/Webrequest). The request contains no chapter number, listening position or account identifier. Where the image is unavailable, the app draws geometric artwork locally. See the [Wikimedia privacy policy](https://foundation.wikimedia.org/wiki/Policy:Privacy_policy).
 
 ### Links you open
 
-If you tap attribution or license links in Settings (for example Wikimedia Commons or license pages), those open in your browser or system link handler. Activity on those websites is subject to the websites’ own privacy practices.
+Opening a privacy, support, source, or license link sends a request to the website you choose. GitHub Pages hosts the app’s privacy, terms, and support pages. In builds with the Sources screen, portrait and license links are under Settings → Privacy & Support → Sources. Earlier builds list the credits directly in Settings. Activity on those websites is subject to the websites’ own privacy practices.
 
 ### What we do not do on the network
 
@@ -103,7 +103,7 @@ The App is a Quran audio player and does not target children with advertising or
 
 ## International users
 
-The App is distributed through the Apple App Store. Audio may be delivered from CDN infrastructure operated by the audio provider. Your iPhone stores listening progress and preferences. If you enable device backups, Apple can include this data in a backup and restore it to a device. You can manage iCloud Backup in iPhone Settings. Downloaded audio is excluded from backup.
+The App is distributed through the Apple App Store. Audio may be delivered from CDN infrastructure operated by the audio provider. Your device stores listening progress and preferences. If you enable device backups, Apple can include this data in a backup and restore it to a device. You can manage iCloud Backup in your device settings. Downloaded audio is excluded from backup.
 
 ## Changes to this policy
 
@@ -111,7 +111,7 @@ We may update this Privacy Policy when the App’s behavior or legal requirement
 
 ## Contact
 
-To ask about privacy or request a copy, correction or deletion of support correspondence, contact the developer at the email below. You can manage local listening data on your iPhone.
+To ask about privacy or request a copy, correction or deletion of support correspondence, contact the developer at the email below. You can manage local listening data on your device.
 
 **Email:** [yehia.fahmy@uwaterloo.ca](mailto:yehia.fahmy@uwaterloo.ca)\
 **Developer:** Yehia Fahmy  

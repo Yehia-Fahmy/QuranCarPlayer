@@ -24,6 +24,8 @@
     --link: #8cb4ff;
     --rule: #2c2e31;
     --card: #1b1c1ecc;
+    --wash-left: #182622;
+    --wash-right: #29221c;
   }
 }
 * { box-sizing: border-box; }
@@ -31,8 +33,8 @@ body {
   margin: 0;
   font-family: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
   background:
-    radial-gradient(1200px 600px at 10% -10%, #e8efe8 0%, transparent 55%),
-    radial-gradient(900px 500px at 100% 0%, #efe6d8 0%, transparent 50%),
+    radial-gradient(1200px 600px at 10% -10%, var(--wash-left, #e8efe8) 0%, transparent 55%),
+    radial-gradient(900px 500px at 100% 0%, var(--wash-right, #efe6d8) 0%, transparent 50%),
     var(--bg);
   color: var(--fg);
   line-height: 1.55;
@@ -86,6 +88,7 @@ footer {
   <main>
     <nav>
       <a href="../privacy/">Privacy Policy</a>
+      <a href="../terms/">Terms of Use</a>
       <a href="../support/">Support</a>
     </nav>
     <article>
@@ -94,7 +97,7 @@ footer {
 <strong>Last updated:</strong> 27 November 2026<br />
 <strong>Developer:</strong> Yehia Fahmy<br />
 <strong>Contact:</strong> <a href="mailto:yehia.fahmy@uwaterloo.ca">yehia.fahmy@uwaterloo.ca</a></p>
-<p>This Privacy Policy describes how <strong>Quran Carplayer</strong> (“the App”) handles information. It applies to the iPhone and Apple CarPlay experience of the App.</p>
+<p>This Privacy Policy describes how <strong>Quran Carplayer</strong> (“the App”) handles information. It applies to the App on iPhone, iPad in supported builds, and Apple CarPlay through a connected iPhone.</p>
 <h2>Summary</h2>
 <ul>
 <li>The App does <strong>not</strong> require an account and does <strong>not</strong> ask you to provide your name, email, or phone number to use it.</li>
@@ -106,9 +109,9 @@ footer {
 <h2>Who we are</h2>
 <p>Quran Carplayer is developed by Yehia Fahmy. For privacy questions, email <a href="mailto:yehia.fahmy@uwaterloo.ca">yehia.fahmy@uwaterloo.ca</a>.</p>
 <h2>Information stored on your device</h2>
-<p>The App stores the following locally on your iPhone (and related Apple system surfaces such as Now Playing), not on developer-operated servers:</p>
+<p>The App stores the following locally on your device, not on developer-operated servers:</p>
 <h3>Preferences</h3>
-<p>Small settings such as preferred reciter, language preference (system / English / Arabic), CarPlay automatic-resume preference, and a surah-list anchor. These are stored using Apple’s <code>UserDefaults</code> on the device.</p>
+<p>Small settings such as preferred reciter, language preference (system / English / Arabic), theme selection in builds that offer themes, CarPlay automatic-resume preference, and a surah-list anchor. These are stored using Apple’s <code>UserDefaults</code> on the device.</p>
 <h3>Listening session (“Continue Listening”)</h3>
 <p>A local session checkpoint (for example, which recording you were listening to, elapsed time, completion status, and when it was saved) is written as a file in the App’s Application Support directory so you can continue where you left off.</p>
 <h3>Optional offline downloads</h3>
@@ -126,9 +129,9 @@ footer {
 <p>Those requests necessarily include ordinary technical request data that any HTTPS client sends (for example, IP address, user-agent style network metadata, and the URL of the requested audio file) so the CDN can deliver the file. The App does not add an analytics identity, advertising ID, or account credential to those requests.</p>
 <p>MP3Quran’s <a href="https://www.mp3quran.net/privacy-en.html">privacy policy</a> describes website logs that include the visitor’s IP address, visit time, country and referring page. It does not specify how long the audio host keeps requests or whether it stores the chapter URL with the listener’s IP address. For build 6, Quran Foundation describes website logs in its <a href="https://quran.com/privacy">privacy policy</a>. A recording choice may reveal religious interests. The app does not create a religious profile or use listening activity for advertising, profiling, or AI training. Playing a saved chapter reads the audio from your device.</p>
 <h3>Minshawi’s portrait</h3>
-<p>When the app needs this portrait, it checks the App Store storefront through StoreKit. In the Canadian and U.S. storefronts it can fetch one historical JPEG from Wikimedia Commons over HTTPS and cache it privately on your iPhone for offline display. Wikimedia logs image requests, including the IP address and image URL, and can derive an approximate location from the IP address. Its traffic logs are generally purged after 90 days. See <a href="https://wikitech.wikimedia.org/wiki/Data_Platform/Data_Lake/Traffic/Webrequest">Wikimedia’s request-log documentation</a>. The request contains no chapter number, listening position or account identifier. Where the image is unavailable, the app draws geometric artwork locally. See the <a href="https://foundation.wikimedia.org/wiki/Policy:Privacy_policy">Wikimedia privacy policy</a>.</p>
+<p>When the app needs this portrait, it checks the App Store storefront through StoreKit. In the Canadian and U.S. storefronts it can fetch one historical JPEG from Wikimedia Commons over HTTPS and cache it privately on your device for offline display. Wikimedia logs image requests, including the IP address and image URL, and can derive an approximate location from the IP address. Its traffic logs are generally purged after 90 days. See <a href="https://wikitech.wikimedia.org/wiki/Data_Platform/Data_Lake/Traffic/Webrequest">Wikimedia’s request-log documentation</a>. The request contains no chapter number, listening position or account identifier. Where the image is unavailable, the app draws geometric artwork locally. See the <a href="https://foundation.wikimedia.org/wiki/Policy:Privacy_policy">Wikimedia privacy policy</a>.</p>
 <h3>Links you open</h3>
-<p>If you tap attribution or license links in Settings (for example Wikimedia Commons or license pages), those open in your browser or system link handler. Activity on those websites is subject to the websites’ own privacy practices.</p>
+<p>Opening a privacy, support, source, or license link sends a request to the website you choose. GitHub Pages hosts the app’s privacy, terms, and support pages. In builds with the Sources screen, portrait and license links are under Settings → Privacy &amp; Support → Sources. Earlier builds list the credits directly in Settings. Activity on those websites is subject to the websites’ own privacy practices.</p>
 <h3>What we do not do on the network</h3>
 <p>The App does not send preferences, session checkpoints, download inventories, or analytics events to servers operated by the developer. There is no developer-operated analytics, advertising, or crash-reporting endpoint in the App.</p>
 <h2>Tracking</h2>
@@ -159,11 +162,11 @@ footer {
 <h2>Children</h2>
 <p>The App is a Quran audio player and does not target children with advertising or profiling. We do not knowingly collect personal information from children through a developer backend. If you believe a child has sent personal information to <a href="mailto:yehia.fahmy@uwaterloo.ca">yehia.fahmy@uwaterloo.ca</a>, contact us and we will delete that correspondence.</p>
 <h2>International users</h2>
-<p>The App is distributed through the Apple App Store. Audio may be delivered from CDN infrastructure operated by the audio provider. Your iPhone stores listening progress and preferences. If you enable device backups, Apple can include this data in a backup and restore it to a device. You can manage iCloud Backup in iPhone Settings. Downloaded audio is excluded from backup.</p>
+<p>The App is distributed through the Apple App Store. Audio may be delivered from CDN infrastructure operated by the audio provider. Your device stores listening progress and preferences. If you enable device backups, Apple can include this data in a backup and restore it to a device. You can manage iCloud Backup in your device settings. Downloaded audio is excluded from backup.</p>
 <h2>Changes to this policy</h2>
 <p>We may update this Privacy Policy when the App’s behavior or legal requirements change. The “Last updated” date at the top will change when we do. Continued use of the App after an update means you acknowledge the revised policy. Material changes will be reflected in the hosted policy URL used for the App Store listing.</p>
 <h2>Contact</h2>
-<p>To ask about privacy or request a copy, correction or deletion of support correspondence, contact the developer at the email below. You can manage local listening data on your iPhone.</p>
+<p>To ask about privacy or request a copy, correction or deletion of support correspondence, contact the developer at the email below. You can manage local listening data on your device.</p>
 <p><strong>Email:</strong> <a href="mailto:yehia.fahmy@uwaterloo.ca">yehia.fahmy@uwaterloo.ca</a><br />
 <strong>Developer:</strong> Yehia Fahmy<br />
 <strong>App:</strong> Quran Carplayer</p>
