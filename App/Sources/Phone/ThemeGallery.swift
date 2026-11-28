@@ -22,20 +22,50 @@ struct ThemeGallery: View {
     let reciter: Reciter?
     @ObservedObject var artworkProvider: ChapterArtworkProvider
     @Environment(\.listeningTheme) private var theme
-    @Environment(\.dynamicTypeSize) private var typeSize
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    private var columns: [GridItem] {
-        if typeSize.isAccessibilitySize { return [GridItem(.flexible())] }
-        return [GridItem(.adaptive(minimum: layout == .portrait ? 150 : 220), spacing: 14, alignment: .topLeading)]
-    }
+    private var keys: [String] { [ListeningTheme.systemPreference] + ListeningTheme.allCases.map(\.rawValue) }
+    private var selectedKey: String { ListeningTheme(rawValue: preference)?.rawValue ?? ListeningTheme.systemPreference }
 
     var body: some View {
-        ScrollView {
-            LazyVGrid(columns: columns, alignment: .leading, spacing: 20) {
-                choice(nil)
-                ForEach(ListeningTheme.allCases, id: \.self) { choice($0) }
+        GeometryReader { bounds in
+            let ratio = layout.canvas.width / layout.canvas.height
+            let cardWidth = min(bounds.size.width * 0.76, max(150, bounds.size.height - 112) * ratio, 520)
+            let inset = (bounds.size.width - cardWidth) / 2
+            ScrollView {
+                VStack(spacing: 18) {
+                    ScrollView(.horizontal) {
+                        LazyHStack(spacing: 14) {
+                            ForEach(keys, id: \.self) { key in
+                                choice(ListeningTheme(rawValue: key))
+                                    .frame(width: cardWidth)
+                                    .id(key)
+                            }
+                        }
+                        .scrollTargetLayout()
+                    }
+                    .contentMargins(.horizontal, inset, for: .scrollContent)
+                    .scrollIndicators(.hidden)
+                    .scrollTargetBehavior(.viewAligned(limitBehavior: .always))
+                    .scrollPosition(id: Binding<String?>(
+                        get: { selectedKey },
+                        set: { if let key = $0 { preference = key } }
+                    ), anchor: .center)
+                    .accessibilityIdentifier("theme-carousel")
+
+                    HStack(spacing: 6) {
+                        ForEach(keys, id: \.self) { key in
+                            Capsule()
+                                .fill(key == selectedKey ? theme.accent : Color.primary.opacity(0.23))
+                                .frame(width: key == selectedKey ? 18 : 6, height: 6)
+                        }
+                    }
+                    .accessibilityHidden(true)
+                }
+                .padding(.vertical, 18)
+                .frame(minHeight: bounds.size.height)
             }
-            .padding(16)
+            .scrollBounceBehavior(.basedOnSize)
         }
         .background(theme.background)
         .navigationTitle(L10n.string("theme.appearance", language))
@@ -45,9 +75,9 @@ struct ThemeGallery: View {
     private func choice(_ palette: ListeningTheme?) -> some View {
         let key = palette?.rawValue ?? ListeningTheme.systemPreference
         let name = L10n.string("theme.\(key)", language)
-        let selected = (ListeningTheme(rawValue: preference)?.rawValue ?? ListeningTheme.systemPreference) == key
+        let selected = selectedKey == key
         return Button {
-            preference = key
+            withAnimation(reduceMotion ? nil : .snappy) { preference = key }
         } label: {
             VStack(alignment: .leading, spacing: 8) {
                 GeometryReader { bounds in
@@ -104,7 +134,7 @@ struct ThemeGallery: View {
                                         in: .rect(cornerRadius: 6))
                     }
                 }
-                .frame(width: 156)
+                .frame(width: 200)
                 .padding(10)
                 .frame(maxHeight: .infinity)
                 .background(palette.background)
